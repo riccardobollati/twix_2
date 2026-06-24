@@ -1,0 +1,9 @@
+data
+env
+*__pycache__*
+.DS_Store
+
+*.pyc
+src/ground_truth_generator_y
+test_2.py
+test
