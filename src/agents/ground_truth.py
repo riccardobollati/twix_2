@@ -49,7 +49,8 @@ def ground_truth_node(state: dict[str, Any], llm: BaseChatModel, window: int = 3
 
     records: list[dict] = []
     record_counter = 0
-    total_tokens = 0
+    total_input  = 0
+    total_output = 0
 
     with pdfplumber.open(pdf_path) as pdf:
         total = len(pdf.pages)
@@ -89,9 +90,12 @@ def ground_truth_node(state: dict[str, Any], llm: BaseChatModel, window: int = 3
                 HumanMessage(content=content),
             ])
             usage = response.usage_metadata or {}
-            total_tokens += usage.get("total_tokens") or (
-                usage.get("input_tokens", 0) + usage.get("output_tokens", 0)
-            )
+            inp = usage.get("input_tokens") or 0
+            out = usage.get("output_tokens") or 0
+            if not inp and not out:
+                out = usage.get("total_tokens") or 0
+            total_input  += inp
+            total_output += out
             try:
                 parsed    = _parse_json(response.content)
                 page_recs = parsed.get("records", [])
@@ -124,6 +128,8 @@ def ground_truth_node(state: dict[str, Any], llm: BaseChatModel, window: int = 3
 
     duration = time.time() - t0
     cost: dict = {"phase": "ground_truth", "duration_s": round(duration, 3)}
-    if total_tokens:
-        cost["tokens"] = total_tokens
+    if total_input:
+        cost["input_tokens"] = total_input
+    if total_output:
+        cost["output_tokens"] = total_output
     return {"cost": [cost]}

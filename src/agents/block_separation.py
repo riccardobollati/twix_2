@@ -92,10 +92,11 @@ def block_separation_node(state: dict[str, Any]) -> dict[str, Any]:
     spinner_thread.start()
 
     t0 = time.time()
-    returncode, tokens = codex_silent(prompt, train_dir, task="block_separation")
+    returncode, input_t, output_t = codex_silent(prompt, train_dir, task="block_separation")
     duration = time.time() - t0
 
-    spinner_result["tokens"] = tokens if returncode == 0 else None
+    total_t = (input_t or 0) + (output_t or 0) or None
+    spinner_result["tokens"] = total_t if returncode == 0 else None
     stop_event.set()
     spinner_thread.join(timeout=0.5)
 
@@ -103,7 +104,9 @@ def block_separation_node(state: dict[str, Any]) -> dict[str, Any]:
         raise RuntimeError(f"codex failed for block_separation (exit code {returncode})")
 
     cost_entry: dict = {"phase": "block_separation", "duration_s": round(duration, 3)}
-    if tokens is not None:
-        cost_entry["tokens"] = tokens
+    if input_t is not None:
+        cost_entry["input_tokens"] = input_t
+    if output_t is not None:
+        cost_entry["output_tokens"] = output_t
 
     return {"cost": [cost_entry]}

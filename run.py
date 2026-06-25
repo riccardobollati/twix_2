@@ -169,6 +169,10 @@ def main() -> None:
         "--train-max-retries", type=int, default=3, metavar="N",
         help="Maximum number of Codex repair attempts before proceeding regardless (default: 3).",
     )
+    parser.add_argument(
+        "--gt-test-window", type=int, default=None, metavar="N",
+        help="Pages per LLM call when generating test ground truth (default: 20).",
+    )
     args = parser.parse_args()
 
     total_steps = 2
@@ -208,6 +212,7 @@ def main() -> None:
         "eval_pages":                 args.eval_pages,
         "train_accuracy_threshold":   args.train_threshold,
         "train_repair_max_retries":   args.train_max_retries,
+        **({"gt_test_window": args.gt_test_window} if args.gt_test_window is not None else {}),
     })
     print(f"[2/{total_steps}] Graph complete.", file=sys.stderr)
 

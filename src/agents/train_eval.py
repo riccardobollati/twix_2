@@ -79,14 +79,16 @@ def train_eval_node(state: dict[str, Any], llm: BaseChatModel) -> dict[str, Any]
         print("train_eval_node: reusing existing ground truth (repair retry)")
         with open(gt_path, encoding="utf-8") as f:
             records = json.load(f)
-        gt_duration = 0.0
-        gt_tokens   = 0
+        gt_duration  = 0.0
+        gt_input     = 0
+        gt_output    = 0
     else:
         print(f"train_eval_node: generating train ground truth (window={WINDOW})...")
         system_prompt  = build_prompt(template)
         records: list[dict] = []
         record_counter = 0
-        gt_tokens      = 0
+        gt_input       = 0
+        gt_output      = 0
 
         t0 = time.time()
         with pdfplumber.open(pdf_path) as pdf:
@@ -128,9 +130,12 @@ def train_eval_node(state: dict[str, Any], llm: BaseChatModel) -> dict[str, Any]
                 ])
 
                 usage = response.usage_metadata or {}
-                gt_tokens += usage.get("total_tokens") or (
-                    usage.get("input_tokens", 0) + usage.get("output_tokens", 0)
-                )
+                inp = usage.get("input_tokens") or 0
+                out = usage.get("output_tokens") or 0
+                if not inp and not out:
+                    out = usage.get("total_tokens") or 0
+                gt_input  += inp
+                gt_output += out
 
                 try:
                     parsed    = _parse_json(response.content)
@@ -155,8 +160,10 @@ def train_eval_node(state: dict[str, Any], llm: BaseChatModel) -> dict[str, Any]
         _maybe_merge_single_block(gt_path, template)
 
     gt_cost: dict = {"phase": "train_ground_truth", "duration_s": round(gt_duration, 3)}
-    if gt_tokens:
-        gt_cost["tokens"] = gt_tokens
+    if gt_input:
+        gt_cost["input_tokens"] = gt_input
+    if gt_output:
+        gt_cost["output_tokens"] = gt_output
     cost_entries.append(gt_cost)
 
     # ── 3. Evaluate ───────────────────────────────────────────────────────────
@@ -180,5 +187,20 @@ def train_eval_node(state: dict[str, Any], llm: BaseChatModel) -> dict[str, Any]
         f"exact_match={eval_result['exact_match']}"
     )
     cost_entries.append({"phase": "train_eval", "duration_s": round(eval_duration, 3)})
+
+    # ── 4. Append to accuracy history (tracks each loop iteration) ───────────
+    history_path = os.path.join(train_eval_dir, "eval_history.json")
+    if os.path.isfile(history_path):
+        with open(history_path, encoding="utf-8") as f:
+            history: list[dict] = json.load(f)
+    else:
+        history = []
+    history.append({
+        "attempt":     state.get("train_repair_attempts", 0),
+        "accuracy":    eval_result["accuracy"],
+        "exact_match": eval_result["exact_match"],
+    })
+    with open(history_path, "w", encoding="utf-8") as f:
+        json.dump(history, f, indent=2, ensure_ascii=False)
 
     return {"cost": cost_entries}

@@ -38,6 +38,10 @@ def save_metadata_node(state: dict[str, Any]) -> dict[str, Any]:
     def _find(phase: str) -> dict:
         return next((c for c in all_costs if c["phase"] == phase), {})
 
+    def _find_last(phase: str) -> dict:
+        matches = [c for c in all_costs if c["phase"] == phase]
+        return matches[-1] if matches else {}
+
     pipeline_phases = [c for c in all_costs if c["phase"] in _PIPELINE_PHASES]
 
     # ── train eval ────────────────────────────────────────────────────────────
@@ -46,11 +50,24 @@ def save_metadata_node(state: dict[str, Any]) -> dict[str, Any]:
     if os.path.isfile(train_eval_json):
         with open(train_eval_json, encoding="utf-8") as f:
             ev = json.load(f)
+
+        # Accuracy history across loop iterations
+        history_path = os.path.join(train_eval_dir, "eval_history.json")
+        iterations: list[dict] | None = None
+        if os.path.isfile(history_path):
+            with open(history_path, encoding="utf-8") as f:
+                iterations = json.load(f)
+
+        # Repair cost entries (one per loop iteration)
+        repairs = [c for c in all_costs if c["phase"].startswith("train_repair_")]
+
         train_eval = {
-            "accuracy":               ev.get("accuracy"),
-            "exact_match":            ev.get("exact_match"),
-            "agentic_pipeline_cost":  _find("train_grouping"),
-            "ground_truth_cost":      _find("train_ground_truth"),
+            "accuracy":              ev.get("accuracy"),
+            "exact_match":           ev.get("exact_match"),
+            "iterations":            iterations,
+            "repairs":               repairs if repairs else None,
+            "agentic_pipeline_cost": _find_last("train_grouping"),
+            "ground_truth_cost":     _find("train_ground_truth"),
         }
 
     # ── test eval ─────────────────────────────────────────────────────────────
@@ -68,7 +85,8 @@ def save_metadata_node(state: dict[str, Any]) -> dict[str, Any]:
 
     # ── totals ────────────────────────────────────────────────────────────────
     total_duration = sum(c.get("duration_s", 0) for c in all_costs)
-    total_tokens   = sum(c.get("tokens", 0) for c in all_costs) or None
+    total_input    = sum(c.get("input_tokens",  0) for c in all_costs) or None
+    total_output   = sum(c.get("output_tokens", 0) for c in all_costs) or None
 
     test_pages = None
     if state.get("test_start") and state.get("test_end"):
@@ -84,8 +102,9 @@ def save_metadata_node(state: dict[str, Any]) -> dict[str, Any]:
         "train_eval":      train_eval,
         "test_eval":       test_eval,
         "totals": {
-            "duration_s": round(total_duration, 3),
-            "tokens":     total_tokens,
+            "duration_s":    round(total_duration, 3),
+            "input_tokens":  total_input,
+            "output_tokens": total_output,
         },
     }
 

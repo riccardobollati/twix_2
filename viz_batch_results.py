@@ -4,7 +4,7 @@ Usage:
     python viz_batch_results.py <folder>
 
 Outputs saved to <folder>/results/:
-    accuracy.png    – train vs test accuracy per document
+    accuracy.png    – train (per loop iteration) vs test accuracy per document
     train_cost.png  – train-phase tokens and duration: ground truth vs code gen
     test_cost.png   – test-phase latency (pipeline vs GT) and GT token usage
 """
@@ -18,6 +18,12 @@ import os
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 import numpy as np
+
+
+# ── token pricing (USD per million tokens) ───────────────────────────────────
+# Adjust to match the model you are using (defaults: gpt-4o).
+PRICE_INPUT_PER_M  = 2.50
+PRICE_OUTPUT_PER_M = 15.00
 
 
 # ── data loading ──────────────────────────────────────────────────────────────
@@ -34,37 +40,95 @@ def _load_all(folder: str) -> list[dict]:
     return docs
 
 
-def _pipeline_totals(phases: list[dict]) -> tuple[float, float]:
-    """Sum tokens and duration across all pipeline (code-generation) phases."""
-    tokens   = sum(p.get("tokens", 0)      for p in phases)
-    duration = sum(p.get("duration_s", 0)  for p in phases)
-    return tokens, duration
+def _cost_usd(cost: dict) -> float:
+    """Convert a cost entry's token counts to USD using the pricing constants above."""
+    inp, out = _split_tokens(cost)
+    return (inp * PRICE_INPUT_PER_M + out * PRICE_OUTPUT_PER_M) / 1_000_000
+
+
+def _split_tokens(cost: dict) -> tuple[float, float]:
+    """Return (input_tokens, output_tokens) from a cost entry.
+
+    Falls back to treating a legacy ``tokens`` total as output when the split
+    fields are absent (backward-compatible with older metadata files).
+    """
+    inp = cost.get("input_tokens", 0)
+    out = cost.get("output_tokens", 0)
+    if not inp and not out:
+        out = cost.get("tokens", 0)
+    return inp, out
+
+
+def _pipeline_totals(phases: list[dict]) -> tuple[float, float, float]:
+    """Sum input/output tokens and duration across all pipeline phases."""
+    input_tokens  = sum(_split_tokens(p)[0] for p in phases)
+    output_tokens = sum(_split_tokens(p)[1] for p in phases)
+    duration      = sum(p.get("duration_s", 0) for p in phases)
+    return input_tokens, output_tokens, duration
 
 
 # ── plot 1: accuracy ──────────────────────────────────────────────────────────
 
 def plot_accuracy(docs: list[dict], out_path: str) -> None:
-    names      = [d["_name"] for d in docs]
-    train_acc  = [d.get("train_eval", {}).get("accuracy") for d in docs]
-    test_acc   = [d.get("test_eval",  {}).get("accuracy") for d in docs]
+    # Find max training iterations across all documents
+    max_iters = 1
+    for d in docs:
+        iters = d.get("train_eval", {}).get("iterations")
+        if iters:
+            max_iters = max(max_iters, len(iters))
 
-    x     = np.arange(len(names))
-    width = 0.35
+    names = [d["_name"] for d in docs]
+    n     = len(names)
 
-    fig, ax = plt.subplots(figsize=(max(10, len(names) * 0.9), 5))
+    # Per-document per-iteration train accuracy (padded to max_iters)
+    train_accs: list[list[float | None]] = []
+    for d in docs:
+        iters = d.get("train_eval", {}).get("iterations") or []
+        row   = [it.get("accuracy") for it in iters]
+        if not row:
+            row = [d.get("train_eval", {}).get("accuracy")]
+        row += [None] * (max_iters - len(row))
+        train_accs.append(row)
 
-    bars_train = ax.bar(x - width / 2, train_acc, width, label="Train", color="#4C72B0")
-    bars_test  = ax.bar(x + width / 2, test_acc,  width, label="Test",  color="#DD8452")
+    test_acc = [d.get("test_eval", {}).get("accuracy") for d in docs]
 
-    for bar in (*bars_train, *bars_test):
-        h = bar.get_height()
-        if h is not None:
-            ax.text(
-                bar.get_x() + bar.get_width() / 2, h + 0.005,
-                f"{h:.2f}", ha="center", va="bottom", fontsize=7,
-            )
+    bars_per_doc = max_iters + 1  # train iters + test
+    group_width  = 0.8
+    bar_width    = group_width / bars_per_doc
+    x            = np.arange(n)
 
-    ax.set_title("Train vs Test Accuracy per Document")
+    fig, ax = plt.subplots(figsize=(max(10, n * max(1.2, bars_per_doc * 0.35)), 5))
+
+    train_cmap   = plt.colormaps["Blues"]
+    train_colors = [train_cmap(0.35 + 0.5 * i / max(max_iters - 1, 1)) for i in range(max_iters)]
+
+    all_bars: list[tuple] = []
+
+    for i in range(max_iters):
+        vals    = [row[i] for row in train_accs]
+        label   = "Train" if max_iters == 1 else f"Train iter {i}"
+        offsets = x - group_width / 2 + (i + 0.5) * bar_width
+        bars    = ax.bar(offsets, [v or 0 for v in vals], bar_width,
+                         label=label, color=train_colors[i])
+        all_bars.append((bars, vals))
+
+    # Test bar
+    offsets   = x - group_width / 2 + (max_iters + 0.5) * bar_width
+    bars_test = ax.bar(offsets, [v or 0 for v in test_acc], bar_width,
+                       label="Test", color="#DD8452")
+    all_bars.append((bars_test, test_acc))
+
+    for bars, vals in all_bars:
+        for bar, v in zip(bars, vals):
+            if v is not None and v > 0:
+                ax.text(
+                    bar.get_x() + bar.get_width() / 2, v + 0.005,
+                    f"{v:.2f}", ha="center", va="bottom", fontsize=7,
+                )
+
+    title = ("Train vs Test Accuracy per Document" if max_iters == 1
+             else "Training Loop & Test Accuracy per Document")
+    ax.set_title(title)
     ax.set_ylabel("Accuracy")
     ax.set_xticks(x)
     ax.set_xticklabels(names, rotation=45, ha="right")
@@ -79,6 +143,25 @@ def plot_accuracy(docs: list[dict], out_path: str) -> None:
     print(f"Saved: {out_path}")
 
 
+# ── helpers for stacked token bars ───────────────────────────────────────────
+
+def _stacked_token_bar(
+    ax,
+    positions,
+    input_vals: list[float],
+    output_vals: list[float],
+    width: float,
+    input_color: str,
+    output_color: str,
+    label_prefix: str,
+) -> None:
+    """Draw a pair of stacked bars (input bottom, output top) at `positions`."""
+    ax.bar(positions, input_vals,  width, label=f"{label_prefix} input",
+           color=input_color)
+    ax.bar(positions, output_vals, width, label=f"{label_prefix} output",
+           color=output_color, bottom=input_vals)
+
+
 # ── plot 2: train-phase cost ──────────────────────────────────────────────────
 
 def plot_train_cost(docs: list[dict], out_path: str) -> None:
@@ -88,24 +171,37 @@ def plot_train_cost(docs: list[dict], out_path: str) -> None:
 
     names = [d["_name"] for d in docs]
 
-    gt_tokens   = [d["train_eval"].get("ground_truth_cost", {}).get("tokens",      0) for d in docs]
-    gt_time     = [d["train_eval"].get("ground_truth_cost", {}).get("duration_s",  0) for d in docs]
-    code_tokens = [_pipeline_totals(d["pipeline_phases"])[0] for d in docs]
-    code_time   = [_pipeline_totals(d["pipeline_phases"])[1] for d in docs]
+    gt_tokens_split = [_split_tokens(d["train_eval"].get("ground_truth_cost", {})) for d in docs]
+    gt_input    = [s[0] for s in gt_tokens_split]
+    gt_output   = [s[1] for s in gt_tokens_split]
+    gt_time     = [d["train_eval"].get("ground_truth_cost", {}).get("duration_s", 0) for d in docs]
+
+    pipeline_results = [_pipeline_totals(d["pipeline_phases"]) for d in docs]
+    code_input  = [r[0] for r in pipeline_results]
+    code_output = [r[1] for r in pipeline_results]
+    code_time   = [r[2] for r in pipeline_results]
 
     x     = np.arange(len(names))
     width = 0.35
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(max(14, len(names) * 1.3), 5))
 
-    # — tokens —
-    ax1.bar(x - width / 2, [t / 1_000 for t in gt_tokens],   width, label="Ground truth",    color="#4C72B0")
-    ax1.bar(x + width / 2, [t / 1_000 for t in code_tokens], width, label="Code generation", color="#DD8452")
+    # — tokens (stacked: input bottom, output top) —
+    _stacked_token_bar(
+        ax1, x - width / 2,
+        [i / 1_000 for i in gt_input],   [o / 1_000 for o in gt_output],
+        width, "#2C5282", "#4C72B0", "GT",
+    )
+    _stacked_token_bar(
+        ax1, x + width / 2,
+        [i / 1_000 for i in code_input],  [o / 1_000 for o in code_output],
+        width, "#8B3A00", "#DD8452", "Code",
+    )
     ax1.set_title("Tokens")
     ax1.set_ylabel("Tokens (k)")
     ax1.set_xticks(x)
     ax1.set_xticklabels(names, rotation=45, ha="right")
-    ax1.legend()
+    ax1.legend(fontsize=8)
     ax1.grid(axis="y", alpha=0.3)
 
     # — duration —
@@ -135,7 +231,9 @@ def plot_test_cost(docs: list[dict], out_path: str) -> None:
     names         = [d["_name"] for d in docs]
     pipeline_time = [d["test_eval"].get("agentic_pipeline_cost", {}).get("duration_s", 0) for d in docs]
     gt_time       = [d["test_eval"].get("ground_truth_cost",     {}).get("duration_s", 0) for d in docs]
-    gt_tokens     = [d["test_eval"].get("ground_truth_cost",     {}).get("tokens",     0) for d in docs]
+    gt_tokens_split = [_split_tokens(d["test_eval"].get("ground_truth_cost", {})) for d in docs]
+    gt_input      = [s[0] for s in gt_tokens_split]
+    gt_output     = [s[1] for s in gt_tokens_split]
 
     x     = np.arange(len(names))
     width = 0.35
@@ -152,15 +250,114 @@ def plot_test_cost(docs: list[dict], out_path: str) -> None:
     ax1.legend()
     ax1.grid(axis="y", alpha=0.3)
 
-    # — GT tokens —
-    ax2.bar(x, [t / 1_000 for t in gt_tokens], color="#4C72B0")
+    # — GT tokens (stacked: input bottom, output top) —
+    ax2.bar(x, [i / 1_000 for i in gt_input],  color="#2C5282", label="Input tokens")
+    ax2.bar(x, [o / 1_000 for o in gt_output], color="#4C72B0", label="Output tokens",
+            bottom=[i / 1_000 for i in gt_input])
     ax2.set_title("Ground Truth Tokens")
     ax2.set_ylabel("Tokens (k)")
     ax2.set_xticks(x)
     ax2.set_xticklabels(names, rotation=45, ha="right")
+    ax2.legend(fontsize=8)
     ax2.grid(axis="y", alpha=0.3)
 
     fig.suptitle("Test Phase Cost", fontsize=12, fontweight="bold")
+    plt.tight_layout()
+    plt.savefig(out_path, dpi=150)
+    plt.close()
+    print(f"Saved: {out_path}")
+
+
+# ── plot 4: break-even analysis ──────────────────────────────────────────────
+
+def plot_break_even(docs: list[dict], out_path: str) -> None:
+    """For each document compute when the pipeline setup cost is recouped.
+
+    Fixed cost  = code generation (pipeline_phases) + train GT + train grouping + repairs.
+    LLM cost/pg = test ground-truth tokens / test_pages  (full LLM-per-page baseline).
+    Run cost/pg  = test agentic_pipeline_cost / test_pages  (grouping LLM still runs).
+    Break-even   = fixed_cost / (llm_cost_per_page - run_cost_per_page).
+    """
+    usable = []
+    for d in docs:
+        train_pages = d.get("train_pages") or 0
+        test_pages  = d.get("test_pages")  or 0
+        train_eval  = d.get("train_eval", {})
+        test_eval   = d.get("test_eval",  {})
+        train_gt    = train_eval.get("ground_truth_cost", {})
+        test_gt     = test_eval.get("ground_truth_cost",  {})
+
+        # LLM cost per page — prefer test set (larger sample), fall back to train
+        if test_gt and test_pages:
+            llm_cost_per_page = _cost_usd(test_gt) / test_pages
+        elif train_gt and train_pages:
+            llm_cost_per_page = _cost_usd(train_gt) / train_pages
+        else:
+            continue
+        if llm_cost_per_page <= 0:
+            continue
+
+        # Pipeline run cost per page (grouping LLM call at inference time)
+        pipe_run_per_page = 0.0
+        if test_pages:
+            pipe_run_per_page = _cost_usd(test_eval.get("agentic_pipeline_cost", {})) / test_pages
+
+        # One-time setup cost
+        repairs    = train_eval.get("repairs") or []
+        fixed_cost = (
+            sum(_cost_usd(p) for p in d.get("pipeline_phases", []))
+            + _cost_usd(train_gt)
+            + _cost_usd(train_eval.get("agentic_pipeline_cost", {}))
+            + sum(_cost_usd(r) for r in repairs)
+        )
+
+        savings_per_page = llm_cost_per_page - pipe_run_per_page
+        if savings_per_page <= 0:
+            continue  # pipeline never cheaper per-page
+
+        break_even = fixed_cost / savings_per_page
+
+        usable.append({
+            "name":               d["_name"],
+            "fixed_cost":         fixed_cost,
+            "llm_cost_per_page":  llm_cost_per_page,
+            "pipe_run_per_page":  pipe_run_per_page,
+            "break_even":         break_even,
+            "train_pages":        train_pages,
+            "total_pages":        train_pages + test_pages,
+        })
+
+    if not usable:
+        return
+
+    n     = len(usable)
+    names = [u["name"] for u in usable]
+
+    fig, ax = plt.subplots(figsize=(max(8, n * 1.1), 5))
+
+    x    = np.arange(n)
+    bars = ax.bar(x, [u["break_even"] for u in usable], 0.6,
+                  color="#4C72B0", label="Break-even pages")
+    for bar, u in zip(bars, usable):
+        ax.text(
+            bar.get_x() + bar.get_width() / 2, bar.get_height() + 0.3,
+            f"{u['break_even']:.0f}", ha="center", va="bottom", fontsize=8,
+        )
+    for i, u in enumerate(usable):
+        ax.plot(i, u["train_pages"], "^", color="#2ca02c", markersize=8, zorder=5,
+                label="Train pages" if i == 0 else None)
+        ax.plot(i, u["total_pages"], "D", color="#d62728", markersize=7, zorder=5,
+                label="Total pages available" if i == 0 else None)
+
+    ax.set_title(
+        f"Break-even pages  —  ${PRICE_INPUT_PER_M}/M input · ${PRICE_OUTPUT_PER_M}/M output"
+    )
+    ax.set_ylabel("Pages")
+    ax.set_xticks(x)
+    ax.set_xticklabels(names, rotation=45, ha="right")
+    ax.legend(fontsize=8)
+    ax.grid(axis="y", alpha=0.3)
+
     plt.tight_layout()
     plt.savefig(out_path, dpi=150)
     plt.close()
@@ -186,6 +383,7 @@ def main() -> None:
     plot_accuracy(   docs, os.path.join(out_dir, "accuracy.png"))
     plot_train_cost( docs, os.path.join(out_dir, "train_cost.png"))
     plot_test_cost(  docs, os.path.join(out_dir, "test_cost.png"))
+    plot_break_even( docs, os.path.join(out_dir, "break_even.png"))
 
 
 if __name__ == "__main__":

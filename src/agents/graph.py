@@ -92,7 +92,7 @@ def build_graph(llm: BaseChatModel):
     graph.add_node("codex_fix", train_repair_node)
     graph.add_node("grouping", grouping_node)
     graph.add_node("merge_records", merge_records_node)
-    graph.add_node("ground_truth", lambda state: ground_truth_node(state, llm, window=20))
+    graph.add_node("ground_truth", lambda state: ground_truth_node(state, llm, window=state.get("gt_test_window") or 20))
     graph.add_node("eval", eval_node)
     graph.add_node("save_metadata", save_metadata_node)
 

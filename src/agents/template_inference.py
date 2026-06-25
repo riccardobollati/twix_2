@@ -38,7 +38,8 @@ class ExtractionState(TypedDict):
     train_pages:       int   # number of pages requested for the train set
     eval_mode:         bool  # whether to create a test split
 
-    eval_pages: NotRequired[int]  # max test pages (None = all remaining)
+    eval_pages:      NotRequired[int]  # max test pages (None = all remaining)
+    gt_test_window:  NotRequired[int]  # pages per LLM call for test GT (default 20)
 
     # ── train-repair loop ────────────────────────────────────────────────────────
     train_accuracy_threshold: NotRequired[float]  # accuracy target; 0.0 = disabled
@@ -138,13 +139,17 @@ def template_inference_node(state: ExtractionState, llm: BaseChatModel) -> dict[
         json.dump({"template": parsed.get("template", []), "metadata": parsed.get("metadata", [])}, f, indent=2)
 
     usage = response.usage_metadata or {}
-    tokens = usage.get("total_tokens") or (
-        (usage.get("input_tokens") or 0) + (usage.get("output_tokens") or 0)
-    ) or None
+    input_tokens  = usage.get("input_tokens")  or 0
+    output_tokens = usage.get("output_tokens") or 0
+    if not input_tokens and not output_tokens:
+        total = usage.get("total_tokens") or 0
+        output_tokens = total  # split unknown, store as output by convention
 
     cost_entry: dict = {"phase": "template_inference", "duration_s": round(duration, 3)}
-    if tokens:
-        cost_entry["tokens"] = tokens
+    if input_tokens:
+        cost_entry["input_tokens"] = input_tokens
+    if output_tokens:
+        cost_entry["output_tokens"] = output_tokens
 
     return {
         "messages": [response],

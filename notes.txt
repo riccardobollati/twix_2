@@ -1,1 +1,96 @@
 now create a new node called block_extraction_scipting. this node create a folder in the agent workspace called extraction_scriots. once this is done I want to start a node for each block_id (so in parallel) where a codex instance is started within the block sample folder with the instruction to create a python script to extract data from that block, the script must be generalizable to all the instance of that block type
+
+
+python3 run.py id_49 --eval --train-threshold 0.95 --train-max-retries 3
+
+
+ await gather_future
+  File "/Users/riccardo/tesi/code/twix_2/src/run_batch.py", line 407, in run_job
+    await reader_task
+  File "/Users/riccardo/tesi/code/twix_2/src/run_batch.py", line 352, in stream_output
+    line = await stream.readline()
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/streams.py", line 571, in readline
+    raise ValueError(e.args[0])
+ValueError: Separator is not found, and chunk exceed the limit
+(env) riccardo@Riccardos-MacBook-Air twix_2 % python3 src/run_batch.py --eval --train-threshold 0.90 --train-max-retries 3 --eval-pages 20 --pages 5 --jobs 1
+Traceback (most recent call last):
+  File "/Users/riccardo/tesi/code/twix_2/src/run_batch.py", line 406, in run_job
+    returncode = await process.wait()
+                 ^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/subprocess.py", line 137, in wait
+    return await self._transport._wait()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/base_subprocess.py", line 255, in _wait
+    return await waiter
+           ^^^^^^^^^^^^
+asyncio.exceptions.CancelledError
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/riccardo/tesi/code/twix_2/src/run_batch.py", line 535, in <module>
+    raise SystemExit(main())
+                     ~~~~^^
+  File "/Users/riccardo/tesi/code/twix_2/src/run_batch.py", line 531, in main
+    return asyncio.run(run_batch(args, forwarded_args))
+           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/runners.py", line 204, in run
+    return runner.run(main)
+           ~~~~~~~~~~^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/runners.py", line 127, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/base_events.py", line 719, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "/Users/riccardo/tesi/code/twix_2/src/run_batch.py", line 506, in run_batch
+    await gather_future
+  File "/Users/riccardo/tesi/code/twix_2/src/run_batch.py", line 411, in run_job
+    await reader_task
+  File "/Users/riccardo/tesi/code/twix_2/src/run_batch.py", line 352, in stream_output
+    line = await stream.readline()
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/streams.py", line 571, in readline
+    raise ValueError(e.args[0])
+ValueError: Separator is not found, and chunk exceed the limit
+(env) riccardo@Riccardos-MacBook-Air twix_2 %
+(env) riccardo@Riccardos-MacBook-Air twix_2 % python3 src/run_batch.py --eval --train-threshold 0.90 --train-max-retries 3 --eval-pages 20 --pages 5 --jobs 1
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/streams.py", line 562, in readline
+    line = await self.readuntil(sep)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/streams.py", line 663, in readuntil
+    raise exceptions.LimitOverrunError(
+        'Separator is not found, and chunk exceed the limit',
+        offset)
+asyncio.exceptions.LimitOverrunError: Separator is not found, and chunk exceed the limit
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/riccardo/tesi/code/twix_2/src/run_batch.py", line 535, in <module>
+    raise SystemExit(main())
+                     ~~~~^^
+  File "/Users/riccardo/tesi/code/twix_2/src/run_batch.py", line 531, in main
+    return asyncio.run(run_batch(args, forwarded_args))
+           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/runners.py", line 204, in run
+    return runner.run(main)
+           ~~~~~~~~~~^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/runners.py", line 127, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/base_events.py", line 719, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "/Users/riccardo/tesi/code/twix_2/src/run_batch.py", line 508, in run_batch
+    await gather_future
+  File "/Users/riccardo/tesi/code/twix_2/src/run_batch.py", line 407, in run_job
+    await reader_task
+  File "/Users/riccardo/tesi/code/twix_2/src/run_batch.py", line 352, in stream_output
+    line = await stream.readline()
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/streams.py", line 571, in readline
+    raise ValueError(e.args[0])
+ValueError: Separator is not found, and chunk exceed the limit

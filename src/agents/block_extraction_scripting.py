@@ -117,36 +117,40 @@ def block_extraction_scripting_node(state: dict[str, Any]) -> dict[str, Any]:
 
     t0 = time.time()
 
-    def _run(template_id: str) -> tuple[str, int, int | None]:
+    def _run(template_id: str) -> tuple[str, int, int | None, int | None]:
         sample_dir = os.path.join(block_samples_dir, template_id)
         template_node = _load_template_node(agent_space, template_id)
         prompt = PROMPT_BLOCK_EXTRACTION_SCRIPTING(template_id, template_node)
-        rc, tokens = codex_silent(prompt, sample_dir, task=f"block_extraction_scripting_{template_id}")
-        return template_id, rc, tokens
+        rc, inp, out = codex_silent(prompt, sample_dir, task=f"block_extraction_scripting_{template_id}")
+        return template_id, rc, inp, out
 
     block_tokens: list[dict] = []
     with ThreadPoolExecutor() as executor:
         futures = {executor.submit(_run, tid): tid for tid in template_ids}
         for future in as_completed(futures):
-            template_id, rc, tokens = future.result()
+            template_id, rc, inp, out = future.result()
             if rc != 0:
-                tokens = None
-            display.mark_done(template_id, tokens)
-            if tokens is not None:
-                block_tokens.append({"id": template_id, "tokens": tokens})
+                inp = out = None
+            total_t = (inp or 0) + (out or 0) or None
+            display.mark_done(template_id, total_t)
+            if inp is not None or out is not None:
+                block_tokens.append({"id": template_id, "input_tokens": inp or 0, "output_tokens": out or 0})
 
     display.stop()
     spinner_thread.join(timeout=0.2)
 
     duration = time.time() - t0
-    total_tokens = sum(b["tokens"] for b in block_tokens) if block_tokens else None
+    has_tokens = bool(block_tokens)
+    total_input  = sum(b["input_tokens"]  for b in block_tokens) if has_tokens else None
+    total_output = sum(b["output_tokens"] for b in block_tokens) if has_tokens else None
 
     cost_entry: dict = {
         "phase": "block_extraction_scripting",
         "duration_s": round(duration, 3),
     }
-    if total_tokens is not None:
-        cost_entry["tokens"] = total_tokens
+    if has_tokens:
+        cost_entry["input_tokens"]  = total_input
+        cost_entry["output_tokens"] = total_output
         cost_entry["blocks"] = sorted(block_tokens, key=lambda b: b["id"])
 
     return {"cost": [cost_entry]}
