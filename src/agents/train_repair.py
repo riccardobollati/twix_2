@@ -5,7 +5,7 @@ import threading
 import time
 from typing import Any
 
-from src.models.codex import codex_silent
+from src.models.codex import DEFAULT_CODEX_MODEL, codex_silent
 
 
 _FRAMES = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]
@@ -150,7 +150,9 @@ def train_repair_node(state: dict[str, Any]) -> dict[str, Any]:
     spinner_thread.start()
 
     t0 = time.time()
-    returncode, input_t, output_t = codex_silent(prompt, pipeline_dir, task=f"train_repair_{attempts}")
+    debug_dir = os.path.join(document_dir, "debug")
+    log_path  = os.path.join(debug_dir, f"train_repair_{attempts}.log") if state.get("save_log") else None
+    returncode, input_t, output_t = codex_silent(prompt, pipeline_dir, task=f"train_repair_{attempts}", model=DEFAULT_CODEX_MODEL, caveman=state.get("use_caveman", False), log_path=log_path)
     duration = time.time() - t0
 
     total_t = (input_t or 0) + (output_t or 0) or None

@@ -9,7 +9,7 @@ from typing import Any
 _PIPELINE_PHASES = {
     "template_inference", "record_separation", "run_record_separation",
     "block_separation", "run_block_separation", "block_samples",
-    "block_extraction_scripting", "collect_extraction_scripts",
+    "block_difficulty_router", "block_extraction_scripting", "collect_extraction_scripts",
 }
 
 
@@ -93,14 +93,16 @@ def save_metadata_node(state: dict[str, Any]) -> dict[str, Any]:
         test_pages = state["test_end"] - state["test_start"] + 1
 
     metadata = {
-        "doc_name":        state.get("doc_name"),
-        "timestamp":       datetime.datetime.now().isoformat(),
-        "train_pages":     state.get("actual_train_pages"),
-        "test_pages":      test_pages,
-        "eval_mode":       state.get("eval_mode", False),
-        "pipeline_phases": pipeline_phases,
-        "train_eval":      train_eval,
-        "test_eval":       test_eval,
+        "doc_name":         state.get("doc_name"),
+        "timestamp":        datetime.datetime.now().isoformat(),
+        "train_pages":      state.get("actual_train_pages"),
+        "test_pages":       test_pages,
+        "eval_mode":        state.get("eval_mode", False),
+        "llm_model":        state.get("llm_model"),
+        "block_models":     state.get("block_codex_models"),
+        "pipeline_phases":  pipeline_phases,
+        "train_eval":       train_eval,
+        "test_eval":        test_eval,
         "totals": {
             "duration_s":    round(total_duration, 3),
             "input_tokens":  total_input,

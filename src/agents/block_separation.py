@@ -8,7 +8,7 @@ import threading
 import time
 from typing import Any
 
-from src.models.codex import codex_silent
+from src.models.codex import DEFAULT_CODEX_MODEL, codex_silent
 from src.prompts.block_separation_prompt import PROMPT_BLOCK_SEPARATION
 
 
@@ -92,7 +92,9 @@ def block_separation_node(state: dict[str, Any]) -> dict[str, Any]:
     spinner_thread.start()
 
     t0 = time.time()
-    returncode, input_t, output_t = codex_silent(prompt, train_dir, task="block_separation")
+    debug_dir = os.path.join(os.path.dirname(state["agent_space"]), "debug")
+    log_path  = os.path.join(debug_dir, "block_separation.log") if state.get("save_log") else None
+    returncode, input_t, output_t = codex_silent(prompt, train_dir, task="block_separation", model=DEFAULT_CODEX_MODEL, caveman=state.get("use_caveman", False), log_path=log_path)
     duration = time.time() - t0
 
     total_t = (input_t or 0) + (output_t or 0) or None

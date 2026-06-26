@@ -8,7 +8,7 @@ import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any
 
-from src.models.codex import codex_silent
+from src.models.codex import DEFAULT_CODEX_MODEL, codex_silent
 from src.prompts.block_extraction_scripting_prompt import PROMPT_BLOCK_EXTRACTION_SCRIPTING
 
 
@@ -115,13 +115,18 @@ def block_extraction_scripting_node(state: dict[str, Any]) -> dict[str, Any]:
     display = _Display(template_ids)
     spinner_thread = display.start()
 
+    block_codex_models = state.get("block_codex_models") or {}
+    use_caveman = state.get("use_caveman", False)
+    debug_dir   = os.path.join(os.path.dirname(agent_space), "debug") if state.get("save_log") else None
     t0 = time.time()
 
     def _run(template_id: str) -> tuple[str, int, int | None, int | None]:
+        model      = block_codex_models.get(template_id, DEFAULT_CODEX_MODEL)
         sample_dir = os.path.join(block_samples_dir, template_id)
+        log_path   = os.path.join(debug_dir, f"block_extraction_{template_id}.log") if debug_dir else None
         template_node = _load_template_node(agent_space, template_id)
         prompt = PROMPT_BLOCK_EXTRACTION_SCRIPTING(template_id, template_node)
-        rc, inp, out = codex_silent(prompt, sample_dir, task=f"block_extraction_scripting_{template_id}")
+        rc, inp, out = codex_silent(prompt, sample_dir, task=f"block_extraction_scripting_{template_id}", model=model, caveman=use_caveman, log_path=log_path)
         return template_id, rc, inp, out
 
     block_tokens: list[dict] = []

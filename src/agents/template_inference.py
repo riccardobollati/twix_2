@@ -38,8 +38,12 @@ class ExtractionState(TypedDict):
     train_pages:       int   # number of pages requested for the train set
     eval_mode:         bool  # whether to create a test split
 
-    eval_pages:      NotRequired[int]  # max test pages (None = all remaining)
-    gt_test_window:  NotRequired[int]  # pages per LLM call for test GT (default 20)
+    eval_pages:      NotRequired[int]        # max test pages (None = all remaining)
+    gt_test_window:  NotRequired[int]        # pages per LLM call for test GT (default 20)
+    block_codex_models: NotRequired[dict]    # template_id → codex model string
+    llm_model:          NotRequired[str]     # name of the vision LLM used for this run
+    use_caveman:        NotRequired[bool]    # prepend /caveman to every codex prompt
+    save_log:           NotRequired[bool]    # save raw codex session output to debug/
 
     # ── train-repair loop ────────────────────────────────────────────────────────
     train_accuracy_threshold: NotRequired[float]  # accuracy target; 0.0 = disabled

@@ -21,9 +21,10 @@ import numpy as np
 
 
 # ── token pricing (USD per million tokens) ───────────────────────────────────
-# Adjust to match the model you are using (defaults: gpt-4o).
-PRICE_INPUT_PER_M  = 2.50
-PRICE_OUTPUT_PER_M = 15.00
+PRICE_INPUT_PER_M       = 2.50   # hard model (gpt-5.4)
+PRICE_OUTPUT_PER_M      = 15.00  # hard model (gpt-5.4)
+PRICE_INPUT_EASY_PER_M  = 0.75   # easy model (gpt-5.4-mini)
+PRICE_OUTPUT_EASY_PER_M = 4.50   # easy model (gpt-5.4-mini)
 
 
 # ── data loading ──────────────────────────────────────────────────────────────
@@ -40,10 +41,37 @@ def _load_all(folder: str) -> list[dict]:
     return docs
 
 
-def _cost_usd(cost: dict) -> float:
-    """Convert a cost entry's token counts to USD using the pricing constants above."""
+def _cost_usd(
+    cost: dict,
+    inp_price: float = PRICE_INPUT_PER_M,
+    out_price: float = PRICE_OUTPUT_PER_M,
+) -> float:
+    """Convert a cost entry's token counts to USD."""
     inp, out = _split_tokens(cost)
-    return (inp * PRICE_INPUT_PER_M + out * PRICE_OUTPUT_PER_M) / 1_000_000
+    return (inp * inp_price + out * out_price) / 1_000_000
+
+
+def _pipeline_cost_usd(phases: list[dict], block_models: dict | None) -> float:
+    """Total USD cost for all pipeline phases.
+
+    For the block_extraction_scripting phase, per-block model pricing is applied
+    when per-block token data and a block_models mapping are available; otherwise
+    falls back to hard-model pricing for the whole phase.
+    """
+    total = 0.0
+    for p in phases:
+        if p.get("phase") == "block_extraction_scripting" and block_models:
+            blocks = p.get("blocks")
+            if blocks:
+                for b in blocks:
+                    model = block_models.get(str(b.get("id", "")), "")
+                    if "mini" in model:
+                        total += _cost_usd(b, PRICE_INPUT_EASY_PER_M, PRICE_OUTPUT_EASY_PER_M)
+                    else:
+                        total += _cost_usd(b)
+                continue  # per-block totals already accumulated; skip phase-level sum
+        total += _cost_usd(p)
+    return total
 
 
 def _split_tokens(cost: dict) -> tuple[float, float]:
@@ -268,63 +296,64 @@ def plot_test_cost(docs: list[dict], out_path: str) -> None:
     print(f"Saved: {out_path}")
 
 
-# ── plot 4: break-even analysis ──────────────────────────────────────────────
+# ── break-even computation ────────────────────────────────────────────────────
 
-def plot_break_even(docs: list[dict], out_path: str) -> None:
-    """For each document compute when the pipeline setup cost is recouped.
+def _break_even_pages(d: dict) -> float | None:
+    """Return break-even pages for one document, or None if not computable.
 
     Fixed cost  = code generation (pipeline_phases) + train GT + train grouping + repairs.
     LLM cost/pg = test ground-truth tokens / test_pages  (full LLM-per-page baseline).
     Run cost/pg  = test agentic_pipeline_cost / test_pages  (grouping LLM still runs).
     Break-even   = fixed_cost / (llm_cost_per_page - run_cost_per_page).
     """
+    train_pages = d.get("train_pages") or 0
+    test_pages  = d.get("test_pages")  or 0
+    train_eval  = d.get("train_eval", {})
+    test_eval   = d.get("test_eval",  {})
+    train_gt    = train_eval.get("ground_truth_cost", {})
+    test_gt     = test_eval.get("ground_truth_cost",  {})
+
+    if test_gt and test_pages:
+        llm_cost_per_page = _cost_usd(test_gt) / test_pages
+    elif train_gt and train_pages:
+        llm_cost_per_page = _cost_usd(train_gt) / train_pages
+    else:
+        return None
+    if llm_cost_per_page <= 0:
+        return None
+
+    pipe_run_per_page = 0.0
+    if test_pages:
+        pipe_run_per_page = _cost_usd(test_eval.get("agentic_pipeline_cost", {})) / test_pages
+
+    repairs    = train_eval.get("repairs") or []
+    block_models = d.get("block_models")
+    fixed_cost = (
+        _pipeline_cost_usd(d.get("pipeline_phases", []), block_models)
+        + _cost_usd(train_gt)
+        + _cost_usd(train_eval.get("agentic_pipeline_cost", {}))
+        + sum(_cost_usd(r) for r in repairs)
+    )
+
+    savings = llm_cost_per_page - pipe_run_per_page
+    return fixed_cost / savings if savings > 0 else None
+
+
+# ── plot 4: break-even analysis ──────────────────────────────────────────────
+
+def plot_break_even(docs: list[dict], out_path: str) -> None:
     usable = []
     for d in docs:
+        be = _break_even_pages(d)
+        if be is None:
+            continue
         train_pages = d.get("train_pages") or 0
         test_pages  = d.get("test_pages")  or 0
-        train_eval  = d.get("train_eval", {})
-        test_eval   = d.get("test_eval",  {})
-        train_gt    = train_eval.get("ground_truth_cost", {})
-        test_gt     = test_eval.get("ground_truth_cost",  {})
-
-        # LLM cost per page — prefer test set (larger sample), fall back to train
-        if test_gt and test_pages:
-            llm_cost_per_page = _cost_usd(test_gt) / test_pages
-        elif train_gt and train_pages:
-            llm_cost_per_page = _cost_usd(train_gt) / train_pages
-        else:
-            continue
-        if llm_cost_per_page <= 0:
-            continue
-
-        # Pipeline run cost per page (grouping LLM call at inference time)
-        pipe_run_per_page = 0.0
-        if test_pages:
-            pipe_run_per_page = _cost_usd(test_eval.get("agentic_pipeline_cost", {})) / test_pages
-
-        # One-time setup cost
-        repairs    = train_eval.get("repairs") or []
-        fixed_cost = (
-            sum(_cost_usd(p) for p in d.get("pipeline_phases", []))
-            + _cost_usd(train_gt)
-            + _cost_usd(train_eval.get("agentic_pipeline_cost", {}))
-            + sum(_cost_usd(r) for r in repairs)
-        )
-
-        savings_per_page = llm_cost_per_page - pipe_run_per_page
-        if savings_per_page <= 0:
-            continue  # pipeline never cheaper per-page
-
-        break_even = fixed_cost / savings_per_page
-
         usable.append({
-            "name":               d["_name"],
-            "fixed_cost":         fixed_cost,
-            "llm_cost_per_page":  llm_cost_per_page,
-            "pipe_run_per_page":  pipe_run_per_page,
-            "break_even":         break_even,
-            "train_pages":        train_pages,
-            "total_pages":        train_pages + test_pages,
+            "name":        d["_name"],
+            "break_even":  be,
+            "train_pages": train_pages,
+            "total_pages": train_pages + test_pages,
         })
 
     if not usable:
@@ -364,6 +393,190 @@ def plot_break_even(docs: list[dict], out_path: str) -> None:
     print(f"Saved: {out_path}")
 
 
+# ── plot 5: accuracy + break-even combined ───────────────────────────────────
+
+BE_COLOR    = "#9467bd"   # purple — break-even
+BLOCK_COLOR = "#2ca02c"   # green  — block count
+
+def plot_combined(docs: list[dict], out_path: str) -> None:
+    """Accuracy bars (left axis) + break-even bar (right axis) + block count bar (far-right axis)."""
+    max_iters = 1
+    for d in docs:
+        iters = d.get("train_eval", {}).get("iterations")
+        if iters:
+            max_iters = max(max_iters, len(iters))
+
+    names = [d["_name"] for d in docs]
+    n     = len(names)
+
+    train_accs: list[list[float | None]] = []
+    for d in docs:
+        iters = d.get("train_eval", {}).get("iterations") or []
+        row   = [it.get("accuracy") for it in iters]
+        if not row:
+            row = [d.get("train_eval", {}).get("accuracy")]
+        row += [None] * (max_iters - len(row))
+        train_accs.append(row)
+
+    test_acc    = [d.get("test_eval", {}).get("accuracy") for d in docs]
+    break_even  = [_break_even_pages(d) for d in docs]
+    def _block_count(d: dict) -> int:
+        if d.get("block_models"):
+            return len(d["block_models"])
+        for p in d.get("pipeline_phases", []):
+            if p.get("phase") == "block_extraction_scripting" and p.get("blocks"):
+                return len(p["blocks"])
+        return 0
+
+    block_count = [_block_count(d) for d in docs]
+
+    # slots: train iters + test + break-even + block count
+    acc_slots   = max_iters + 1
+    total_slots = acc_slots + 2
+    group_width = 0.8
+    bar_width   = group_width / total_slots
+    x           = np.arange(n)
+
+    fig, ax = plt.subplots(figsize=(max(10, n * max(1.4, total_slots * 0.35)), 5))
+    ax2 = ax.twinx()
+    ax3 = ax.twinx()
+    ax3.spines["right"].set_position(("outward", 55))
+
+    # ── accuracy bars on ax (left) ────────────────────────────────────────────
+    train_cmap   = plt.colormaps["Blues"]
+    train_colors = [train_cmap(0.35 + 0.5 * i / max(max_iters - 1, 1)) for i in range(max_iters)]
+    all_bars: list[tuple] = []
+
+    for i in range(max_iters):
+        vals    = [row[i] for row in train_accs]
+        label   = "Train" if max_iters == 1 else f"Train iter {i}"
+        offsets = x - group_width / 2 + (i + 0.5) * bar_width
+        bars    = ax.bar(offsets, [v or 0 for v in vals], bar_width,
+                         label=label, color=train_colors[i])
+        all_bars.append((bars, vals))
+
+    test_offsets = x - group_width / 2 + (max_iters + 0.5) * bar_width
+    bars_test    = ax.bar(test_offsets, [v or 0 for v in test_acc], bar_width,
+                          label="Test", color="#DD8452")
+    all_bars.append((bars_test, test_acc))
+
+    for bars, vals in all_bars:
+        for bar, v in zip(bars, vals):
+            if v is not None and v > 0:
+                ax.text(
+                    bar.get_x() + bar.get_width() / 2, v + 0.005,
+                    f"{v:.2f}", ha="center", va="bottom", fontsize=7,
+                )
+
+    ax.set_ylabel("Accuracy")
+    ax.set_ylim(0, 1.12)
+    ax.yaxis.set_major_formatter(mticker.PercentFormatter(xmax=1))
+
+    # ── break-even bars on ax2 (right) ───────────────────────────────────────
+    be_offsets = x - group_width / 2 + (acc_slots + 0.5) * bar_width
+    be_vals    = [be or 0 for be in break_even]
+    bars_be    = ax2.bar(be_offsets, be_vals, bar_width,
+                         label="Break-even pages", color=BE_COLOR, alpha=0.85)
+
+    for bar, be in zip(bars_be, break_even):
+        if be is not None and be > 0:
+            ax2.text(
+                bar.get_x() + bar.get_width() / 2, be + 0.5,
+                f"{be:.0f}", ha="center", va="bottom", fontsize=7, color=BE_COLOR,
+            )
+
+    ax2.set_ylabel("Break-even (pages)", color=BE_COLOR)
+    ax2.tick_params(axis="y", labelcolor=BE_COLOR)
+    ax2.spines["right"].set_color(BE_COLOR)
+
+    # ── block count bars on ax3 (far right) ──────────────────────────────────
+    bc_offsets = x - group_width / 2 + (acc_slots + 1.5) * bar_width
+    bars_bc    = ax3.bar(bc_offsets, block_count, bar_width,
+                         label="Block types", color=BLOCK_COLOR, alpha=0.75)
+
+    for bar, bc in zip(bars_bc, block_count):
+        if bc > 0:
+            ax3.text(
+                bar.get_x() + bar.get_width() / 2, bc + 0.05,
+                str(bc), ha="center", va="bottom", fontsize=7, color=BLOCK_COLOR,
+            )
+
+    ax3.set_ylabel("Block types", color=BLOCK_COLOR)
+    ax3.tick_params(axis="y", labelcolor=BLOCK_COLOR)
+    ax3.spines["right"].set_color(BLOCK_COLOR)
+    ax3.set_ylim(0, max(block_count or [1]) * 1.4)
+    ax3.yaxis.set_major_locator(mticker.MaxNLocator(integer=True))
+
+    # ── shared x-axis & legend ────────────────────────────────────────────────
+    title = ("Train vs Test Accuracy + Break-even + Block types" if max_iters == 1
+             else "Training Loop & Test Accuracy + Break-even + Block types")
+    ax.set_title(title)
+    ax.set_xticks(x)
+    ax.set_xticklabels(names, rotation=45, ha="right")
+    ax.grid(axis="y", alpha=0.3)
+
+    handles1, labels1 = ax.get_legend_handles_labels()
+    handles2, labels2 = ax2.get_legend_handles_labels()
+    handles3, labels3 = ax3.get_legend_handles_labels()
+    ax.legend(handles1 + handles2 + handles3, labels1 + labels2 + labels3, fontsize=8)
+
+    plt.tight_layout()
+    plt.savefig(out_path, dpi=150)
+    plt.close()
+    print(f"Saved: {out_path}")
+
+
+# ── plot 6: break-even vs block count scatter ────────────────────────────────
+
+def plot_cost_vs_blocks(docs: list[dict], out_path: str) -> None:
+    """Scatter: number of block types (x) vs break-even pages (y), one point per document."""
+    def _block_count(d: dict) -> int:
+        if d.get("block_models"):
+            return len(d["block_models"])
+        for p in d.get("pipeline_phases", []):
+            if p.get("phase") == "block_extraction_scripting" and p.get("blocks"):
+                return len(p["blocks"])
+        return 0
+
+    points = []
+    for d in docs:
+        be = _break_even_pages(d)
+        bc = _block_count(d)
+        if be is not None and bc > 0:
+            points.append({"name": d["_name"], "blocks": bc, "break_even": be})
+
+    if not points:
+        return
+
+    fig, ax = plt.subplots(figsize=(7, 5))
+
+    xs = [p["blocks"]     for p in points]
+    ys = [p["break_even"] for p in points]
+
+    ax.scatter(xs, ys, color="#4C72B0", s=80, zorder=3)
+
+    for p in points:
+        ax.annotate(
+            p["name"],
+            (p["blocks"], p["break_even"]),
+            textcoords="offset points",
+            xytext=(6, 3),
+            fontsize=8,
+            color="dimgray",
+        )
+
+    ax.set_xlabel("Number of block types")
+    ax.set_ylabel("Break-even (pages)")
+    ax.set_title("Break-even pages vs number of block types")
+    ax.xaxis.set_major_locator(mticker.MaxNLocator(integer=True))
+    ax.grid(alpha=0.3)
+
+    plt.tight_layout()
+    plt.savefig(out_path, dpi=150)
+    plt.close()
+    print(f"Saved: {out_path}")
+
+
 # ── main ──────────────────────────────────────────────────────────────────────
 
 def main() -> None:
@@ -380,10 +593,12 @@ def main() -> None:
     out_dir = os.path.join(args.folder, "results")
     os.makedirs(out_dir, exist_ok=True)
 
-    plot_accuracy(   docs, os.path.join(out_dir, "accuracy.png"))
-    plot_train_cost( docs, os.path.join(out_dir, "train_cost.png"))
-    plot_test_cost(  docs, os.path.join(out_dir, "test_cost.png"))
-    plot_break_even( docs, os.path.join(out_dir, "break_even.png"))
+    plot_accuracy(      docs, os.path.join(out_dir, "accuracy.png"))
+    plot_train_cost(    docs, os.path.join(out_dir, "train_cost.png"))
+    plot_test_cost(     docs, os.path.join(out_dir, "test_cost.png"))
+    plot_break_even(    docs, os.path.join(out_dir, "break_even.png"))
+    plot_combined(      docs, os.path.join(out_dir, "combined.png"))
+    plot_cost_vs_blocks(docs, os.path.join(out_dir, "cost_vs_blocks.png"))
 
 
 if __name__ == "__main__":

@@ -6,6 +6,7 @@ import os
 from langchain_core.language_models.chat_models import BaseChatModel
 from langgraph.graph import END, START, StateGraph
 
+from src.agents.block_difficulty_router import block_difficulty_router_node
 from src.agents.block_extraction_scripting import block_extraction_scripting_node
 from src.agents.block_samples import block_samples_node
 from src.agents.block_separation import block_separation_node, run_block_separation_node
@@ -76,7 +77,11 @@ def build_graph(llm: BaseChatModel):
     """
     graph = StateGraph(ExtractionState)
 
-    graph.add_node("environment_creation", environment_creation_node)
+    _llm_model = getattr(llm, "model_name", None) or getattr(llm, "model", None) or "unknown"
+    graph.add_node(
+        "environment_creation",
+        lambda state: {**environment_creation_node(state), "llm_model": _llm_model},
+    )
     graph.add_node(
         "template_inference",
         lambda state: template_inference_node(state, llm),
@@ -86,6 +91,7 @@ def build_graph(llm: BaseChatModel):
     graph.add_node("block_separation", block_separation_node)
     graph.add_node("run_block_separation", run_block_separation_node)
     graph.add_node("block_samples", block_samples_node)
+    graph.add_node("block_difficulty_router", lambda state: block_difficulty_router_node(state, llm))
     graph.add_node("block_extraction_scripting", block_extraction_scripting_node)
     graph.add_node("collect_extraction_scripts", collect_extraction_scripts_node)
     graph.add_node("train_eval", lambda state: train_eval_node(state, llm))
@@ -103,7 +109,8 @@ def build_graph(llm: BaseChatModel):
     graph.add_edge("run_record_separation", "block_separation")
     graph.add_edge("block_separation", "run_block_separation")
     graph.add_edge("run_block_separation", "block_samples")
-    graph.add_edge("block_samples", "block_extraction_scripting")
+    graph.add_edge("block_samples", "block_difficulty_router")
+    graph.add_edge("block_difficulty_router", "block_extraction_scripting")
     graph.add_edge("block_extraction_scripting", "collect_extraction_scripts")
 
     graph.add_edge("collect_extraction_scripts", "train_eval")

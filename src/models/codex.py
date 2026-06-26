@@ -2,11 +2,26 @@ import json
 import subprocess
 
 
-def codex(prompt, dir_path, task):
+DEFAULT_CODEX_MODEL = "gpt-5.4"
+_CAVEMAN_PREFIX = "/caveman full\n\n"
+_SCOPE_PREFIX = (
+    "STRICT SCOPE RULE: You are running inside a single task folder. "
+    "Work ONLY with files in your current working directory. "
+    "Do NOT use `..` paths, do NOT navigate to parent directories, "
+    "do NOT read or reference any file outside the current folder. "
+    "Everything you need for this task is already here.\n\n"
+)
+
+
+def codex(prompt, dir_path, task, model: str = DEFAULT_CODEX_MODEL, caveman: bool = False):
     print(f"Running codex for task: {task}")
+    if caveman:
+        prompt = _CAVEMAN_PREFIX + prompt
+    prompt = _SCOPE_PREFIX + prompt
     result = subprocess.run(
         [
             "codex", "exec",
+            "-m", model,
             "-C", str(dir_path),
             "-s", "workspace-write",
             "--skip-git-repo-check",
@@ -16,15 +31,19 @@ def codex(prompt, dir_path, task):
     return result.returncode
 
 
-def codex_silent(prompt, dir_path, task) -> tuple[int, int | None, int | None]:
+def codex_silent(prompt, dir_path, task, model: str = DEFAULT_CODEX_MODEL, caveman: bool = False, log_path: str | None = None) -> tuple[int, int | None, int | None]:
     """Run codex with --json output, suppress stdout/stderr, return (returncode, input_tokens, output_tokens).
 
     Parses the JSONL event stream for token usage. Returns None for each token
     field if usage information is not found in the output.
     """
+    if caveman:
+        prompt = _CAVEMAN_PREFIX + prompt
+    prompt = _SCOPE_PREFIX + prompt
     result = subprocess.run(
         [
             "codex", "exec",
+            "-m", model,
             "-C", str(dir_path),
             "-s", "workspace-write",
             "--skip-git-repo-check",
@@ -38,6 +57,17 @@ def codex_silent(prompt, dir_path, task) -> tuple[int, int | None, int | None]:
     if result.returncode != 0:
         print(f"[codex stderr]\n{result.stderr}", flush=True)
         print(f"[codex stdout]\n{result.stdout}", flush=True)
+    if log_path:
+        import os as _os
+        _os.makedirs(_os.path.dirname(log_path), exist_ok=True)
+        with open(log_path, "w", encoding="utf-8") as _f:
+            _f.write(result.stdout)
+            if result.stderr:
+                _f.write("\n--- stderr ---\n")
+                _f.write(result.stderr)
+        prompt_path = _os.path.splitext(log_path)[0] + ".prompt"
+        with open(prompt_path, "w", encoding="utf-8") as _f:
+            _f.write(prompt)
     input_tokens, output_tokens = _parse_tokens(result.stdout)
     return result.returncode, input_tokens, output_tokens
 

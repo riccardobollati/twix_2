@@ -280,6 +280,18 @@ def parse_args(argv: Sequence[str]) -> tuple[argparse.Namespace, list[str]]:
         metavar="N",
         help="Forwarded to run.py: pages per LLM call for test ground truth (default: 20).",
     )
+    run_options.add_argument(
+        "--caveman",
+        action="store_true",
+        default=argparse.SUPPRESS,
+        help="Forwarded to run.py: prepend /caveman to every Codex prompt.",
+    )
+    run_options.add_argument(
+        "--save-log",
+        action="store_true",
+        default=argparse.SUPPRESS,
+        help="Forwarded to run.py: save raw Codex session output to <doc>/debug/.",
+    )
     return parser.parse_known_args(argv)
 
 
@@ -299,6 +311,8 @@ def build_forwarded_args(args: argparse.Namespace, unknown_args: Sequence[str]) 
     for flag, attr in (
         ("--eval", "eval"),
         ("--group-rows", "group_rows"),
+        ("--caveman", "caveman"),
+        ("--save-log", "save_log"),
     ):
         if getattr(args, attr, False):
             forwarded.append(flag)

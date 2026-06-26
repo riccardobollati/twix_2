@@ -173,6 +173,14 @@ def main() -> None:
         "--gt-test-window", type=int, default=None, metavar="N",
         help="Pages per LLM call when generating test ground truth (default: 20).",
     )
+    parser.add_argument(
+        "--caveman", action="store_true",
+        help="Prepend /caveman to every Codex prompt to reduce output tokens (~65%%).",
+    )
+    parser.add_argument(
+        "--save-log", action="store_true",
+        help="Save raw Codex session output to <doc>/debug/ (one file per session).",
+    )
     args = parser.parse_args()
 
     total_steps = 2
@@ -213,6 +221,8 @@ def main() -> None:
         "train_accuracy_threshold":   args.train_threshold,
         "train_repair_max_retries":   args.train_max_retries,
         **({"gt_test_window": args.gt_test_window} if args.gt_test_window is not None else {}),
+        **({"use_caveman": True} if args.caveman else {}),
+        **({"save_log": True} if args.save_log else {}),
     })
     print(f"[2/{total_steps}] Graph complete.", file=sys.stderr)
 

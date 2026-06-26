@@ -75,7 +75,8 @@ def block_samples_node(state: dict[str, Any]) -> dict[str, Any]:
                 page = pdf.pages[page_num - 1]
                 crop = page.crop(bbox)
                 img  = crop.to_image(resolution=150)
-                img.save(os.path.join(out_dir, f"{full_id}.png"), format="PNG", quantize=False)
+                stem = f"p{page_num}_{full_id}"
+                img.save(os.path.join(out_dir, f"{stem}.png"), format="PNG", quantize=False)
 
                 ox, oy = bbox[0], bbox[1]
                 relative_words = [
@@ -84,7 +85,7 @@ def block_samples_node(state: dict[str, Any]) -> dict[str, Any]:
                     for w in words
                 ]
                 relative_block = {**block, "words": relative_words}
-                with open(os.path.join(out_dir, f"{full_id}.json"), "w", encoding="utf-8") as f:
+                with open(os.path.join(out_dir, f"{stem}.json"), "w", encoding="utf-8") as f:
                     json.dump({"page": page_num, **relative_block}, f, indent=2, ensure_ascii=False)
 
             print(f"block_samples: {template_id} → {len(sample)} sample(s) saved to {out_dir}")
