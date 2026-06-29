@@ -40,6 +40,8 @@ from src.eval.render import render_to_file
 from src.eval.score import score as eval_score
 from src.ground_truth_gen.ground_truth import _load_page_ocr, _parse_json, _render_page_b64
 from src.ground_truth_gen.prompt import build_prompt
+from src.agents.ground_truth import _node_order, _should_merge, _merge_records
+from src.agents.grouping import _maybe_merge_single_block
 from src.models import get_llm
 
 
@@ -89,46 +91,79 @@ def _generate_ground_truth(
     ocr_path: str | None,
     indices: list[int],
     llm,
+    window: int = 20,
 ) -> list[dict]:
-    records: list[dict] = []
-    record_counter = 0
+    system_prompt = build_prompt(template)
+    order  = _node_order(template)
+    window = max(1, window)
+    wins   = [indices[i:i + window] for i in range(0, len(indices), window)]
+
+    all_windows: list[list[dict]] = []
     with pdfplumber.open(pdf_path) as pdf:
-        for idx in indices:
-            page_num = idx + 1
-            print(f"  page {page_num}...", end=" ", flush=True)
-            image_b64 = _render_page_b64(pdf.pages[idx])
-            content: list = [
-                {"type": "text",
-                 "text": f"Extract all records from page {page_num} of the document."},
-                {"type": "image_url",
-                 "image_url": {"url": f"data:image/png;base64,{image_b64}"}},
-            ]
-            if ocr_path and os.path.isfile(ocr_path):
-                ocr_text = _load_page_ocr(ocr_path, page_num)
+        print(f"  {len(indices)} page(s), {len(wins)} window(s) of up to {window}")
+        for win_indices in wins:
+            page_nums = [i + 1 for i in win_indices]
+            pages_str = ", ".join(str(p) for p in page_nums)
+            label = f"pages {pages_str}" if len(page_nums) > 1 else f"page {page_nums[0]}"
+            print(f"  {label}...", end=" ", flush=True)
+
+            if len(page_nums) == 1:
+                user_text = f"Extract all records from page {page_nums[0]} of the document."
+            else:
+                user_text = (
+                    f"Extract all records from pages {pages_str} of the document. "
+                    f"The images are provided in page order ({pages_str})."
+                )
+
+            content: list = [{"type": "text", "text": user_text}]
+            for idx in win_indices:
                 content.append({
-                    "type": "text",
-                    "text": f"OCR words on this page (exact character sequences, reading order):\n{ocr_text}",
+                    "type": "image_url",
+                    "image_url": {"url": f"data:image/png;base64,{_render_page_b64(pdf.pages[idx])}"},
                 })
+            if ocr_path and os.path.isfile(ocr_path):
+                for page_num in page_nums:
+                    ocr_text = _load_page_ocr(ocr_path, page_num)
+                    content.append({
+                        "type": "text",
+                        "text": f"OCR words on page {page_num} (exact character sequences, reading order):\n{ocr_text}",
+                    })
+
             response = llm.invoke([
-                SystemMessage(content=build_prompt(template)),
+                SystemMessage(content=system_prompt),
                 HumanMessage(content=content),
             ])
             try:
-                parsed = _parse_json(response.content)
-                page_records = parsed.get("records", [])
+                parsed     = _parse_json(response.content)
+                page_recs  = parsed.get("records", [])
             except (json.JSONDecodeError, AttributeError) as exc:
                 print(f"WARN: {exc}")
-                page_records = []
+                print(f"  [RAW RESPONSE]\n{response.content}\n  [END RAW]")
+                page_recs = []
 
             n_blocks = 0
-            for rec in page_records:
-                blocks = rec.get("data", [])
-                for block in blocks:
-                    block["page"] = page_num
-                records.append({"record_id": str(record_counter), "data": blocks})
-                record_counter += 1
-                n_blocks += len(blocks)
-            print(f"{len(page_records)} record(s), {n_blocks} block(s)")
+            for rec in page_recs:
+                for block in rec.get("data", []):
+                    block["page"] = page_nums[0]
+                n_blocks += len(rec.get("data", []))
+            print(f"{len(page_recs)} record(s), {n_blocks} block(s)")
+            if not page_recs:
+                print(f"  [RAW RESPONSE]\n{response.content}\n  [END RAW]")
+            all_windows.append(page_recs)
+
+    # ── boundary-aware merge pass (mirrors ground_truth_node) ─────────────────
+    records: list[dict] = []
+    for page_recs in all_windows:
+        if not page_recs:
+            continue
+        if records and _should_merge(records[-1], page_recs[0], order):
+            records[-1] = _merge_records(records[-1], page_recs[0])
+            rest = page_recs[1:]
+        else:
+            rest = page_recs
+        for rec in rest:
+            records.append({"record_id": str(len(records)), "data": rec.get("data", [])})
+
     return records
 
 
@@ -143,6 +178,14 @@ def main() -> None:
         help="Number of pages to sample for ground truth (default: all).",
     )
     parser.add_argument("--seed", type=int, default=None, help="Random seed for page sampling.")
+    parser.add_argument(
+        "--gt-window", type=int, default=20, metavar="N",
+        help="Pages per LLM call when generating ground truth (default: 20).",
+    )
+    parser.add_argument(
+        "--reuse", action="store_true",
+        help="Skip pipeline and ground-truth generation if grouped.json and ground_truth.json already exist.",
+    )
     args = parser.parse_args()
 
     pdf_path      = os.path.abspath(args.pdf_path)
@@ -168,32 +211,48 @@ def main() -> None:
     with open(template_path, encoding="utf-8") as f:
         template = json.load(f).get("template", [])
 
-    # --- OCR ---
-    print("Extracting OCR...")
-    _extract_ocr(pdf_path, ocr_path)
-    print(f"  OCR saved → {ocr_path}")
+    can_reuse = args.reuse and os.path.isfile(grouped_path) and os.path.isfile(gt_path)
 
-    # --- run pipeline ---
-    print("Running pipeline...")
-    _run_pipeline(pipeline_py, pdf_path, eval_dir)
+    if can_reuse:
+        print(f"--reuse: loading existing grouped.json and ground_truth.json from {eval_dir}")
+        with open(grouped_path, encoding="utf-8") as f:
+            candidate = json.load(f)
+        with open(gt_path, encoding="utf-8") as f:
+            gt_results = json.load(f)
+    else:
+        if args.reuse:
+            missing = [p for p in (grouped_path, gt_path) if not os.path.isfile(p)]
+            print(f"--reuse: missing {missing}, recomputing.")
 
-    with open(grouped_path, encoding="utf-8") as f:
-        candidate = json.load(f)
+        # --- OCR ---
+        print("Extracting OCR...")
+        _extract_ocr(pdf_path, ocr_path)
+        print(f"  OCR saved → {ocr_path}")
 
-    # --- ground truth ---
-    print("Generating ground truth...")
-    with pdfplumber.open(pdf_path) as pdf:
-        total = len(pdf.pages)
-    n_pages = min(args.pages, total) if args.pages is not None else total
-    rng = random.Random(args.seed)
-    indices = sorted(rng.sample(range(total), n_pages))
-    print(f"Sampling pages: {[i + 1 for i in indices]} / {total}")
+        # --- run pipeline ---
+        print("Running pipeline...")
+        _run_pipeline(pipeline_py, pdf_path, eval_dir)
 
-    gt_results = _generate_ground_truth(pdf_path, template, ocr_path, indices, get_llm())
+        with open(grouped_path, encoding="utf-8") as f:
+            candidate = json.load(f)
 
-    with open(gt_path, "w", encoding="utf-8") as f:
-        json.dump(gt_results, f, indent=2, ensure_ascii=False)
-    print(f"Ground truth saved → {gt_path}")
+        # --- ground truth ---
+        print("Generating ground truth...")
+        with pdfplumber.open(pdf_path) as pdf:
+            total = len(pdf.pages)
+        n_pages = min(args.pages, total) if args.pages is not None else total
+        rng = random.Random(args.seed)
+        indices = sorted(rng.sample(range(total), n_pages))
+        print(f"Sampling pages: {[i + 1 for i in indices]} / {total}")
+
+        gt_results = _generate_ground_truth(pdf_path, template, ocr_path, indices, get_llm(), window=args.gt_window)
+
+        with open(gt_path, "w", encoding="utf-8") as f:
+            json.dump(gt_results, f, indent=2, ensure_ascii=False)
+        _maybe_merge_single_block(gt_path, template)
+        with open(gt_path, encoding="utf-8") as f:
+            gt_results = json.load(f)
+        print(f"Ground truth saved → {gt_path}")
 
     # Filter candidate to pages covered by ground truth
     gt_pages = {block["page"] for rec in gt_results for block in rec.get("data", [])}

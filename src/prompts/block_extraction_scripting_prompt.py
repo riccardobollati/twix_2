@@ -95,6 +95,20 @@ Return format for a KV block ("{block_type}" == "kv"):
   }}
   Determine whether "data" should be a dict or a list by inspecting the samples.
 
+How `extract()` is called at runtime:
+  The pipeline (pipeline.py) has already run a separate block-separation step that
+  locates every block instance on every page and relativises its word coordinates.
+  For each detected instance it calls:
+
+    relative_block = {{**block, "words": _relativize(block["words"])}}
+    result = extract(relative_block)
+
+  So `extract()` always receives a single, already-isolated block whose word
+  coordinates start at (0, 0). It must NOT attempt to locate the block inside a
+  full page, parse an OCR CSV, or do any document-level logic — all of that is
+  handled upstream. Focus entirely on parsing the words of the one block passed in
+  and returning the structured output.
+
 Additional requirements:
 - Use the template "fields" as the canonical key names in all output dicts.
 - Use word positions (x0, top, x1, bottom) to group words into rows/columns and to
@@ -102,8 +116,7 @@ Additional requirements:
 - Be generalizable: the function must work correctly on any instance of block type
   "{template_id}", not only the sampled ones.
 - Use only the Python standard library. Do not import any external packages.
-- In addition to `extract(block)`, define a `main(inputpath: str, out_path: str) -> None`
-  function. `inputpath` is the path to the OCR CSV to run block separation on;
-  `out_path` is the folder where the output file `block_separation.json` should be written.
+- Define ONLY the `extract(block: dict) -> dict` function. Do NOT write a `main()`
+  function, a CLI entry point, or any block-detection / document-parsing logic.
 
 Save the finished script as {template_id}.py in the current directory."""

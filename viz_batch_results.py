@@ -154,6 +154,14 @@ def plot_accuracy(docs: list[dict], out_path: str) -> None:
                     f"{v:.2f}", ha="center", va="bottom", fontsize=7,
                 )
 
+    valid_test = [v for v in test_acc if v is not None]
+    if valid_test:
+        avg_test = sum(valid_test) / len(valid_test)
+        ax.axhline(avg_test, color="#DD8452", linestyle="--", linewidth=1.2,
+                   label=f"Avg test {avg_test:.2f}")
+        ax.text(0.99, avg_test, f"{avg_test:.2f}", transform=ax.get_yaxis_transform(),
+                ha="right", va="bottom", fontsize=8, color="#DD8452")
+
     title = ("Train vs Test Accuracy per Document" if max_iters == 1
              else "Training Loop & Test Accuracy per Document")
     ax.set_title(title)
@@ -378,6 +386,12 @@ def plot_break_even(docs: list[dict], out_path: str) -> None:
         ax.plot(i, u["total_pages"], "D", color="#d62728", markersize=7, zorder=5,
                 label="Total pages available" if i == 0 else None)
 
+    avg_be = sum(u["break_even"] for u in usable) / len(usable)
+    ax.axhline(avg_be, color="#4C72B0", linestyle="--", linewidth=1.2,
+               label=f"Avg break-even {avg_be:.0f}")
+    ax.text(0.99, avg_be, f"{avg_be:.0f}", transform=ax.get_yaxis_transform(),
+            ha="right", va="bottom", fontsize=8, color="#4C72B0")
+
     ax.set_title(
         f"Break-even pages  —  ${PRICE_INPUT_PER_M}/M input · ${PRICE_OUTPUT_PER_M}/M output"
     )
@@ -391,6 +405,17 @@ def plot_break_even(docs: list[dict], out_path: str) -> None:
     plt.savefig(out_path, dpi=150)
     plt.close()
     print(f"Saved: {out_path}")
+
+
+# ── shared helper ────────────────────────────────────────────────────────────
+
+def _block_count(d: dict) -> int:
+    if d.get("block_models"):
+        return len(d["block_models"])
+    for p in d.get("pipeline_phases", []):
+        if p.get("phase") == "block_extraction_scripting" and p.get("blocks"):
+            return len(p["blocks"])
+    return 0
 
 
 # ── plot 5: accuracy + break-even combined ───────────────────────────────────
@@ -420,14 +445,6 @@ def plot_combined(docs: list[dict], out_path: str) -> None:
 
     test_acc    = [d.get("test_eval", {}).get("accuracy") for d in docs]
     break_even  = [_break_even_pages(d) for d in docs]
-    def _block_count(d: dict) -> int:
-        if d.get("block_models"):
-            return len(d["block_models"])
-        for p in d.get("pipeline_phases", []):
-            if p.get("phase") == "block_extraction_scripting" and p.get("blocks"):
-                return len(p["blocks"])
-        return 0
-
     block_count = [_block_count(d) for d in docs]
 
     # slots: train iters + test + break-even + block count
@@ -507,6 +524,23 @@ def plot_combined(docs: list[dict], out_path: str) -> None:
     ax3.set_ylim(0, max(block_count or [1]) * 1.4)
     ax3.yaxis.set_major_locator(mticker.MaxNLocator(integer=True))
 
+    # ── avg lines ────────────────────────────────────────────────────────────
+    valid_test = [v for v in test_acc if v is not None]
+    if valid_test:
+        avg_test = sum(valid_test) / len(valid_test)
+        ax.axhline(avg_test, color="#DD8452", linestyle="--", linewidth=1.2,
+                   label=f"Avg test {avg_test:.2f}")
+        ax.text(0.99, avg_test, f"{avg_test:.2f}", transform=ax.get_yaxis_transform(),
+                ha="right", va="bottom", fontsize=8, color="#DD8452")
+
+    valid_be = [be for be in break_even if be is not None]
+    if valid_be:
+        avg_be = sum(valid_be) / len(valid_be)
+        ax2.axhline(avg_be, color=BE_COLOR, linestyle="--", linewidth=1.2,
+                    label=f"Avg break-even {avg_be:.0f}")
+        ax2.text(0.99, avg_be, f"{avg_be:.0f}", transform=ax2.get_yaxis_transform(),
+                 ha="right", va="bottom", fontsize=8, color=BE_COLOR)
+
     # ── shared x-axis & legend ────────────────────────────────────────────────
     title = ("Train vs Test Accuracy + Break-even + Block types" if max_iters == 1
              else "Training Loop & Test Accuracy + Break-even + Block types")
@@ -530,14 +564,6 @@ def plot_combined(docs: list[dict], out_path: str) -> None:
 
 def plot_cost_vs_blocks(docs: list[dict], out_path: str) -> None:
     """Scatter: number of block types (x) vs break-even pages (y), one point per document."""
-    def _block_count(d: dict) -> int:
-        if d.get("block_models"):
-            return len(d["block_models"])
-        for p in d.get("pipeline_phases", []):
-            if p.get("phase") == "block_extraction_scripting" and p.get("blocks"):
-                return len(p["blocks"])
-        return 0
-
     points = []
     for d in docs:
         be = _break_even_pages(d)
@@ -577,6 +603,88 @@ def plot_cost_vs_blocks(docs: list[dict], out_path: str) -> None:
     print(f"Saved: {out_path}")
 
 
+# ── plot 7: per-document overview ────────────────────────────────────────────
+
+def plot_document(d: dict, out_dir: str) -> None:
+    """Two-panel overview for a single document: accuracy (left) + break-even & blocks (right)."""
+    name    = d["_name"]
+    doc_dir = os.path.join(out_dir, name)
+    os.makedirs(doc_dir, exist_ok=True)
+
+    # accuracy
+    iters      = d.get("train_eval", {}).get("iterations") or []
+    train_accs = [it.get("accuracy") for it in iters]
+    if not train_accs:
+        train_accs = [d.get("train_eval", {}).get("accuracy")]
+    test_acc = d.get("test_eval", {}).get("accuracy")
+
+    n_train      = len(train_accs)
+    acc_labels   = ([f"Train iter {i}" for i in range(n_train)] if n_train > 1 else ["Train"]) + ["Test"]
+    train_cmap   = plt.colormaps["Blues"]
+    train_colors = [train_cmap(0.35 + 0.5 * i / max(n_train - 1, 1)) for i in range(n_train)]
+    acc_colors   = train_colors + ["#DD8452"]
+    acc_raw      = list(train_accs) + [test_acc]
+    acc_vals     = [v or 0 for v in acc_raw]
+
+    # break-even + block count
+    be = _break_even_pages(d)
+    bc = _block_count(d)
+
+    fig, (ax_acc, ax_be) = plt.subplots(1, 2, figsize=(12, 5))
+
+    # ── left: accuracy ────────────────────────────────────────────────────────
+    x    = np.arange(len(acc_labels))
+    bars = ax_acc.bar(x, acc_vals, 0.5, color=acc_colors)
+    for bar, v in zip(bars, acc_raw):
+        if v is not None and v > 0:
+            ax_acc.text(
+                bar.get_x() + bar.get_width() / 2, v + 0.005,
+                f"{v:.2f}", ha="center", va="bottom", fontsize=9,
+            )
+    ax_acc.set_title("Accuracy")
+    ax_acc.set_ylabel("Accuracy")
+    ax_acc.set_xticks(x)
+    ax_acc.set_xticklabels(acc_labels)
+    ax_acc.set_ylim(0, 1.15)
+    ax_acc.yaxis.set_major_formatter(mticker.PercentFormatter(xmax=1))
+    ax_acc.grid(axis="y", alpha=0.3)
+
+    # ── right: break-even (left axis) + block count (right axis) ─────────────
+    ax_bc = ax_be.twinx()
+
+    if be is not None:
+        ax_be.bar([0], [be], 0.4, color=BE_COLOR, alpha=0.85, label="Break-even pages")
+        ax_be.text(0, be * 1.02 + 0.3, f"{be:.0f}", ha="center", va="bottom",
+                   fontsize=10, color=BE_COLOR, fontweight="bold")
+
+    ax_bc.bar([1], [bc], 0.4, color=BLOCK_COLOR, alpha=0.75, label="Block types")
+    ax_bc.text(1, bc + 0.05, str(bc), ha="center", va="bottom",
+               fontsize=10, color=BLOCK_COLOR, fontweight="bold")
+
+    ax_be.set_ylabel("Break-even (pages)", color=BE_COLOR)
+    ax_be.tick_params(axis="y", labelcolor=BE_COLOR)
+    ax_be.spines["right"].set_color(BE_COLOR)
+
+    ax_bc.set_ylabel("Block types", color=BLOCK_COLOR)
+    ax_bc.tick_params(axis="y", labelcolor=BLOCK_COLOR)
+    ax_bc.spines["right"].set_color(BLOCK_COLOR)
+    ax_bc.set_ylim(0, max(bc, 1) * 1.5)
+    ax_bc.yaxis.set_major_locator(mticker.MaxNLocator(integer=True))
+
+    ax_be.set_xlim(-0.6, 1.6)
+    ax_be.set_xticks([0, 1])
+    ax_be.set_xticklabels(["Break-even", "Block types"])
+    ax_be.set_title("Break-even & Block types")
+    ax_be.grid(axis="y", alpha=0.3)
+
+    fig.suptitle(name, fontsize=13, fontweight="bold")
+    plt.tight_layout()
+    out_path = os.path.join(doc_dir, "overview.png")
+    plt.savefig(out_path, dpi=150)
+    plt.close()
+    print(f"Saved: {out_path}")
+
+
 # ── main ──────────────────────────────────────────────────────────────────────
 
 def main() -> None:
@@ -599,6 +707,9 @@ def main() -> None:
     plot_break_even(    docs, os.path.join(out_dir, "break_even.png"))
     plot_combined(      docs, os.path.join(out_dir, "combined.png"))
     plot_cost_vs_blocks(docs, os.path.join(out_dir, "cost_vs_blocks.png"))
+
+    for d in docs:
+        plot_document(d, out_dir)
 
 
 if __name__ == "__main__":
