@@ -135,26 +135,47 @@ def table_score(g_content: dict, c_content: dict) -> tuple[float, dict]:
             cell_fn += sum(1 for _ in _row_keyvals(g_row))
     else:
         n_g, n_c = len(g_rows), len(c_rows)
-        size = max(n_g, n_c)
-        # Build padded similarity matrix (cost = -sim).
-        cost = [[1.0] * size for _ in range(size)]
-        for i in range(n_g):
-            for j in range(n_c):
-                cost[i][j] = 1.0 - _row_similarity(g_rows[i], c_rows[j])
-        try:
-            row_ind, col_ind = linear_sum_assignment(cost)
-        except Exception:
-            row_ind, col_ind = list(range(size)), list(range(size))
+        matched_g: set = set()
+        matched_c: set = set()
 
-        matched_g = set()
-        matched_c = set()
-        for i, j in zip(row_ind, col_ind):
-            if i < n_g and j < n_c:
-                sim = 1.0 - cost[i][j]
-                if sim > 0.0:
-                    row_alignment.append((int(i), int(j), float(sim)))
-                    matched_g.add(int(i))
-                    matched_c.add(int(j))
+        if max(n_g, n_c) <= 200:
+            # Hungarian assignment — exact but O(n³); fine for small tables.
+            size = max(n_g, n_c)
+            cost = [[1.0] * size for _ in range(size)]
+            for i in range(n_g):
+                for j in range(n_c):
+                    cost[i][j] = 1.0 - _row_similarity(g_rows[i], c_rows[j])
+            try:
+                row_ind, col_ind = linear_sum_assignment(cost)
+            except Exception:
+                row_ind, col_ind = list(range(size)), list(range(size))
+            for i, j in zip(row_ind, col_ind):
+                if i < n_g and j < n_c:
+                    sim = 1.0 - cost[i][j]
+                    if sim > 0.0:
+                        row_alignment.append((int(i), int(j), float(sim)))
+                        matched_g.add(int(i))
+                        matched_c.add(int(j))
+        else:
+            # Greedy band alignment for large tables — O(n × band).
+            # Rows are sequential (merged across pages), so gold[i] maps
+            # roughly to candidate[i * n_c / n_g]; search within ±band of that.
+            band = max(15, max(n_g, n_c) // 20)
+            for i in range(n_g):
+                j_center = round(i * n_c / n_g)
+                j_lo = max(0, j_center - band)
+                j_hi = min(n_c, j_center + band + 1)
+                best_sim, best_j = 0.0, -1
+                for j in range(j_lo, j_hi):
+                    if j in matched_c:
+                        continue
+                    sim = _row_similarity(g_rows[i], c_rows[j])
+                    if sim > best_sim:
+                        best_sim, best_j = sim, j
+                if best_j >= 0 and best_sim > 0.0:
+                    row_alignment.append((i, best_j, best_sim))
+                    matched_g.add(i)
+                    matched_c.add(best_j)
         for i in range(n_g):
             if i not in matched_g:
                 missing_rows.append(i)

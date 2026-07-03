@@ -355,13 +355,9 @@ def plot_break_even(docs: list[dict], out_path: str) -> None:
         be = _break_even_pages(d)
         if be is None:
             continue
-        train_pages = d.get("train_pages") or 0
-        test_pages  = d.get("test_pages")  or 0
         usable.append({
-            "name":        d["_name"],
-            "break_even":  be,
-            "train_pages": train_pages,
-            "total_pages": train_pages + test_pages,
+            "name":       d["_name"],
+            "break_even": be,
         })
 
     if not usable:
@@ -380,15 +376,9 @@ def plot_break_even(docs: list[dict], out_path: str) -> None:
             bar.get_x() + bar.get_width() / 2, bar.get_height() + 0.3,
             f"{u['break_even']:.0f}", ha="center", va="bottom", fontsize=8,
         )
-    for i, u in enumerate(usable):
-        ax.plot(i, u["train_pages"], "^", color="#2ca02c", markersize=8, zorder=5,
-                label="Train pages" if i == 0 else None)
-        ax.plot(i, u["total_pages"], "D", color="#d62728", markersize=7, zorder=5,
-                label="Total pages available" if i == 0 else None)
 
     avg_be = sum(u["break_even"] for u in usable) / len(usable)
-    ax.axhline(avg_be, color="#4C72B0", linestyle="--", linewidth=1.2,
-               label=f"Avg break-even {avg_be:.0f}")
+    ax.axhline(avg_be, color="#4C72B0", linestyle="--", linewidth=1.2)
     ax.text(0.99, avg_be, f"{avg_be:.0f}", transform=ax.get_yaxis_transform(),
             ha="right", va="bottom", fontsize=8, color="#4C72B0")
 
@@ -398,7 +388,6 @@ def plot_break_even(docs: list[dict], out_path: str) -> None:
     ax.set_ylabel("Pages")
     ax.set_xticks(x)
     ax.set_xticklabels(names, rotation=45, ha="right")
-    ax.legend(fontsize=8)
     ax.grid(axis="y", alpha=0.3)
 
     plt.tight_layout()
@@ -654,7 +643,7 @@ def plot_document(d: dict, out_dir: str) -> None:
 
     if be is not None:
         ax_be.bar([0], [be], 0.4, color=BE_COLOR, alpha=0.85, label="Break-even pages")
-        ax_be.text(0, be * 1.02 + 0.3, f"{be:.0f}", ha="center", va="bottom",
+        ax_be.text(0, be + 0.3, f"{be:.0f}", ha="center", va="bottom",
                    fontsize=10, color=BE_COLOR, fontweight="bold")
 
     ax_bc.bar([1], [bc], 0.4, color=BLOCK_COLOR, alpha=0.75, label="Block types")
@@ -664,6 +653,8 @@ def plot_document(d: dict, out_dir: str) -> None:
     ax_be.set_ylabel("Break-even (pages)", color=BE_COLOR)
     ax_be.tick_params(axis="y", labelcolor=BE_COLOR)
     ax_be.spines["right"].set_color(BE_COLOR)
+    if be is not None:
+        ax_be.set_ylim(0, be * 1.2)
 
     ax_bc.set_ylabel("Block types", color=BLOCK_COLOR)
     ax_bc.tick_params(axis="y", labelcolor=BLOCK_COLOR)
