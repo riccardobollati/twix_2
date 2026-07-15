@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import base64
-import io
 import json
 import os
 import subprocess
@@ -9,23 +7,17 @@ import sys
 import time
 from typing import Any
 
-import pdfplumber
 from langchain_core.language_models.chat_models import BaseChatModel
-from langchain_core.messages import HumanMessage, SystemMessage
 
+from src.eval.convert import load_json_dedup
 from src.eval.score import score as eval_score
 from src.eval.render import render_to_file
-from src.ground_truth_gen.prompt import build_prompt
-from src.ground_truth_gen.ground_truth import _parse_json, _load_page_ocr
+from src.agents._usage import apply_usage
+from src.agents.gt_common import generate_ground_truth
 from src.agents.grouping import _maybe_merge_single_block
 
 WINDOW = 5
-
-
-def _render_page_b64(page) -> str:
-    buf = io.BytesIO()
-    page.to_image(resolution=150).original.save(buf, format="PNG")
-    return base64.b64encode(buf.getvalue()).decode()
+PIPELINE_TIMEOUT_S = 300  # hard cap for one pipeline.py run
 
 
 def train_eval_node(state: dict[str, Any], llm: BaseChatModel) -> dict[str, Any]:
@@ -58,11 +50,15 @@ def train_eval_node(state: dict[str, Any], llm: BaseChatModel) -> dict[str, Any]
     # ── 1. Run pipeline on train PDF ──────────────────────────────────────────
     print("train_eval_node: running pipeline on train PDF...")
     t0 = time.time()
-    result = subprocess.run(
-        [sys.executable, pipeline_py, pdf_path, "--out-dir", train_eval_dir],
-        capture_output=True,
-        text=True,
-    )
+    try:
+        result = subprocess.run(
+            [sys.executable, pipeline_py, pdf_path, "--out-dir", train_eval_dir],
+            capture_output=True,
+            text=True,
+            timeout=PIPELINE_TIMEOUT_S,
+        )
+    except subprocess.TimeoutExpired:
+        raise RuntimeError(f"pipeline.py timed out after {PIPELINE_TIMEOUT_S}s on train PDF")
     duration = time.time() - t0
     if result.returncode != 0:
         raise RuntimeError(f"pipeline.py failed on train PDF:\n{result.stderr}")
@@ -77,101 +73,25 @@ def train_eval_node(state: dict[str, Any], llm: BaseChatModel) -> dict[str, Any]
     gt_path = os.path.join(train_eval_dir, "ground_truth.json")
     if os.path.isfile(gt_path):
         print("train_eval_node: reusing existing ground truth (repair retry)")
-        with open(gt_path, encoding="utf-8") as f:
-            records = json.load(f)
-        gt_duration  = 0.0
-        gt_input     = 0
-        gt_output    = 0
+        gt_duration = 0.0
+        gt_usage    = {"input_tokens": 0, "output_tokens": 0, "total_tokens": 0}
     else:
         print(f"train_eval_node: generating train ground truth (window={WINDOW})...")
-        system_prompt  = build_prompt(template)
-        records: list[dict] = []
-        record_counter = 0
-        gt_input       = 0
-        gt_output      = 0
-
         t0 = time.time()
-        with pdfplumber.open(pdf_path) as pdf:
-            total   = len(pdf.pages)
-            windows = [list(range(i, min(i + WINDOW, total))) for i in range(0, total, WINDOW)]
-            print(f"  {total} page(s), {len(windows)} window(s) of up to {WINDOW}")
-
-            for win_indices in windows:
-                page_nums = [i + 1 for i in win_indices]
-                pages_str = ", ".join(str(p) for p in page_nums)
-
-                user_text = (
-                    f"Extract all records from page {page_nums[0]} of the document."
-                    if len(page_nums) == 1
-                    else (
-                        f"Extract all records from pages {pages_str} of the document. "
-                        f"The images are provided in page order ({pages_str})."
-                    )
-                )
-
-                content: list = [{"type": "text", "text": user_text}]
-                for idx in win_indices:
-                    content.append({
-                        "type": "image_url",
-                        "image_url": {"url": f"data:image/png;base64,{_render_page_b64(pdf.pages[idx])}"},
-                    })
-                if ocr_path and os.path.isfile(ocr_path):
-                    for page_num in page_nums:
-                        ocr_text = _load_page_ocr(ocr_path, page_num)
-                        content.append({
-                            "type": "text",
-                            "text": f"OCR words on page {page_num} (exact character sequences, reading order):\n{ocr_text}",
-                        })
-
-                print(f"  pages {pages_str}...", end=" ", flush=True)
-                response = llm.invoke([
-                    SystemMessage(content=system_prompt),
-                    HumanMessage(content=content),
-                ])
-
-                usage = response.usage_metadata or {}
-                inp = usage.get("input_tokens") or 0
-                out = usage.get("output_tokens") or 0
-                if not inp and not out:
-                    out = usage.get("total_tokens") or 0
-                gt_input  += inp
-                gt_output += out
-
-                try:
-                    parsed    = _parse_json(response.content)
-                    page_recs = parsed.get("records", [])
-                except (json.JSONDecodeError, AttributeError) as exc:
-                    print(f"WARN: {exc}")
-                    page_recs = []
-
-                n_blocks = 0
-                for rec in page_recs:
-                    blocks = rec.get("data", [])
-                    for block in blocks:
-                        block["page"] = page_nums[0]
-                    records.append({"record_id": str(record_counter), "data": blocks})
-                    record_counter += 1
-                    n_blocks += len(blocks)
-                print(f"{len(page_recs)} record(s), {n_blocks} block(s)")
-
+        records, _, gt_usage = generate_ground_truth(pdf_path, ocr_path, template, llm, WINDOW)
         gt_duration = time.time() - t0
         with open(gt_path, "w", encoding="utf-8") as f:
             json.dump(records, f, indent=2, ensure_ascii=False)
         _maybe_merge_single_block(gt_path, template)
 
     gt_cost: dict = {"phase": "train_ground_truth", "duration_s": round(gt_duration, 3)}
-    if gt_input:
-        gt_cost["input_tokens"] = gt_input
-    if gt_output:
-        gt_cost["output_tokens"] = gt_output
+    apply_usage(gt_cost, gt_usage["input_tokens"], gt_usage["output_tokens"], gt_usage["total_tokens"])
     cost_entries.append(gt_cost)
 
     # ── 3. Evaluate ───────────────────────────────────────────────────────────
     t0 = time.time()
-    with open(gt_path, encoding="utf-8") as f:
-        gold = json.load(f)
-    with open(grouped_path, encoding="utf-8") as f:
-        candidate = json.load(f)
+    gold = load_json_dedup(gt_path)
+    candidate = load_json_dedup(grouped_path)
 
     eval_result  = eval_score(gold, candidate, reference="human", threshold=0.9)
     eval_duration = time.time() - t0

@@ -37,10 +37,12 @@ def collect_extraction_scripts_node(state: dict[str, Any]) -> dict[str, Any]:
     # .py file found there into extraction_scripts/.
     os.makedirs(extraction_scripts_dir, exist_ok=True)
     collected = []
+    missing: list[str] = []
     for template_id in sorted(os.listdir(block_samples_dir)):
         sample_dir = os.path.join(block_samples_dir, template_id)
         if not os.path.isdir(sample_dir):
             continue
+        found = False
         for fname in os.listdir(sample_dir):
             if not fname.endswith(".py"):
                 continue
@@ -49,6 +51,15 @@ def collect_extraction_scripts_node(state: dict[str, Any]) -> dict[str, Any]:
                 os.path.join(extraction_scripts_dir, fname),
             )
             collected.append(fname)
+            found = True
+        if not found:
+            missing.append(template_id)
+
+    if missing:
+        raise RuntimeError(
+            "collect_extraction_scripts: no extraction script found for "
+            f"template_id(s): {', '.join(missing)}"
+        )
 
     print(f"collect_extraction_scripts: {len(collected)} extraction script(s) collected")
 
@@ -90,7 +101,10 @@ def collect_extraction_scripts_node(state: dict[str, Any]) -> dict[str, Any]:
 
     phases = list(state.get("cost") or []) + [own_entry]
     total_duration = round(sum(p["duration_s"] for p in phases), 3)
-    total_tokens = sum(p["tokens"] for p in phases if "tokens" in p) or None
+    total_tokens = sum(
+        (p.get("input_tokens") or 0) + (p.get("output_tokens") or 0) + (p.get("total_tokens") or 0)
+        for p in phases
+    ) or None
 
     report: dict = {"phases": phases, "total_duration_s": total_duration}
     if total_tokens is not None:

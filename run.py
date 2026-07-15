@@ -23,7 +23,7 @@ Usage:
 Environment variables:
     LLM_PROVIDER    Provider name (default: openai). See src/models/ for available providers.
     OPENAI_API_KEY  Required when LLM_PROVIDER=openai.
-    OPENAI_MODEL    OpenAI model name (default: gpt-4o).
+    OPENAI_MODEL    OpenAI model name (default: src.models.openai.DEFAULT_MODEL).
 """
 
 from __future__ import annotations
@@ -210,7 +210,7 @@ def main() -> None:
     #   block_samples → block_extraction_scripting → collect_extraction_scripts →
     #   grouping [→ ground_truth → eval]  (last two only when eval_mode=True)
     print(f"[2/{total_steps}] Running graph ...", file=sys.stderr)
-    graph = build_graph(get_llm())
+    graph = build_graph(get_llm(), train_repair_max_retries=args.train_max_retries)
     graph.invoke({
         "full_pdf_path":              pdf_path,
         "full_ocr_csv_path":          ocr_csv_path,

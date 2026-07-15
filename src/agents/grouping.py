@@ -8,6 +8,9 @@ import time
 from typing import Any
 
 
+PIPELINE_TIMEOUT_S = 300  # hard cap for one pipeline.py run
+
+
 def _maybe_merge_single_block(path: str, template: list) -> None:
     """Merge records and/or blocks based on template structure.
 
@@ -45,11 +48,11 @@ def _maybe_merge_single_block(path: str, template: list) -> None:
             print(f"  merged {n_records} record(s) → 1 record, {len(all_blocks)} block(s)")
             changed = True
 
-    # ── pass 2: merge consecutive same-bid table blocks within each record ────
-    bid_to_type = {
-        str(b): node.get("type")
-        for node in template
-        for b in (node["bid"] if isinstance(node.get("bid"), list) else [node.get("bid", "")])
+    # ── pass 2: merge consecutive same-node table blocks within each record ───
+    # block_id follows "<node_id>_<instance>", so the prefix is a node_id
+    node_type_by_id = {
+        str(node.get("node_id", i)): node.get("type")
+        for i, node in enumerate(template)
     }
     new_records = []
     for record in records:
@@ -57,19 +60,19 @@ def _maybe_merge_single_block(path: str, template: list) -> None:
         new_blocks = []
         i = 0
         while i < len(blocks):
-            block = blocks[i]
-            bid   = str(block.get("block_id", "")).rsplit("_", 1)[0]
-            if bid_to_type.get(bid) == "table":
+            block   = blocks[i]
+            node_id = str(block.get("block_id", "")).rsplit("_", 1)[0]
+            if node_type_by_id.get(node_id) == "table":
                 group = [block]
                 j = i + 1
-                while j < len(blocks) and str(blocks[j].get("block_id", "")).rsplit("_", 1)[0] == bid:
+                while j < len(blocks) and str(blocks[j].get("block_id", "")).rsplit("_", 1)[0] == node_id:
                     group.append(blocks[j])
                     j += 1
                 if len(group) > 1:
                     first       = group[0]
                     merged_rows = [row for b in group for row in b.get("data", [])]
                     new_blocks.append({**first, "data": merged_rows})
-                    print(f"  merged {len(group)} consecutive table block(s) for bid={bid} → {len(merged_rows)} rows")
+                    print(f"  merged {len(group)} consecutive table block(s) for node_id={node_id} → {len(merged_rows)} rows")
                     changed = True
                 else:
                     new_blocks.append(block)
@@ -102,11 +105,15 @@ def grouping_node(state: dict[str, Any]) -> dict[str, Any]:
     pdf_path     = state.get("test_pdf_path") or state["pdf_path"]
 
     t0 = time.time()
-    result = subprocess.run(
-        [sys.executable, pipeline_py, pdf_path, "--out-dir", pipeline_dir],
-        capture_output=True,
-        text=True,
-    )
+    try:
+        result = subprocess.run(
+            [sys.executable, pipeline_py, pdf_path, "--out-dir", pipeline_dir],
+            capture_output=True,
+            text=True,
+            timeout=PIPELINE_TIMEOUT_S,
+        )
+    except subprocess.TimeoutExpired:
+        raise RuntimeError(f"pipeline.py timed out after {PIPELINE_TIMEOUT_S}s")
     duration = time.time() - t0
 
     if result.returncode != 0:

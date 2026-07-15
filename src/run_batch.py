@@ -370,14 +370,23 @@ def build_command(args: argparse.Namespace, forwarded_args: Sequence[str], job: 
 
 
 async def stream_output(stream: asyncio.StreamReader, job: JobState) -> None:
-    while True:
-        line = await stream.readline()
-        if not line:
-            break
-        decoded = line.decode("utf-8", errors="replace").strip()
-        if decoded:
-            job.last_line = decoded
-            job.line_count += 1
+    # Tee the job's full output to data/<doc>/batch.log (append, line-buffered)
+    log_path = job.folder / "batch.log"
+    with open(log_path, "a", encoding="utf-8", buffering=1) as log:
+        while True:
+            try:
+                line = await stream.readline()
+            except ValueError:
+                # a single line exceeded the reader limit — drain a chunk instead
+                line = await stream.read(2 ** 20)
+            if not line:
+                break
+            decoded = line.decode("utf-8", errors="replace")
+            log.write(decoded if decoded.endswith("\n") else decoded + "\n")
+            stripped = decoded.strip()
+            if stripped:
+                job.last_line = stripped
+                job.line_count += 1
 
 
 async def terminate_process(job: JobState) -> None:

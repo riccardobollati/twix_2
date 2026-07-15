@@ -89,7 +89,12 @@ def environment_creation_node(state: ExtractionState) -> dict[str, Any]:
     os.makedirs(agent_space, exist_ok=True)
 
     if eval_mode:
-        actual_train_pages = min(train_pages_req, total_pages // 2)
+        if total_pages < 2:
+            raise RuntimeError(
+                f"eval_mode requires a PDF with at least 2 pages to split into "
+                f"train and test, but {full_pdf_path} has {total_pages}"
+            )
+        actual_train_pages = max(1, min(train_pages_req, total_pages // 2))
         test_start = actual_train_pages + 1
         test_end = (
             min(test_start + eval_pages_req - 1, total_pages)

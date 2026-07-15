@@ -5,28 +5,8 @@ import threading
 import time
 from typing import Any
 
+from src.agents._ui import spinner as _spinner
 from src.models.codex import DEFAULT_CODEX_MODEL, codex_silent
-
-
-_FRAMES = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]
-_GREEN_TICK = "\033[32m✓\033[0m"
-
-import sys
-
-
-def _spinner(label: str, stop_event: threading.Event, result: dict) -> None:
-    frame = 0
-    sys.stdout.write("\n")
-    sys.stdout.flush()
-    while not stop_event.is_set():
-        sys.stdout.write(f"\r\033[K  {label}  {_FRAMES[frame % len(_FRAMES)]}")
-        sys.stdout.flush()
-        frame += 1
-        time.sleep(0.1)
-    tok = result.get("tokens")
-    suffix = f"  {_GREEN_TICK}  {tok:,} tokens" if tok is not None else f"  {_GREEN_TICK}"
-    sys.stdout.write(f"\r\033[K  {label}{suffix}\n")
-    sys.stdout.flush()
 
 
 def _build_prompt(eval_txt: str, extraction_script_ids: list[str]) -> str:
@@ -152,11 +132,11 @@ def train_repair_node(state: dict[str, Any]) -> dict[str, Any]:
     t0 = time.time()
     debug_dir = os.path.join(document_dir, "debug")
     log_path  = os.path.join(debug_dir, f"train_repair_{attempts}.log") if state.get("save_log") else None
-    returncode, input_t, output_t = codex_silent(prompt, pipeline_dir, task=f"train_repair_{attempts}", model=DEFAULT_CODEX_MODEL, caveman=state.get("use_caveman", False), log_path=log_path)
+    returncode, input_t, output_t, total_t = codex_silent(prompt, pipeline_dir, task=f"train_repair_{attempts}", model=DEFAULT_CODEX_MODEL, caveman=state.get("use_caveman", False), log_path=log_path)
     duration = time.time() - t0
 
-    total_t = (input_t or 0) + (output_t or 0) or None
-    spinner_result["tokens"] = total_t if returncode == 0 else None
+    shown_t = (input_t or 0) + (output_t or 0) + (total_t or 0) or None
+    spinner_result["tokens"] = shown_t if returncode == 0 else None
     stop_event.set()
     spinner_thread.join(timeout=0.5)
 
@@ -171,6 +151,8 @@ def train_repair_node(state: dict[str, Any]) -> dict[str, Any]:
         cost_entry["input_tokens"] = input_t
     if output_t is not None:
         cost_entry["output_tokens"] = output_t
+    if total_t is not None:
+        cost_entry["total_tokens"] = total_t
 
     return {
         "train_repair_attempts": attempts,

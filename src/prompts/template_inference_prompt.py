@@ -57,6 +57,7 @@ For each visually distinct data region within a record:
   - **Multi-line headers do not change the block type.** Column headers that wrap across two or more lines within their cell are still a single K row — the block is still a table. Classify it based on the presence of a header row followed by data rows, not on whether each header fits on one line.
   - **Wrapped cell values do not change the block type.** If a data value spans multiple lines within its cell (e.g., a long name broken across lines), the row is still a V row. The block is still a table.
   - **Sparse or checkbox-style columns do not change the block type.** Columns with single-letter or abbreviated headers (e.g., "M", "Tu", "W", "Th") whose cells contain markers like "X" or are blank are table columns, not key-value pairs. Do not confuse "header: marker" with a KV layout — if these columns share a header row with other table columns and their values appear in aligned rows beneath them, the whole region is a table.
+  - **Two-tier (group) headers.** Some tables have a header row of group labels spanning several sub-columns, with a second header row naming the sub-columns (e.g. "Balance", "Exports", "Imports" each spanning "Total", "Goods", "Services"). Both rows together form one K band. To keep field names unique, prefix each sub-column with its group label joined by " - " (e.g. "Balance - Total", "Balance - Goods", "Exports - Total"). Assign group labels deterministically from the header row above, left-to-right: each sub-column takes the group label whose horizontal span covers it. Sub-columns with no group label above them (e.g. a leading "Period" column) keep their own name unchanged.
 - **Key-Value block**: You see field-value pairs arranged horizontally — a label immediately followed by its value in the same row, often in a form-like layout. These rows are KV. A KV block has **no** shared header row above it; each row is self-contained with its own label and value.
 - **Metadata**: Titles, section headers, page headers/footers, free text that is not part of a table or key-value structure. These are M.
 
@@ -130,8 +131,8 @@ Do **not** store the raw text value. Instead, write a Python `re`-compatible reg
 
 Rules for building the pattern:
 - Keep static text exactly as it appears (escape special regex characters where needed).
-- Replace a dynamic numeric part with `\d+`.
-- Replace a dynamic date with the appropriate pattern, e.g. `\d{1,2}/\d{1,2}/\d{4}` or `\d{4}-\d{2}-\d{2}`.
+- Replace a dynamic numeric part with `\\d+`.
+- Replace a dynamic date with the appropriate pattern, e.g. `\\d{1,2}/\\d{1,2}/\\d{4}` or `\\d{4}-\\d{2}-\\d{2}`.
 - Replace a dynamic alphabetic part with `[A-Za-z]+`.
 - Replace a dynamic alphanumeric part with `[A-Za-z0-9]+`.
 - Replace a free-form variable-length value with `.+`.
@@ -196,7 +197,7 @@ Each element is an object with two keys:
 Additional rules:
 - No two entries should match the same text — deduplicate by meaning, not by raw value.
 - If no metadata is found, use an empty array `[]`.
-- Escape regex special characters in static text (e.g. `\.` for a literal dot, `\(` for a literal parenthesis).
+- Escape regex special characters in static text (e.g. `\\.` for a literal dot, `\\(` for a literal parenthesis).
 
 ---
 
@@ -295,6 +296,31 @@ Additional rules:
 }
 ```
 
+### Two-Tier Header Example (Trade Statistics)
+
+A table whose header spans two rows — a group row ("Balance", "Exports", "Imports") above a sub-column row ("Total", "Goods", "Services" repeated under each group), with a plain "Period" column on the left:
+
+```json
+{
+    "template": [
+        {
+            "type": "table",
+            "fields": ["Period", "Balance - Total", "Balance - Goods", "Balance - Services", "Exports - Total", "Exports - Goods", "Exports - Services", "Imports - Total", "Imports - Goods", "Imports - Services"],
+            "bid": [0],
+            "child": -1,
+            "node_id": 0,
+            "complexity": { "same_row_structure": true, "nested": false }
+        }
+    ],
+    "metadata": [
+        {"pattern": "U\\.S\\. International Trade in Goods and Services", "type": "document_level"},
+        {"pattern": "Page \\d+ of \\d+",                                  "type": "document_level"}
+    ]
+}
+```
+
+Note how every field name is unique: each sub-column is prefixed with the group label directly above it, joined by " - ", assigned left-to-right.
+
 ---
 
 ## Rules
@@ -305,6 +331,7 @@ Additional rules:
 - **Include every structured data block (table or kv) seen on any page**, even if it appears in only one record or on only one page. A block is part of the template if it has field labels and data values in a table or key-value layout — frequency of appearance does not matter.
 - The only reason to exclude a structured-looking region is if it is clearly metadata (a title, header, footer, page number, disclaimer, or section label with no data values beneath it).
 - Every template node must have at least one field.
+- **Field names within a node MUST be unique.** Never output the same field name twice in one `fields` array. When a table has a group-header row spanning sub-columns (e.g. "Balance" / "Exports" / "Imports" each spanning "Total", "Goods", "Services"), prefix each sub-column with its group label joined by " - " (e.g. "Balance - Total"), assigning group labels deterministically from the header row above, left-to-right.
 - Only include field names in `fields` arrays — never include values.
 - Template node order must reflect top-to-bottom document order.
 - A phrase is either a field (goes in the template), a value (excluded entirely), or metadata (goes in the metadata array). No phrase should appear in both the template and the metadata.

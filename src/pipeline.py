@@ -23,6 +23,9 @@ from collections import defaultdict
 import pdfplumber
 
 
+SCRIPT_TIMEOUT_S = 300  # hard cap for one generated-script execution
+
+
 # ── OCR ───────────────────────────────────────────────────────────────────────
 
 def _extract_ocr(pdf_path: str) -> list[dict]:
@@ -85,10 +88,15 @@ def _relativize(words: list[dict]) -> list[dict]:
 
 def _run_record_separation(pipeline_dir: str, ocr_csv_path: str, out_dir: str) -> dict:
     script_path = os.path.join(pipeline_dir, "record_separation.py")
-    result = subprocess.run(
-        [sys.executable, script_path, ocr_csv_path, out_dir],
-        cwd=pipeline_dir,
-    )
+    try:
+        result = subprocess.run(
+            [sys.executable, script_path, ocr_csv_path, out_dir],
+            cwd=pipeline_dir,
+            timeout=SCRIPT_TIMEOUT_S,
+        )
+    except subprocess.TimeoutExpired:
+        print(f"record_separation timed out after {SCRIPT_TIMEOUT_S}s", file=sys.stderr)
+        sys.exit(1)
     if result.returncode != 0:
         print("record_separation failed", file=sys.stderr)
         sys.exit(1)
@@ -100,10 +108,15 @@ def _run_record_separation(pipeline_dir: str, ocr_csv_path: str, out_dir: str) -
 
 def _run_block_separation(pipeline_dir: str, ocr_csv_path: str, out_dir: str) -> dict:
     script_path = os.path.join(pipeline_dir, "block_separation.py")
-    result = subprocess.run(
-        [sys.executable, script_path, ocr_csv_path, out_dir],
-        cwd=pipeline_dir,
-    )
+    try:
+        result = subprocess.run(
+            [sys.executable, script_path, ocr_csv_path, out_dir],
+            cwd=pipeline_dir,
+            timeout=SCRIPT_TIMEOUT_S,
+        )
+    except subprocess.TimeoutExpired:
+        print(f"block_separation timed out after {SCRIPT_TIMEOUT_S}s", file=sys.stderr)
+        sys.exit(1)
     if result.returncode != 0:
         print("block_separation failed", file=sys.stderr)
         sys.exit(1)
@@ -126,8 +139,11 @@ def _load_extractors(pipeline_dir: str) -> dict:
             os.path.join(scripts_dir, fname),
         )
         module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(module)
-        extractors[template_id] = module.extract
+        try:
+            spec.loader.exec_module(module)
+            extractors[template_id] = module.extract
+        except Exception as exc:
+            print(f"  warning: extractor {fname} failed to load, skipping: {exc}")
     return extractors
 
 
@@ -155,11 +171,15 @@ def _group_records(record_separation: dict, block_separation: dict, extracted: l
         pages      = record["pages"]
         page_start = pages[0]["page"]
         page_end   = pages[-1]["page"]
-        y_start_r  = pages[0]["y_start"]
-        y_end_r    = pages[-1]["y_end"]
+        # y-bounds are per page: always compare against the record's entry for
+        # the block's own page, never mix pages[0]/pages[-1] coordinates.
+        page_entries = {p["page"]: p for p in pages}
         for uid, (page, y_start, y_end) in block_info.items():
-            if page < page_start or page > page_end:
+            entry = page_entries.get(page)
+            if entry is None:
                 continue
+            y_start_r = entry["y_start"]
+            y_end_r   = entry["y_end"]
             if page == page_start and y_start < y_start_r:
                 # Compute overlap for fallback
                 overlap = max(0.0, min(y_end, y_end_r) - max(y_start, y_start_r))
@@ -205,7 +225,7 @@ def main() -> None:
     # 1. OCR
     print("Extracting OCR...")
     words = _extract_ocr(pdf_path)
-    ocr_csv_path = os.path.join(pipeline_dir, "ocr.csv")
+    ocr_csv_path = os.path.join(out_dir, "ocr.csv")
     _save_ocr_csv(words, ocr_csv_path)
     print(f"  {len(words)} words extracted → ocr.csv")
 

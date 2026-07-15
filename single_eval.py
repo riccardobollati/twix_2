@@ -36,6 +36,7 @@ from langchain_core.messages import HumanMessage, SystemMessage
 
 sys.path.insert(0, os.path.dirname(__file__))
 
+from src.eval.convert import load_json_dedup
 from src.eval.render import render_to_file
 from src.eval.score import score as eval_score
 from src.ground_truth_gen.ground_truth import _load_page_ocr, _parse_json, _render_page_b64
@@ -77,7 +78,7 @@ def _extract_ocr(pdf_path: str, out_path: str) -> None:
 
 def _run_pipeline(pipeline_py: str, pdf_path: str, out_dir: str) -> None:
     os.makedirs(out_dir, exist_ok=True)
-    result = subprocess.run(
+    subprocess.run(
         [sys.executable, os.path.abspath(pipeline_py),
          os.path.abspath(pdf_path),
          "--out-dir", os.path.abspath(out_dir)],
@@ -144,7 +145,10 @@ def _generate_ground_truth(
             n_blocks = 0
             for rec in page_recs:
                 for block in rec.get("data", []):
+                    # `page` stays the first window page for backward-compat;
+                    # `window_pages` carries the full range the block may come from.
                     block["page"] = page_nums[0]
+                    block["window_pages"] = list(page_nums)
                 n_blocks += len(rec.get("data", []))
             print(f"{len(page_recs)} record(s), {n_blocks} block(s)")
             if not page_recs:
@@ -215,10 +219,8 @@ def main() -> None:
 
     if can_reuse:
         print(f"--reuse: loading existing grouped.json and ground_truth.json from {eval_dir}")
-        with open(grouped_path, encoding="utf-8") as f:
-            candidate = json.load(f)
-        with open(gt_path, encoding="utf-8") as f:
-            gt_results = json.load(f)
+        candidate = load_json_dedup(grouped_path)
+        gt_results = load_json_dedup(gt_path)
     else:
         if args.reuse:
             missing = [p for p in (grouped_path, gt_path) if not os.path.isfile(p)]
@@ -233,8 +235,7 @@ def main() -> None:
         print("Running pipeline...")
         _run_pipeline(pipeline_py, pdf_path, eval_dir)
 
-        with open(grouped_path, encoding="utf-8") as f:
-            candidate = json.load(f)
+        candidate = load_json_dedup(grouped_path)
 
         # --- ground truth ---
         print("Generating ground truth...")
@@ -250,12 +251,16 @@ def main() -> None:
         with open(gt_path, "w", encoding="utf-8") as f:
             json.dump(gt_results, f, indent=2, ensure_ascii=False)
         _maybe_merge_single_block(gt_path, template)
-        with open(gt_path, encoding="utf-8") as f:
-            gt_results = json.load(f)
+        gt_results = load_json_dedup(gt_path)
         print(f"Ground truth saved → {gt_path}")
 
-    # Filter candidate to pages covered by ground truth
-    gt_pages = {block["page"] for rec in gt_results for block in rec.get("data", [])}
+    # Filter candidate to pages covered by ground truth. Use the union of all
+    # window pages so multi-page GT windows don't decimate the candidate.
+    gt_pages: set = set()
+    for rec in gt_results:
+        for block in rec.get("data", []):
+            pages = block.get("window_pages") or [block.get("page")]
+            gt_pages.update(p for p in pages if p is not None)
     if gt_pages:
         candidate = [
             r for r in candidate

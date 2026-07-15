@@ -5,8 +5,9 @@ import os
 import time
 from typing import Any
 
-from src.eval.score import score as eval_score
+from src.eval.convert import load_json_dedup
 from src.eval.render import render_to_file
+from src.eval.score import score as eval_score
 
 
 def eval_node(state: dict[str, Any]) -> dict[str, Any]:
@@ -27,10 +28,10 @@ def eval_node(state: dict[str, Any]) -> dict[str, Any]:
     grouped_path = os.path.join(pipeline_dir, "grouped.json")
     gt_path      = os.path.join(pipeline_dir, "ground_truth.json")
 
-    with open(grouped_path, encoding="utf-8") as f:
-        candidate = json.load(f)
-    with open(gt_path, encoding="utf-8") as f:
-        gt = json.load(f)
+    # load with duplicate-key disambiguation so legacy templates with repeated
+    # field names don't silently collapse to a single column
+    candidate = load_json_dedup(grouped_path)
+    gt = load_json_dedup(gt_path)
 
     eval_result = eval_score(gt, candidate, reference="human", threshold=0.9)
 

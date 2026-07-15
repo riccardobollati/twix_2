@@ -39,11 +39,14 @@ def _render_page_b64(page) -> str:
 
 def _parse_json(text: str) -> dict:
     """Extract and parse the first JSON object found in the model response."""
+    from src.eval.convert import loads_json_dedup
+
     # Find the outermost {...} in the response, ignoring any surrounding prose or fences
     match = re.search(r'\{.*\}', text, re.DOTALL)
     if not match:
         raise json.JSONDecodeError("no JSON object found", text, 0)
-    return json.loads(match.group())
+    # duplicate-key-safe: repeated field names become key, key#2, … instead of last-wins
+    return loads_json_dedup(match.group())
 
 
 def _load_page_ocr(csv_path: str, page_num: int) -> str:
@@ -156,13 +159,15 @@ def main() -> None:
                 print(f"WARN: could not parse response ({exc})")
                 page_records = []
 
-            # Annotate blocks with the first page of the window.
+            # Annotate blocks with the first page of the window (backward-compat)
+            # plus the full window range in `window_pages`.
             first_page = page_nums[0]
             n_blocks = 0
             for record in page_records:
                 blocks = record.get("data", [])
                 for block in blocks:
                     block["page"] = first_page
+                    block["window_pages"] = list(page_nums)
                 all_records.append({
                     "record_id": str(record_counter),
                     "data": blocks,

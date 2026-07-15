@@ -9,6 +9,7 @@ from .content import content_similarity
 
 SIM_THRESHOLD = 0.4       # §3.2 node-level threshold
 RECORD_SIM_THRESHOLD = 0.3  # §3.0 record-level threshold
+MIN_CONTENT_SIM = 0.1     # required when the parent term is vacuous (both parents None)
 
 W_TYPE = 0.30
 W_CONTENT = 0.50
@@ -97,25 +98,28 @@ def align(gold_nodes: list[dict], cand_nodes: list[dict]) -> dict:
     g_id_to_idx = _build_id_to_idx(gold_nodes)
     c_id_to_idx = _build_id_to_idx(cand_nodes)
 
-    def parent_term(g_idx: int, c_idx: int) -> float:
+    def parent_term(g_idx: int, c_idx: int) -> tuple[float, bool]:
+        """Return (term, vacuous). vacuous=True when both parents are None."""
         g_pid = ((gold_nodes[g_idx].get("relationship") or {}).get("parent_id"))
         c_pid = ((cand_nodes[c_idx].get("relationship") or {}).get("parent_id"))
         if g_pid is None and c_pid is None:
-            return 1.0
+            return 1.0, True
         if g_pid is None or c_pid is None:
-            return 0.0
+            return 0.0, False
         gp_idx = g_id_to_idx.get(g_pid)
         cp_idx = c_id_to_idx.get(c_pid)
         if gp_idx is None or cp_idx is None:
-            return 0.0
+            return 0.0, False
         if g_to_c.get(gp_idx) == cp_idx:
-            return 1.0
-        return 0.0
+            return 1.0, False
+        return 0.0, False
 
     sim_matrix2 = [[0.0] * n_c for _ in range(n_g)]
+    vacuous_matrix = [[False] * n_c for _ in range(n_g)]
     for i in range(n_g):
         for j in range(n_c):
-            pt = parent_term(i, j)
+            pt, vacuous = parent_term(i, j)
+            vacuous_matrix[i][j] = vacuous
             sim_matrix2[i][j] = (
                 W_TYPE * type_matrix[i][j]
                 + W_CONTENT * content_matrix[i][j]
@@ -123,10 +127,13 @@ def align(gold_nodes: list[dict], cand_nodes: list[dict]) -> dict:
             )
 
     pairs2 = _assignment(sim_matrix2)
+    # A vacuous parent term (both parents None) lifts any same-type pair above
+    # SIM_THRESHOLD, so additionally demand a minimum of content overlap there.
     kept2 = [
         (i, j, sim_matrix2[i][j], type_matrix[i][j], content_matrix[i][j], diag_matrix[i][j])
         for (i, j) in pairs2
         if sim_matrix2[i][j] >= SIM_THRESHOLD
+        and (not vacuous_matrix[i][j] or content_matrix[i][j] >= MIN_CONTENT_SIM)
     ]
     kept2.sort(key=lambda t: (
         str(gold_nodes[t[0]].get("id")), str(cand_nodes[t[1]].get("id"))
@@ -186,20 +193,27 @@ def _order_prior(i: int, j: int, n_g: int, n_c: int) -> float:
 
 
 def _mean_pairwise_node_sim(nodes_g: list[dict], nodes_c: list[dict]) -> float:
-    """Mean of best-matching candidate sim for each gold node (structure_sim=0)."""
+    """Symmetric mean best-match node sim (structure_sim=0).
+
+    Averages the gold→candidate and candidate→gold best-match means so extra
+    candidate nodes drag the similarity down just like missing gold nodes.
+    """
     if not nodes_g or not nodes_c:
         return 0.0
-    sims = []
-    for g in nodes_g:
-        best = 0.0
-        for c in nodes_c:
+    best_g = [0.0] * len(nodes_g)
+    best_c = [0.0] * len(nodes_c)
+    for i, g in enumerate(nodes_g):
+        for j, c in enumerate(nodes_c):
             type_match = 1.0 if g.get("type") == c.get("type") else 0.0
             cs, _ = content_similarity(g, c)
             s = W_TYPE * type_match + W_CONTENT * cs
-            if s > best:
-                best = s
-        sims.append(best)
-    return sum(sims) / len(sims)
+            if s > best_g[i]:
+                best_g[i] = s
+            if s > best_c[j]:
+                best_c[j] = s
+    g_mean = sum(best_g) / len(best_g)
+    c_mean = sum(best_c) / len(best_c)
+    return 0.5 * (g_mean + c_mean)
 
 
 def _record_sim(

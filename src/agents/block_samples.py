@@ -55,6 +55,9 @@ def block_samples_node(state: dict[str, Any]) -> dict[str, Any]:
             template_id = full_id.rsplit("_", 1)[0]
             instances[template_id].append((page_num, full_id, block))
 
+    # seeded from doc_name so repeated runs sample the same instances
+    rng = random.Random(state.get("doc_name", "block_samples"))
+
     with pdfplumber.open(pdf_path) as pdf:
         total_pages = len(pdf.pages)
         for template_id, all_instances in instances.items():
@@ -62,21 +65,32 @@ def block_samples_node(state: dict[str, Any]) -> dict[str, Any]:
             os.makedirs(out_dir, exist_ok=True)
 
             sample = (
-                random.sample(all_instances, _SAMPLE_SIZE)
+                rng.sample(all_instances, _SAMPLE_SIZE)
                 if len(all_instances) > _SAMPLE_SIZE
                 else all_instances
             )
 
+            saved = 0
             for page_num, full_id, block in sample:
                 words = block.get("words", [])
                 bbox = _block_bbox(words)
                 if bbox is None or page_num < 1 or page_num > total_pages:
                     continue
                 page = pdf.pages[page_num - 1]
-                crop = page.crop(bbox)
-                img  = crop.to_image(resolution=150)
+                # clamp the crop to the page bounds — OCR boxes can stick out
+                px0, ptop, px1, pbottom = page.bbox
+                bbox = (max(bbox[0], px0), max(bbox[1], ptop),
+                        min(bbox[2], px1), min(bbox[3], pbottom))
+                if bbox[0] >= bbox[2] or bbox[1] >= bbox[3]:
+                    continue
                 stem = f"p{page_num}_{full_id}"
-                img.save(os.path.join(out_dir, f"{stem}.png"), format="PNG", quantize=False)
+                try:
+                    crop = page.crop(bbox)
+                    img  = crop.to_image(resolution=150)
+                    img.save(os.path.join(out_dir, f"{stem}.png"), format="PNG", quantize=False)
+                except Exception as exc:
+                    print(f"  warning: block_samples crop failed for {stem}: {exc}")
+                    continue
 
                 ox, oy = bbox[0], bbox[1]
                 relative_words = [
@@ -87,7 +101,8 @@ def block_samples_node(state: dict[str, Any]) -> dict[str, Any]:
                 relative_block = {**block, "words": relative_words}
                 with open(os.path.join(out_dir, f"{stem}.json"), "w", encoding="utf-8") as f:
                     json.dump({"page": page_num, **relative_block}, f, indent=2, ensure_ascii=False)
+                saved += 1
 
-            print(f"block_samples: {template_id} → {len(sample)} sample(s) saved to {out_dir}")
+            print(f"block_samples: {template_id} → {saved} sample(s) saved to {out_dir}")
 
     return {"cost": [{"phase": "block_samples", "duration_s": round(time.time() - t0, 3)}]}

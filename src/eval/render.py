@@ -18,6 +18,14 @@ REASON_EXPLANATIONS = {
     "R-ROW-MISSING":          "gold row has no aligned candidate row (eval.md §5.1)",
     "R-ROW-EXTRA":            "candidate row has no aligned gold row (eval.md §5.1)",
     "R-CELL-DIFFERS":         "aligned cell value differs after eval.md §3.4",
+    "R-CELL-WRONG-COLUMN":    (
+        "the value was extracted under the wrong column; check the column-group -> field "
+        "mapping (duplicate/ambiguous field names in the template)"
+    ),
+    "R-COLUMN-SWAP":          (
+        "most of this column's mismatched cells match a single other gold column — "
+        "systematic column swap"
+    ),
     "R-KV-KEY-MISSING":       "key_value: key present in gold, absent in candidate",
     "R-KV-KEY-EXTRA":         "key_value: key present in candidate, absent in gold",
     "R-KV-VALUE-DIFFERS":     "key_value: shared key but values differ after eval.md §3.4",
@@ -41,6 +49,14 @@ SUGGESTED_FIXES = {
     "R-ROW-MISSING":          "row is not being parsed; check row-detection heuristics for this table.",
     "R-ROW-EXTRA":            "candidate is splitting a single row into multiple, or hallucinating a row.",
     "R-CELL-DIFFERS":         "the cell value is wrong; check column-boundary detection or text grouping.",
+    "R-CELL-WRONG-COLUMN":    (
+        "fix the column-group -> field mapping; duplicate/ambiguous field names in the "
+        "template are routing values to the wrong column."
+    ),
+    "R-COLUMN-SWAP":          (
+        "swap the field mapping for these two columns; the extractor consistently emits "
+        "one column's values under the other."
+    ),
     "R-KV-KEY-MISSING":       "add this field to the key_value block; the parser missed it.",
     "R-KV-KEY-EXTRA":         "remove this spurious field from the key_value block.",
     "R-KV-VALUE-DIFFERS":     "the value text is being captured incorrectly; check OCR / line wrapping.",

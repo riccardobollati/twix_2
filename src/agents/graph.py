@@ -34,7 +34,8 @@ def _route_after_train_eval(state: dict) -> str:
         with open(eval_json, encoding="utf-8") as f:
             ev = json.load(f)
         accuracy = ev.get("accuracy", 1.0)
-    except (OSError, json.JSONDecodeError):
+    except (OSError, json.JSONDecodeError) as exc:
+        print(f"  warning: could not read {eval_json} ({exc}) — skipping repair, proceeding to grouping")
         return "grouping"
 
     attempts    = state.get("train_repair_attempts", 0)
@@ -57,11 +58,20 @@ def _route_after_train_eval(state: dict) -> str:
     return "codex_fix"
 
 
-def build_graph(llm: BaseChatModel):
+def recursion_limit_for(max_repair_retries: int) -> int:
+    """Recursion budget for one graph run: the base node chain plus the extra
+    codex_fix → train_eval → routing steps added by each repair round."""
+    return 30 + 4 * max_repair_retries
+
+
+def build_graph(llm: BaseChatModel, train_repair_max_retries: int = 3):
     """Build and compile the PDF template inference graph.
 
     Args:
         llm: Any LangChain-compatible vision chat model (BaseChatModel).
+        train_repair_max_retries: maximum repair rounds the run may use — the
+            compiled graph's recursion_limit is derived from it, so pass the
+            same value given as "train_repair_max_retries" in the invoke state.
 
     Returns:
         A compiled LangGraph ready to be invoked with an ExtractionState.
@@ -129,4 +139,6 @@ def build_graph(llm: BaseChatModel):
     graph.add_edge("eval", "save_metadata")
     graph.add_edge("save_metadata", END)
 
-    return graph.compile()
+    return graph.compile().with_config(
+        recursion_limit=recursion_limit_for(train_repair_max_retries)
+    )

@@ -8,27 +8,42 @@ import threading
 import time
 from typing import Any
 
+from src.agents._ui import spinner as _spinner
 from src.models.codex import codex_silent
 from src.prompts.record_separation_prompt_2 import PROMPT_RECORD_SEPARATION
 
 
-_FRAMES = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]
-_GREEN_TICK = "\033[32m✓\033[0m"
+SCRIPT_TIMEOUT_S = 300  # hard cap for one generated-script execution
 
 
-def _spinner(label: str, stop_event: threading.Event, result: dict) -> None:
-    frame = 0
-    sys.stdout.write("\n")
-    sys.stdout.flush()
-    while not stop_event.is_set():
-        sys.stdout.write(f"\r\033[K  {label}  {_FRAMES[frame % len(_FRAMES)]}")
-        sys.stdout.flush()
-        frame += 1
-        time.sleep(0.1)
-    tok = result.get("tokens")
-    suffix = f"  {_GREEN_TICK}  {tok:,} tokens" if tok is not None else f"  {_GREEN_TICK}"
-    sys.stdout.write(f"\r\033[K  {label}{suffix}\n")
-    sys.stdout.flush()
+def _validate_output(out_dir: str) -> str | None:
+    """Check record_separation.json minimal schema. Returns an error message or None."""
+    out_json = os.path.join(out_dir, "record_separation.json")
+    try:
+        with open(out_json, encoding="utf-8") as f:
+            data = json.load(f)
+    except (OSError, json.JSONDecodeError) as exc:
+        return f"record_separation.json could not be read: {exc}"
+    records = data.get("records")
+    if not isinstance(records, list) or not records:
+        return 'record_separation.json must have a non-empty "records" list'
+    return None
+
+
+def _run_script(script_path: str, ocr_csv: str, out_dir: str) -> str | None:
+    """Execute the generated script and validate its output. Returns an error message or None."""
+    try:
+        result = subprocess.run(
+            [sys.executable, script_path, ocr_csv, out_dir],
+            capture_output=True,
+            text=True,
+            timeout=SCRIPT_TIMEOUT_S,
+        )
+    except subprocess.TimeoutExpired:
+        return f"record_separation.py timed out after {SCRIPT_TIMEOUT_S}s"
+    if result.returncode != 0:
+        return f"record_separation.py failed (exit {result.returncode}):\n{result.stderr}"
+    return _validate_output(out_dir)
 
 
 def run_record_separation_node(state: dict[str, Any]) -> dict[str, Any]:
@@ -46,19 +61,11 @@ def run_record_separation_node(state: dict[str, Any]) -> dict[str, Any]:
     ocr_csv     = state["ocr_csv_path"]
 
     t0 = time.time()
-    result = subprocess.run(
-        [sys.executable, script_path, ocr_csv, train_dir],
-        capture_output=True,
-        text=True,
-    )
+    error = _run_script(script_path, ocr_csv, train_dir)
     duration = time.time() - t0
 
-    if result.returncode != 0:
-        raise RuntimeError(
-            f"record_separation.py failed (exit {result.returncode}):\n{result.stderr}"
-        )
-    if result.stdout:
-        print(result.stdout, end="")
+    if error is not None:
+        raise RuntimeError(error)
 
     return {"cost": [{"phase": "run_record_separation", "duration_s": round(duration, 3)}]}
 
@@ -68,6 +75,8 @@ def record_separation_node(state: dict[str, Any]) -> dict[str, Any]:
 
     A "record" is one full instance of the repeating template structure on a page.
     The generated script detects record boundaries from the vertical word distribution.
+    After each codex attempt the generated script is executed and its output validated;
+    failures are fed back into the prompt for the next attempt.
 
     Reads:
         state["template"]       – list of template node dicts from template_inference.
@@ -75,16 +84,19 @@ def record_separation_node(state: dict[str, Any]) -> dict[str, Any]:
         state["pdf_path"]       – used to derive train_dir (where the script is written).
 
     Writes:
-        record_separation.py into train_dir (script not executed here).
+        record_separation.py into train_dir.
     """
     template_json = json.dumps(state["template"], indent=2)
     ocr_csv_path  = state["ocr_csv_path"]
     train_dir     = os.path.dirname(state["pdf_path"])
+    script_path   = os.path.join(train_dir, "record_separation.py")
 
-    prompt = PROMPT_RECORD_SEPARATION(ocr_csv_path, template_json)
+    base_prompt = PROMPT_RECORD_SEPARATION(ocr_csv_path, template_json)
+    prompt = base_prompt
 
     MAX_ATTEMPTS = 3
-    returncode, input_t, output_t, duration = 1, None, None, 0.0
+    input_t, output_t, total_t = None, None, None
+    duration, last_error = 0.0, ""
 
     for attempt in range(1, MAX_ATTEMPTS + 1):
         label = "record_separation" if attempt == 1 else f"record_separation (retry {attempt - 1})"
@@ -98,24 +110,40 @@ def record_separation_node(state: dict[str, Any]) -> dict[str, Any]:
         spinner_thread.start()
 
         t0 = time.time()
-        returncode, input_t, output_t = codex_silent(prompt, train_dir, task="record_separation")
+        returncode, input_t, output_t, total_t = codex_silent(prompt, train_dir, task="record_separation")
         duration = time.time() - t0
 
-        total_t = (input_t or 0) + (output_t or 0) or None
-        spinner_result["tokens"] = total_t if returncode == 0 else None
+        # run the generated script and validate its output
+        if returncode != 0:
+            last_error = f"codex exited {returncode}"
+        elif not os.path.isfile(script_path):
+            last_error = "codex did not produce record_separation.py"
+        else:
+            last_error = _run_script(script_path, ocr_csv_path, train_dir)
+
+        shown_t = (input_t or 0) + (output_t or 0) + (total_t or 0) or None
+        spinner_result["tokens"] = shown_t if last_error is None else None
         stop_event.set()
         spinner_thread.join(timeout=0.5)
 
-        if returncode == 0:
+        if last_error is None:
             break
+        print(f"  record_separation attempt {attempt} failed: {last_error}")
+        prompt = (
+            base_prompt
+            + f"\n\nA PREVIOUS ATTEMPT AT THIS TASK FAILED WITH:\n{last_error}\n"
+            "Fix record_separation.py so it runs cleanly and produces valid output."
+        )
 
-    if returncode != 0:
-        raise RuntimeError(f"codex failed for record_separation after {MAX_ATTEMPTS} attempt(s)")
+    if last_error is not None:
+        raise RuntimeError(f"record_separation failed after {MAX_ATTEMPTS} attempt(s): {last_error}")
 
     cost_entry: dict = {"phase": "record_separation", "duration_s": round(duration, 3)}
     if input_t is not None:
         cost_entry["input_tokens"] = input_t
     if output_t is not None:
         cost_entry["output_tokens"] = output_t
+    if total_t is not None:
+        cost_entry["total_tokens"] = total_t
 
     return {"cost": [cost_entry]}

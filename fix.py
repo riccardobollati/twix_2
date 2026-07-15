@@ -15,6 +15,7 @@ Then patches metadata.json:
     test_eval.exact_match        ← re-computed exact_match
 """
 
+import argparse
 import json
 import os
 
@@ -24,8 +25,13 @@ from src.models import get_llm
 
 # ── config ────────────────────────────────────────────────────────────────────
 
-doc_id = "id_04"
-window = 20
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument("doc_id", help="document id under data/ (e.g. id_04)")
+parser.add_argument("--window", type=int, default=20, help="GT generation page window")
+args = parser.parse_args()
+
+doc_id = args.doc_id
+window = args.window
 
 # ── paths ─────────────────────────────────────────────────────────────────────
 

@@ -74,33 +74,25 @@ def structure_score(gold_nodes: list[dict], cand_nodes: list[dict], alignment: d
         edge_accuracy = 1.0 if not gold_nodes else 0.0
 
     # Path accuracy.
-    def ancestors_g(idx: int) -> set:
+    def _ancestors(nodes: list[dict], id_to_idx: dict, idx: int) -> set:
         seen = set()
         cur = idx
         while True:
-            pid = _parent_id(gold_nodes[cur])
+            pid = _parent_id(nodes[cur])
             if pid is None:
                 break
-            p_idx = g_id_to_idx.get(pid)
+            p_idx = id_to_idx.get(pid)
             if p_idx is None or p_idx in seen:
                 break
             seen.add(p_idx)
             cur = p_idx
         return seen
 
-    def ancestors_c(idx: int) -> set:
-        seen = set()
-        cur = idx
-        while True:
-            pid = _parent_id(cand_nodes[cur])
-            if pid is None:
-                break
-            p_idx = c_id_to_idx.get(pid)
-            if p_idx is None or p_idx in seen:
-                break
-            seen.add(p_idx)
-            cur = p_idx
-        return seen
+    # Precompute ancestor sets once per matched node (not inside the pair loop).
+    g_ancestors = {gi: _ancestors(gold_nodes, g_id_to_idx, gi) for gi in matched_g_idxs}
+    c_ancestors = {
+        g_to_c[gi]: _ancestors(cand_nodes, c_id_to_idx, g_to_c[gi]) for gi in matched_g_idxs
+    }
 
     pairs_correct = 0
     pairs_total = 0
@@ -108,10 +100,10 @@ def structure_score(gold_nodes: list[dict], cand_nodes: list[dict], alignment: d
         for gj in matched_g_idxs[i + 1:]:
             ci = g_to_c[gi]
             cj = g_to_c[gj]
-            g_anc_i = ancestors_g(gi)
-            g_anc_j = ancestors_g(gj)
-            c_anc_i = ancestors_c(ci)
-            c_anc_j = ancestors_c(cj)
+            g_anc_i = g_ancestors[gi]
+            g_anc_j = g_ancestors[gj]
+            c_anc_i = c_ancestors[ci]
+            c_anc_j = c_ancestors[cj]
 
             g_rel = "i_in_j" if gj in g_anc_i else ("j_in_i" if gi in g_anc_j else "neither")
             c_rel = "i_in_j" if cj in c_anc_i else ("j_in_i" if ci in c_anc_j else "neither")

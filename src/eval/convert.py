@@ -46,7 +46,43 @@ Content conversions:
 
 from __future__ import annotations
 
+import json
 from collections import defaultdict
+from pathlib import Path
+
+
+# ── duplicate-key-safe JSON loading ───────────────────────────────────────────
+
+def dedup_object_pairs(pairs: list) -> dict:
+    """``object_pairs_hook`` that keeps duplicate JSON keys instead of last-wins.
+
+    Repeated keys are disambiguated deterministically as ``key``, ``key#2``,
+    ``key#3``, … so duplicate table columns / kv fields survive ingestion.
+    """
+    out: dict = {}
+    counts: dict = {}
+    for k, v in pairs:
+        if k not in out:
+            out[k] = v
+            continue
+        n = counts.get(k, 1) + 1
+        new_key = f"{k}#{n}"
+        while new_key in out:
+            n += 1
+            new_key = f"{k}#{n}"
+        counts[k] = n
+        out[new_key] = v
+    return out
+
+
+def loads_json_dedup(text: str):
+    """json.loads with duplicate-key disambiguation (apply to gold AND candidate)."""
+    return json.loads(text, object_pairs_hook=dedup_object_pairs)
+
+
+def load_json_dedup(path):
+    """Load a JSON file with duplicate-key disambiguation."""
+    return loads_json_dedup(Path(path).read_text(encoding="utf-8"))
 
 
 # ── public entry point ────────────────────────────────────────────────────────
@@ -136,7 +172,17 @@ def _table_content(data) -> dict:
     """[{"col1": "v1", ...}, ...]  →  {headers:[…], rows:[[{key,value},…],…]}"""
     if not isinstance(data, list) or not data:
         return {"headers": [], "rows": []}
-    headers = list(data[0].keys())
+    # Union of keys across ALL rows, first-seen order (row 0 may miss columns
+    # or not be a dict at all).
+    headers: list = []
+    seen: set = set()
+    for row in data:
+        if not isinstance(row, dict):
+            continue
+        for k in row.keys():
+            if k not in seen:
+                seen.add(k)
+                headers.append(k)
     rows = [
         [{"key": h, "value": str(row.get(h, ""))} for h in headers]
         for row in data

@@ -6,12 +6,11 @@ record pair (§3.1–3.2). Stage 2 (code-gen loop) calls `score()` directly.
 
 from __future__ import annotations
 
-import json
 from pathlib import Path
 
 from .align import align, align_records
-from .content import content_similarity
-from .convert import to_eval_format
+from .content import clear_content_caches, node_content_size
+from .convert import load_json_dedup, to_eval_format
 
 
 W_NODE = 0.40
@@ -137,6 +136,16 @@ def _table_diffs_to_entries(g_node: dict, c_node: dict, table_diag: dict) -> lis
             "candidate": c_rows[rj] if rj < len(c_rows) else None,
             "reason": "R-ROW-EXTRA",
         })
+    for sw in table_diag.get("column_swaps", []):
+        out.append({
+            "gold_id": g_node.get("id"),
+            "candidate_id": c_node.get("id"),
+            "type": "table",
+            "field": f"column[{sw.get('column')}]",
+            "gold": sw.get("column"),
+            "candidate": sw.get("matches_column"),
+            "reason": "R-COLUMN-SWAP",
+        })
     return out
 
 
@@ -174,6 +183,16 @@ def _metadata_diffs_to_entries(g_node: dict, c_node: dict, diag: dict) -> list[d
 # Top-level scoring
 # --------------------------------------------------------------------------- #
 
+def _has_structure_info(records: list[dict]) -> bool:
+    """True if any node carries parent/relationship information."""
+    for rec in records:
+        for n in rec.get("nodes") or []:
+            rel = n.get("relationship") or {}
+            if rel.get("parent_id") is not None or rel.get("note"):
+                return True
+    return False
+
+
 def score(
     gold: dict,
     candidate: dict,
@@ -187,8 +206,14 @@ def score(
     gold = to_eval_format(gold)
     candidate = to_eval_format(candidate)
 
+    clear_content_caches()  # per-run memoization (node identity based)
+
     gold_records = list(gold.get("records") or [])
     cand_records = list(candidate.get("records") or [])
+
+    # Flat trees (the only shape convert.py produces) carry no structure signal;
+    # in that case StructureScore is n/a and its weight is renormalized away.
+    structure_applicable = _has_structure_info(gold_records) or _has_structure_info(cand_records)
 
     # --- Record-level alignment (§3.0) ---
     rec_alignment = align_records(gold_records, cand_records)
@@ -228,7 +253,7 @@ def score(
     total_typed_tp = 0
     total_untyped_tp = 0
 
-    type_matched_sims: list[float] = []
+    content_items: list[tuple[float, float]] = []  # (content_sim, size weight)
     by_type_sums: dict = {"table": [], "key_value": [], "metadata": []}
 
     content_diffs: list[dict] = []
@@ -279,7 +304,7 @@ def score(
                 "content_sim": round(float(content_sim), 6),
             })
             if type_match == 1.0:
-                type_matched_sims.append(content_sim)
+                content_items.append((content_sim, float(node_content_size(g_node))))
                 t = g_node.get("type")
                 if t in by_type_sums:
                     by_type_sums[t].append(content_sim)
@@ -295,7 +320,8 @@ def score(
                 elif t == "metadata":
                     content_diffs.extend(_tag(_metadata_diffs_to_entries(g_node, c_node, content_diag)))
             else:
-                type_matched_sims.append(0.0)
+                # Type mismatches count only in NodeMatchF1 (no double penalty
+                # in ContentScore).
                 type_mismatch_entries.append({
                     "gold_record_id": g_rid,
                     "candidate_record_id": c_rid,
@@ -312,6 +338,10 @@ def score(
         for gi_n in missing_gold_nodes:
             gn = g_nodes[gi_n]
             best_j, best_s = closest_for_missing.get(gi_n, (-1, 0.0))
+            content_items.append((0.0, float(node_content_size(gn))))
+            t = gn.get("type")
+            if t in by_type_sums:
+                by_type_sums[t].append(0.0)
             missing_entries.append({
                 "gold_record_id": g_rid,
                 "gold_id": gn.get("id"),
@@ -322,6 +352,10 @@ def score(
             })
         for cj_n in extra_cand_nodes:
             cn = c_nodes[cj_n]
+            content_items.append((0.0, float(node_content_size(cn))))
+            t = cn.get("type")
+            if t in by_type_sums:
+                by_type_sums[t].append(0.0)
             extra_entries.append({
                 "candidate_record_id": c_rid,
                 "candidate_id": cn.get("id"),
@@ -353,6 +387,10 @@ def score(
         g_rid = g_rec.get("record_id", f"r{gi+1}")
         for gn in list(g_rec.get("nodes") or []):
             total_g_nodes += 1
+            content_items.append((0.0, float(node_content_size(gn))))
+            t = gn.get("type")
+            if t in by_type_sums:
+                by_type_sums[t].append(0.0)
             missing_entries.append({
                 "gold_record_id": g_rid,
                 "gold_id": gn.get("id"),
@@ -368,6 +406,10 @@ def score(
         c_rid = c_rec.get("record_id", f"r{ci+1}")
         for cn in list(c_rec.get("nodes") or []):
             total_c_nodes += 1
+            content_items.append((0.0, float(node_content_size(cn))))
+            t = cn.get("type")
+            if t in by_type_sums:
+                by_type_sums[t].append(0.0)
             extra_entries.append({
                 "candidate_record_id": c_rid,
                 "candidate_id": cn.get("id"),
@@ -390,27 +432,43 @@ def score(
         typed_p, typed_r, typed_f = _pr_f1(typed_tp, typed_fp, typed_fn)
         untyped_p, untyped_r, untyped_f = _pr_f1(untyped_tp, untyped_fp, untyped_fn)
 
-    # ContentScore.
-    if type_matched_sims:
-        content_overall = sum(type_matched_sims) / len(type_matched_sims)
+    # ContentScore. Missing gold nodes and extra candidate nodes contribute 0.0
+    # so unaligned content is not survivorship-biased away; the headline number
+    # weights each node by its content size (cells / kv pairs / 1), the macro
+    # mean is kept as a diagnostic.
+    if content_items:
+        total_weight = sum(w for _, w in content_items)
+        content_overall = (
+            sum(s * w for s, w in content_items) / total_weight if total_weight else 0.0
+        )
+        content_macro = sum(s for s, _ in content_items) / len(content_items)
     elif total_g_nodes == 0 and total_c_nodes == 0:
         content_overall = 1.0
+        content_macro = 1.0
     else:
         content_overall = 0.0
+        content_macro = 0.0
     by_type_means = {
         k: (sum(vs) / len(vs) if vs else None) for k, vs in by_type_sums.items()
     }
 
     # StructureScore (micro-aggregated across all matched record pairs).
-    edge_accuracy = (total_edge_correct / total_edge_total) if total_edge_total else (
-        1.0 if total_g_nodes == 0 else 0.0
-    )
-    path_accuracy = (total_pairs_correct / total_pairs_total) if total_pairs_total else 1.0
-    note_agreement_rate = (total_note_match / total_note_total) if total_note_total else 1.0
-
-    accuracy = max(0.0, min(1.0,
-        W_NODE * typed_f + W_CONTENT * content_overall + W_STRUCT * edge_accuracy
-    ))
+    # With flat trees (no parent/relationship info anywhere) the structure
+    # component is vacuous: report n/a and renormalize the remaining weights.
+    if structure_applicable:
+        edge_accuracy = (total_edge_correct / total_edge_total) if total_edge_total else (
+            1.0 if total_g_nodes == 0 else 0.0
+        )
+        path_accuracy = (total_pairs_correct / total_pairs_total) if total_pairs_total else 1.0
+        note_agreement_rate = (total_note_match / total_note_total) if total_note_total else 1.0
+        accuracy = max(0.0, min(1.0,
+            W_NODE * typed_f + W_CONTENT * content_overall + W_STRUCT * edge_accuracy
+        ))
+    else:
+        edge_accuracy = path_accuracy = note_agreement_rate = None
+        accuracy = max(0.0, min(1.0,
+            (W_NODE * typed_f + W_CONTENT * content_overall) / (W_NODE + W_CONTENT)
+        ))
 
     exact_match = (
         abs(accuracy - 1.0) < 1e-9
@@ -451,15 +509,18 @@ def score(
             },
             "ContentScore": {
                 "overall": round(float(content_overall), 6),
+                "macro": round(float(content_macro), 6),
                 "by_type": {
                     k: (round(float(v), 6) if v is not None else None)
                     for k, v in by_type_means.items()
                 },
             },
             "StructureScore": {
-                "edge_accuracy": round(float(edge_accuracy), 6),
-                "path_accuracy": round(float(path_accuracy), 6),
-                "note_agreement_rate": round(float(note_agreement_rate), 6),
+                "edge_accuracy": round(float(edge_accuracy), 6) if edge_accuracy is not None else None,
+                "path_accuracy": round(float(path_accuracy), 6) if path_accuracy is not None else None,
+                "note_agreement_rate": (
+                    round(float(note_agreement_rate), 6) if note_agreement_rate is not None else None
+                ),
             },
         },
         "weights": {"NodeMatchF1": W_NODE, "ContentScore": W_CONTENT, "StructureScore": W_STRUCT},
@@ -482,6 +543,7 @@ def score_paths(
     reference: str = "agent",
     threshold: float = 0.9,
 ) -> dict:
-    g = json.loads(Path(gold_path).read_text())
-    c = json.loads(Path(candidate_path).read_text())
+    # Duplicate-key-safe loading on both gold and candidate.
+    g = load_json_dedup(gold_path)
+    c = load_json_dedup(candidate_path)
     return score(g, c, reference=reference, threshold=threshold)

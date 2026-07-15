@@ -8,29 +8,45 @@ import threading
 import time
 from typing import Any
 
+from src.agents._ui import spinner as _spinner
 from src.models.codex import DEFAULT_CODEX_MODEL, codex_silent
 from src.prompts.block_separation_prompt import PROMPT_BLOCK_SEPARATION
 
 
-# ── animated display ──────────────────────────────────────────────────────────
-
-_FRAMES = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]
-_GREEN_TICK = "\033[32m✓\033[0m"
+SCRIPT_TIMEOUT_S = 300  # hard cap for one generated-script execution
 
 
-def _spinner(label: str, stop_event: threading.Event, result: dict) -> None:
-    frame = 0
-    sys.stdout.write("\n")
-    sys.stdout.flush()
-    while not stop_event.is_set():
-        sys.stdout.write(f"\r\033[K  {label}  {_FRAMES[frame % len(_FRAMES)]}")
-        sys.stdout.flush()
-        frame += 1
-        time.sleep(0.1)
-    tok = result.get("tokens")
-    suffix = f"  {_GREEN_TICK}  {tok:,} tokens" if tok is not None else f"  {_GREEN_TICK}"
-    sys.stdout.write(f"\r\033[K  {label}{suffix}\n")
-    sys.stdout.flush()
+def _validate_output(out_dir: str) -> str | None:
+    """Check block_separation.json minimal schema. Returns an error message or None."""
+    out_json = os.path.join(out_dir, "block_separation.json")
+    try:
+        with open(out_json, encoding="utf-8") as f:
+            data = json.load(f)
+    except (OSError, json.JSONDecodeError) as exc:
+        return f"block_separation.json could not be read: {exc}"
+    pages = data.get("pages")
+    if not isinstance(pages, list) or not pages:
+        return 'block_separation.json must have a non-empty "pages" list'
+    for entry in pages:
+        if not isinstance(entry, dict) or "blocks" not in entry:
+            return 'every entry in "pages" must be an object with a "blocks" list'
+    return None
+
+
+def _run_script(script_path: str, ocr_csv: str, out_dir: str) -> str | None:
+    """Execute the generated script and validate its output. Returns an error message or None."""
+    try:
+        result = subprocess.run(
+            [sys.executable, script_path, ocr_csv, out_dir],
+            capture_output=True,
+            text=True,
+            timeout=SCRIPT_TIMEOUT_S,
+        )
+    except subprocess.TimeoutExpired:
+        return f"block_separation.py timed out after {SCRIPT_TIMEOUT_S}s"
+    if result.returncode != 0:
+        return f"block_separation.py failed (exit {result.returncode}):\n{result.stderr}"
+    return _validate_output(out_dir)
 
 
 def run_block_separation_node(state: dict[str, Any]) -> dict[str, Any]:
@@ -48,19 +64,11 @@ def run_block_separation_node(state: dict[str, Any]) -> dict[str, Any]:
     ocr_csv     = state["ocr_csv_path"]
 
     t0 = time.time()
-    result = subprocess.run(
-        [sys.executable, script_path, ocr_csv, train_dir],
-        capture_output=True,
-        text=True,
-    )
+    error = _run_script(script_path, ocr_csv, train_dir)
     duration = time.time() - t0
 
-    if result.returncode != 0:
-        raise RuntimeError(
-            f"block_separation.py failed (exit {result.returncode}):\n{result.stderr}"
-        )
-    if result.stdout:
-        print(result.stdout, end="")
+    if error is not None:
+        raise RuntimeError(error)
 
     return {"cost": [{"phase": "run_block_separation", "duration_s": round(duration, 3)}]}
 
@@ -68,8 +76,13 @@ def run_block_separation_node(state: dict[str, Any]) -> dict[str, Any]:
 def block_separation_node(state: dict[str, Any]) -> dict[str, Any]:
     """Ask codex to write a block-separation script tailored to the inferred template.
 
+    After each codex attempt the generated script is executed and its output
+    validated; failures are fed back into the prompt for the next attempt
+    (up to 3 attempts).
+
     Reads:
         state["template"]       – list of template node dicts from template_inference.
+        state["metadata"]       – metadata patterns from template_inference.
         state["ocr_csv_path"]   – path to the full OCR CSV.
         state["agent_space"]    – working directory where codex will write the script.
 
@@ -77,38 +90,71 @@ def block_separation_node(state: dict[str, Any]) -> dict[str, Any]:
         Nothing new to state; side-effect is the script written inside agent_space.
     """
     template_json = json.dumps(state["template"], indent=2)
+    metadata_json = json.dumps(state.get("metadata", []), indent=2)
     ocr_csv_path = state["ocr_csv_path"]
     train_dir = os.path.dirname(state["pdf_path"])
+    script_path = os.path.join(train_dir, "block_separation.py")
 
-    prompt = PROMPT_BLOCK_SEPARATION(ocr_csv_path, template_json)
+    base_prompt = PROMPT_BLOCK_SEPARATION(ocr_csv_path, template_json, metadata_json)
+    prompt = base_prompt
 
-    stop_event = threading.Event()
-    spinner_result: dict = {}
-    spinner_thread = threading.Thread(
-        target=_spinner,
-        args=("block_separation", stop_event, spinner_result),
-        daemon=True,
-    )
-    spinner_thread.start()
-
-    t0 = time.time()
     debug_dir = os.path.join(os.path.dirname(state["agent_space"]), "debug")
-    log_path  = os.path.join(debug_dir, "block_separation.log") if state.get("save_log") else None
-    returncode, input_t, output_t = codex_silent(prompt, train_dir, task="block_separation", model=DEFAULT_CODEX_MODEL, caveman=state.get("use_caveman", False), log_path=log_path)
-    duration = time.time() - t0
 
-    total_t = (input_t or 0) + (output_t or 0) or None
-    spinner_result["tokens"] = total_t if returncode == 0 else None
-    stop_event.set()
-    spinner_thread.join(timeout=0.5)
+    MAX_ATTEMPTS = 3
+    input_t, output_t, total_t = None, None, None
+    duration, last_error = 0.0, ""
 
-    if returncode != 0:
-        raise RuntimeError(f"codex failed for block_separation (exit code {returncode})")
+    for attempt in range(1, MAX_ATTEMPTS + 1):
+        label = "block_separation" if attempt == 1 else f"block_separation (retry {attempt - 1})"
+        stop_event = threading.Event()
+        spinner_result: dict = {}
+        spinner_thread = threading.Thread(
+            target=_spinner,
+            args=(label, stop_event, spinner_result),
+            daemon=True,
+        )
+        spinner_thread.start()
+
+        t0 = time.time()
+        log_path = os.path.join(debug_dir, f"block_separation_{attempt}.log") if state.get("save_log") else None
+        returncode, input_t, output_t, total_t = codex_silent(
+            prompt, train_dir, task="block_separation",
+            model=DEFAULT_CODEX_MODEL, caveman=state.get("use_caveman", False), log_path=log_path,
+        )
+        duration = time.time() - t0
+
+        # run the generated script and validate its output
+        last_error = None
+        if returncode != 0:
+            last_error = f"codex exited {returncode}"
+        elif not os.path.isfile(script_path):
+            last_error = "codex did not produce block_separation.py"
+        else:
+            last_error = _run_script(script_path, ocr_csv_path, train_dir)
+
+        shown_t = (input_t or 0) + (output_t or 0) + (total_t or 0) or None
+        spinner_result["tokens"] = shown_t if last_error is None else None
+        stop_event.set()
+        spinner_thread.join(timeout=0.5)
+
+        if last_error is None:
+            break
+        print(f"  block_separation attempt {attempt} failed: {last_error}")
+        prompt = (
+            base_prompt
+            + f"\n\nA PREVIOUS ATTEMPT AT THIS TASK FAILED WITH:\n{last_error}\n"
+            "Fix block_separation.py so it runs cleanly and produces valid output."
+        )
+
+    if last_error is not None:
+        raise RuntimeError(f"block_separation failed after {MAX_ATTEMPTS} attempt(s): {last_error}")
 
     cost_entry: dict = {"phase": "block_separation", "duration_s": round(duration, 3)}
     if input_t is not None:
         cost_entry["input_tokens"] = input_t
     if output_t is not None:
         cost_entry["output_tokens"] = output_t
+    if total_t is not None:
+        cost_entry["total_tokens"] = total_t
 
     return {"cost": [cost_entry]}

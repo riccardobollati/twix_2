@@ -1,0 +1,12 @@
+langchain-core
+langchain-openai
+langgraph
+matplotlib
+numpy
+openai
+pandas
+pdfplumber
+pypdfium2
+python-dotenv
+scipy
+typing_extensions

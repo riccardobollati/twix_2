@@ -3,9 +3,9 @@ from __future__ import annotations
 import json
 import os
 import re
-import sys
 import threading
 import time
+from collections import Counter
 from typing import Annotated, Any, NotRequired
 
 from langchain_core.language_models.chat_models import BaseChatModel
@@ -13,6 +13,8 @@ from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage
 from langgraph.graph.message import add_messages
 from typing_extensions import TypedDict
 
+from src.agents._ui import spinner as _spinner
+from src.agents._usage import apply_usage, split_tokens
 from src.prompts.template_inference_prompt import PROMPT_TEMPLATE_INFERENCE
 
 
@@ -76,6 +78,10 @@ class ExtractionState(TypedDict):
 # Helpers
 # ---------------------------------------------------------------------------
 
+_MAX_ATTEMPTS = 3
+_REQUIRED_NODE_KEYS = ("type", "fields", "bid", "node_id", "complexity")
+
+
 def _parse_json_response(text: str) -> dict[str, Any]:
     """Parse the LLM response as JSON, stripping markdown fences if present."""
     text = text.strip()
@@ -85,6 +91,48 @@ def _parse_json_response(text: str) -> dict[str, Any]:
     return json.loads(text)
 
 
+def _validate_template(template: Any) -> list[str]:
+    """Return a list of structural problems in the parsed template ([] = valid)."""
+    if not isinstance(template, list) or not template:
+        return ['"template" must be a non-empty list of node objects']
+    problems: list[str] = []
+    for i, node in enumerate(template):
+        if not isinstance(node, dict):
+            problems.append(f"template node {i} is not an object")
+            continue
+        missing = [k for k in _REQUIRED_NODE_KEYS if k not in node]
+        if missing:
+            problems.append(f"template node {i} is missing key(s): {', '.join(missing)}")
+        if "fields" in node and not node.get("fields"):
+            problems.append(f"template node {i} has an empty \"fields\" array")
+    return problems
+
+
+def _duplicate_fields(template: list[dict]) -> list[str]:
+    """Return one message per node that contains duplicate field names ([] = none)."""
+    problems: list[str] = []
+    for node in template:
+        counts = Counter(node.get("fields") or [])
+        dups = sorted(name for name, n in counts.items() if n > 1)
+        if dups:
+            problems.append(
+                f"node_id {node.get('node_id')} has duplicate field name(s): {', '.join(repr(d) for d in dups)}"
+            )
+    return problems
+
+
+def _dedup_fields(template: list[dict]) -> None:
+    """Deterministically dedup duplicate field names by suffixing \" (2)\", \" (3)\", ..."""
+    for node in template:
+        fields = node.get("fields") or []
+        seen: Counter = Counter()
+        deduped: list[str] = []
+        for name in fields:
+            seen[name] += 1
+            deduped.append(name if seen[name] == 1 else f"{name} ({seen[name]})")
+        node["fields"] = deduped
+
+
 # ---------------------------------------------------------------------------
 # Nodes
 # ---------------------------------------------------------------------------
@@ -92,13 +140,19 @@ def _parse_json_response(text: str) -> dict[str, Any]:
 def template_inference_node(state: ExtractionState, llm: BaseChatModel) -> dict[str, Any]:
     """Send PDF page images to a vision LLM to infer the document template.
 
+    The LLM call is retried up to 3 times: JSON parse errors and structural
+    validation errors are fed back into the conversation. Duplicate field
+    names within a node trigger one explicit re-ask; if duplicates persist
+    they are deduped deterministically with " (2)", " (3)" suffixes.
+
     Reads:
         state["pdf_pages"]  – list of base64-encoded image strings (up to 3).
 
     Writes:
-        messages            – appends the assistant response.
+        messages            – appends the assistant response(s).
         template            – list of template node dicts (type, fields, bid, child, node_id).
         metadata            – list of fixed metadata phrase strings.
+        pdf_pages           – cleared ([]) so page images are not carried in graph state.
     """
     content: list[dict[str, Any]] = [
         {"type": "text", "text": "Here are the first pages of the PDF document:"},
@@ -109,55 +163,94 @@ def template_inference_node(state: ExtractionState, llm: BaseChatModel) -> dict[
             "image_url": {"url": f"data:image/png;base64,{image_b64}"},
         })
 
-    _FRAMES = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]
     stop_event = threading.Event()
+    spinner_thread = threading.Thread(
+        target=_spinner, args=("template_inference", stop_event, {}), daemon=True
+    )
+    spinner_thread.start()
 
-    def _spin():
-        frame = 0
-        sys.stdout.write("\n")
-        while not stop_event.is_set():
-            sys.stdout.write(f"\r\033[K  template_inference  {_FRAMES[frame % len(_FRAMES)]}")
-            sys.stdout.flush()
-            frame += 1
-            time.sleep(0.1)
-        sys.stdout.write(f"\r\033[K  template_inference  \033[32m✓\033[0m\n")
-        sys.stdout.flush()
-
-    spinner = threading.Thread(target=_spin, daemon=True)
-    spinner.start()
-
-    t0 = time.time()
-    response = llm.invoke([
+    messages: list[BaseMessage] = [
         SystemMessage(content=PROMPT_TEMPLATE_INFERENCE),
         HumanMessage(content=content),
-    ])
-    duration = time.time() - t0
+    ]
+    responses: list[BaseMessage] = []
+    input_tokens = output_tokens = total_tokens = 0
+    dup_reasked = False
+    parsed: dict[str, Any] | None = None
+    last_error = ""
 
-    stop_event.set()
-    spinner.join(timeout=0.5)
+    t0 = time.time()
+    try:
+        for attempt in range(1, _MAX_ATTEMPTS + 1):
+            response = llm.invoke(messages)
+            responses.append(response)
+            inp, out, tot = split_tokens(response.usage_metadata or {})
+            input_tokens  += inp
+            output_tokens += out
+            total_tokens  += tot
 
-    parsed = _parse_json_response(response.content)
+            error: str | None = None
+            candidate: dict[str, Any] | None = None
+            try:
+                candidate = _parse_json_response(response.content)
+            except (json.JSONDecodeError, AttributeError, TypeError) as exc:
+                error = (
+                    f"Your previous response could not be parsed as JSON: {exc}\n"
+                    "Return ONLY the single JSON object described in the instructions."
+                )
+
+            if candidate is not None:
+                problems = _validate_template(candidate.get("template"))
+                if problems:
+                    error = (
+                        "The template JSON you returned is invalid:\n- "
+                        + "\n- ".join(problems)
+                        + "\nEvery node must have type, fields (non-empty), bid, node_id "
+                        "and complexity. Return the corrected JSON object only."
+                    )
+
+            if error is None:
+                dups = _duplicate_fields(candidate.get("template", []))
+                if dups and not dup_reasked and attempt < _MAX_ATTEMPTS:
+                    dup_reasked = True
+                    error = (
+                        "Field names within a node MUST be unique, but your template has duplicates:\n- "
+                        + "\n- ".join(dups)
+                        + "\nIf the duplicates come from a group-header row spanning sub-columns, "
+                        "prefix each sub-column with its group label joined by \" - \" "
+                        "(e.g. \"Balance - Total\"). Return the corrected JSON object only."
+                    )
+                else:
+                    if dups:
+                        _dedup_fields(candidate["template"])
+                        print(f"  warning: template_inference deduped duplicate field names: {'; '.join(dups)}")
+                    parsed = candidate
+                    break
+
+            last_error = error
+            if attempt < _MAX_ATTEMPTS:
+                messages = messages + [response, HumanMessage(content=error)]
+    finally:
+        duration = time.time() - t0
+        stop_event.set()
+        spinner_thread.join(timeout=0.5)
+
+    if parsed is None:
+        raise RuntimeError(
+            f"template_inference failed after {_MAX_ATTEMPTS} attempt(s): {last_error}"
+        )
 
     template_path = os.path.join(os.path.dirname(state["agent_space"]), "template.json")
     with open(template_path, "w", encoding="utf-8") as f:
         json.dump({"template": parsed.get("template", []), "metadata": parsed.get("metadata", [])}, f, indent=2)
 
-    usage = response.usage_metadata or {}
-    input_tokens  = usage.get("input_tokens")  or 0
-    output_tokens = usage.get("output_tokens") or 0
-    if not input_tokens and not output_tokens:
-        total = usage.get("total_tokens") or 0
-        output_tokens = total  # split unknown, store as output by convention
-
     cost_entry: dict = {"phase": "template_inference", "duration_s": round(duration, 3)}
-    if input_tokens:
-        cost_entry["input_tokens"] = input_tokens
-    if output_tokens:
-        cost_entry["output_tokens"] = output_tokens
+    apply_usage(cost_entry, input_tokens, output_tokens, total_tokens)
 
     return {
-        "messages": [response],
+        "messages": responses,
         "template": parsed.get("template", []),
         "metadata": parsed.get("metadata", []),
+        "pdf_pages": [],  # drop base64 page images from graph state
         "cost": [cost_entry],
     }

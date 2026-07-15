@@ -8,15 +8,15 @@ import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any
 
+from src.agents._ui import FRAMES as _FRAMES, GREEN_TICK as _GREEN_TICK
 from src.models.codex import DEFAULT_CODEX_MODEL, codex_silent
 from src.prompts.block_extraction_scripting_prompt import PROMPT_BLOCK_EXTRACTION_SCRIPTING
 
 
+MAX_ATTEMPTS = 3
+
+
 # ── animated display ──────────────────────────────────────────────────────────
-
-_FRAMES = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]
-_GREEN_TICK = "\033[32m✓\033[0m"
-
 
 class _Display:
     """Thread-safe multi-line spinner for parallel Codex sessions."""
@@ -69,19 +69,28 @@ class _Display:
 
 # ── helpers ───────────────────────────────────────────────────────────────────
 
-def _load_template_node(agent_space: str, template_id: str) -> dict | None:
-    """Return the template node whose bid list contains int(template_id), or None."""
+def _load_template_node(agent_space: str, template_id: str) -> dict:
+    """Return the template node whose node_id matches template_id.
+
+    Block ids follow the "<node_id>_<instance>" convention, so a block-sample
+    folder name (template_id) is a node_id. Raises RuntimeError when the node
+    cannot be resolved — an extraction prompt without its template node would
+    silently degrade the generated script.
+    """
     template_path = os.path.join(os.path.dirname(agent_space), "template.json")
     try:
         with open(template_path, encoding="utf-8") as f:
             template = json.load(f)
-        bid = int(template_id)
-        for node in template.get("template", []):
-            if bid in node.get("bid", []):
-                return node
-    except (OSError, json.JSONDecodeError, ValueError):
-        pass
-    return None
+    except (OSError, json.JSONDecodeError) as exc:
+        raise RuntimeError(f"could not load template.json at {template_path}: {exc}") from exc
+    try:
+        node_id = int(template_id)
+    except ValueError as exc:
+        raise RuntimeError(f"block sample folder {template_id!r} is not a valid node_id") from exc
+    for node in template.get("template", []):
+        if node.get("node_id") == node_id:
+            return node
+    raise RuntimeError(f"no template node with node_id={node_id} in {template_path}")
 
 
 # ── node ──────────────────────────────────────────────────────────────────────
@@ -91,6 +100,8 @@ def block_extraction_scripting_node(state: dict[str, Any]) -> dict[str, Any]:
     to generate a Python extraction script generalizable to all instances of that block.
 
     Creates agent_space/extraction_scripts/ and writes one <template_id>.py per block type.
+    Each Codex session is retried up to MAX_ATTEMPTS times when it exits non-zero or
+    fails to produce the script file.
 
     Reads:
         state["agent_space"]  – directory containing block_samples/ and ../template.json
@@ -120,34 +131,52 @@ def block_extraction_scripting_node(state: dict[str, Any]) -> dict[str, Any]:
     debug_dir   = os.path.join(os.path.dirname(agent_space), "debug") if state.get("save_log") else None
     t0 = time.time()
 
-    def _run(template_id: str) -> tuple[str, int, int | None, int | None]:
-        model      = block_codex_models.get(template_id, DEFAULT_CODEX_MODEL)
-        sample_dir = os.path.join(block_samples_dir, template_id)
-        log_path   = os.path.join(debug_dir, f"block_extraction_{template_id}.log") if debug_dir else None
+    def _run(template_id: str) -> tuple[str, bool, int | None, int | None, int | None]:
+        model       = block_codex_models.get(template_id, DEFAULT_CODEX_MODEL)
+        sample_dir  = os.path.join(block_samples_dir, template_id)
+        script_path = os.path.join(sample_dir, f"{template_id}.py")
         template_node = _load_template_node(agent_space, template_id)
         prompt = PROMPT_BLOCK_EXTRACTION_SCRIPTING(template_id, template_node)
-        rc, inp, out = codex_silent(prompt, sample_dir, task=f"block_extraction_scripting_{template_id}", model=model, caveman=use_caveman, log_path=log_path)
-        return template_id, rc, inp, out
+        inp = out = tot = None
+        for attempt in range(1, MAX_ATTEMPTS + 1):
+            log_path = os.path.join(debug_dir, f"block_extraction_{template_id}_{attempt}.log") if debug_dir else None
+            rc, inp, out, tot = codex_silent(prompt, sample_dir, task=f"block_extraction_scripting_{template_id}", model=model, caveman=use_caveman, log_path=log_path)
+            if rc == 0 and os.path.isfile(script_path):
+                return template_id, True, inp, out, tot
+        return template_id, False, inp, out, tot
 
     block_tokens: list[dict] = []
-    with ThreadPoolExecutor() as executor:
-        futures = {executor.submit(_run, tid): tid for tid in template_ids}
-        for future in as_completed(futures):
-            template_id, rc, inp, out = future.result()
-            if rc != 0:
-                inp = out = None
-            total_t = (inp or 0) + (out or 0) or None
-            display.mark_done(template_id, total_t)
-            if inp is not None or out is not None:
-                block_tokens.append({"id": template_id, "input_tokens": inp or 0, "output_tokens": out or 0})
+    failed_ids: list[str] = []
+    try:
+        with ThreadPoolExecutor() as executor:
+            futures = {executor.submit(_run, tid): tid for tid in template_ids}
+            for future in as_completed(futures):
+                template_id, ok, inp, out, tot = future.result()
+                if not ok:
+                    failed_ids.append(template_id)
+                    inp = out = tot = None
+                shown_t = (inp or 0) + (out or 0) + (tot or 0) or None
+                display.mark_done(template_id, shown_t)
+                if inp is not None or out is not None or tot is not None:
+                    entry = {"id": template_id, "input_tokens": inp or 0, "output_tokens": out or 0}
+                    if tot:
+                        entry["total_tokens"] = tot
+                    block_tokens.append(entry)
+    finally:
+        display.stop()
+        spinner_thread.join(timeout=0.2)
 
-    display.stop()
-    spinner_thread.join(timeout=0.2)
+    if failed_ids:
+        raise RuntimeError(
+            "block_extraction_scripting: no script produced after "
+            f"{MAX_ATTEMPTS} attempt(s) for block(s): {', '.join(sorted(failed_ids))}"
+        )
 
     duration = time.time() - t0
     has_tokens = bool(block_tokens)
     total_input  = sum(b["input_tokens"]  for b in block_tokens) if has_tokens else None
     total_output = sum(b["output_tokens"] for b in block_tokens) if has_tokens else None
+    total_total  = sum(b.get("total_tokens", 0) for b in block_tokens) if has_tokens else None
 
     cost_entry: dict = {
         "phase": "block_extraction_scripting",
@@ -156,6 +185,8 @@ def block_extraction_scripting_node(state: dict[str, Any]) -> dict[str, Any]:
     if has_tokens:
         cost_entry["input_tokens"]  = total_input
         cost_entry["output_tokens"] = total_output
+        if total_total:
+            cost_entry["total_tokens"] = total_total
         cost_entry["blocks"] = sorted(block_tokens, key=lambda b: b["id"])
 
     return {"cost": [cost_entry]}
