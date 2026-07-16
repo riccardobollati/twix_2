@@ -146,11 +146,34 @@ def environment_creation_node(state: ExtractionState) -> dict[str, Any]:
 
     pdf_pages = _render_pages(ws_pdf, actual_train_pages)
 
+    # ── held-out validation split ─────────────────────────────────────────────
+    # Separation/extraction scripts are generated against the first
+    # (train − holdout) pages only; train_eval still runs on ALL train pages.
+    # Scripts that overfit the pages they were built on then fail at train
+    # time — where the repair loop can see and fix it — instead of on test.
+    holdout_req = state.get("holdout_pages")
+    if holdout_req is None:
+        holdout = min(2, max(0, actual_train_pages - 2))  # auto: 5→2, 4→2, 3→1, ≤2→0
+    else:
+        holdout = max(0, min(holdout_req, actual_train_pages - 2))
+    build_pages = actual_train_pages - holdout
+
+    if holdout > 0:
+        build_ocr = os.path.join(os.path.dirname(ws_ocr), "ocr_extraction_build.csv")
+        _crop_ocr_csv(ws_ocr, build_ocr, build_pages)
+        print(
+            f"  Build: pages 1–{build_pages} (script generation), "
+            f"held out for train eval: pages {build_pages + 1}–{actual_train_pages}"
+        )
+    else:
+        build_ocr = ws_ocr
+
     return {
         **out,
         "agent_space":        agent_space,
         "pdf_path":           ws_pdf,
         "ocr_csv_path":       ws_ocr,
+        "build_ocr_csv_path": build_ocr,
         "pdf_pages":          pdf_pages,
         "actual_train_pages": actual_train_pages,
     }

@@ -16,7 +16,21 @@ from src.prompts.block_separation_prompt import PROMPT_BLOCK_SEPARATION
 SCRIPT_TIMEOUT_S = 300  # hard cap for one generated-script execution
 
 
-def _validate_output(out_dir: str) -> str | None:
+def _word_pages(ocr_csv: str) -> dict[int, int]:
+    """Map global word id → page number from the OCR CSV."""
+    import csv
+
+    pages: dict[int, int] = {}
+    with open(ocr_csv, encoding="utf-8", errors="replace") as f:
+        for row in csv.DictReader(f):
+            try:
+                pages[int(row["id"])] = int(row["page"])
+            except (KeyError, ValueError):
+                continue
+    return pages
+
+
+def _validate_output(out_dir: str, ocr_csv: str | None = None) -> str | None:
     """Check block_separation.json minimal schema. Returns an error message or None."""
     out_json = os.path.join(out_dir, "block_separation.json")
     try:
@@ -30,6 +44,34 @@ def _validate_output(out_dir: str) -> str | None:
     for entry in pages:
         if not isinstance(entry, dict) or "blocks" not in entry:
             return 'every entry in "pages" must be an object with a "blocks" list'
+
+    # ── page-locality invariant ───────────────────────────────────────────────
+    # A block emitted under page P must contain only page-P words. A script
+    # that globs "everything until the next header band" across pages builds a
+    # mega-block on the header's page that swallows the rest of the document
+    # (rows that continue on later pages must be emitted as continuation
+    # blocks on THEIR page instead). Enforce it so the codex retry loop gets
+    # the violation as feedback rather than shipping the bug to test pages.
+    if ocr_csv and os.path.isfile(ocr_csv):
+        word_pages = _word_pages(ocr_csv)
+        for entry in pages:
+            page_num = entry.get("page")
+            for block in entry.get("blocks", []):
+                foreign = sorted({
+                    word_pages[w["id"]]
+                    for w in block.get("words", [])
+                    if w.get("id") in word_pages and word_pages[w["id"]] != page_num
+                })
+                if foreign:
+                    return (
+                        f"block {block.get('block_id')} is emitted under page {page_num} "
+                        f"but contains words from page(s) {foreign}. Blocks are PAGE-LOCAL: "
+                        "a block may only contain words of its own page. Rows of a table "
+                        "that continue onto later pages must be emitted as separate "
+                        "continuation blocks of the same node on each of those pages — "
+                        "never merged into one block or given synthesized cross-page "
+                        "y-coordinates."
+                    )
     return None
 
 
@@ -46,7 +88,7 @@ def _run_script(script_path: str, ocr_csv: str, out_dir: str) -> str | None:
         return f"block_separation.py timed out after {SCRIPT_TIMEOUT_S}s"
     if result.returncode != 0:
         return f"block_separation.py failed (exit {result.returncode}):\n{result.stderr}"
-    return _validate_output(out_dir)
+    return _validate_output(out_dir, ocr_csv)
 
 
 def run_block_separation_node(state: dict[str, Any]) -> dict[str, Any]:
@@ -61,7 +103,7 @@ def run_block_separation_node(state: dict[str, Any]) -> dict[str, Any]:
     """
     train_dir   = os.path.dirname(state["pdf_path"])
     script_path = os.path.join(train_dir, "block_separation.py")
-    ocr_csv     = state["ocr_csv_path"]
+    ocr_csv     = state.get("build_ocr_csv_path") or state["ocr_csv_path"]
 
     t0 = time.time()
     error = _run_script(script_path, ocr_csv, train_dir)
@@ -91,7 +133,7 @@ def block_separation_node(state: dict[str, Any]) -> dict[str, Any]:
     """
     template_json = json.dumps(state["template"], indent=2)
     metadata_json = json.dumps(state.get("metadata", []), indent=2)
-    ocr_csv_path = state["ocr_csv_path"]
+    ocr_csv_path = state.get("build_ocr_csv_path") or state["ocr_csv_path"]
     train_dir = os.path.dirname(state["pdf_path"])
     script_path = os.path.join(train_dir, "block_separation.py")
 

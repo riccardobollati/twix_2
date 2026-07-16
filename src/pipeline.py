@@ -209,6 +209,83 @@ def _group_records(record_separation: dict, block_separation: dict, extracted: l
     return [{"record_id": record_id, "data": blocks} for record_id, blocks in grouped.items()]
 
 
+# ── health check ──────────────────────────────────────────────────────────────
+
+def _health_check(
+    words: list[dict],
+    record_sep: dict,
+    separation: dict,
+    extracted: list[dict],
+    grouped: list[dict],
+) -> dict:
+    """Detect degenerate pipeline output (silent total failures).
+
+    A separation/extraction stack that fits the train pages can still produce
+    nothing on new pages (unmatched header tokens, dropped records). Scoring an
+    empty grouped.json against a real ground truth reads as a model failure
+    when it is actually a detectable pipeline abort — flag it instead.
+    """
+    total_pages = len({w["page"] for w in words})
+    pages_with_blocks = len({
+        p["page"] for p in separation.get("pages", []) if p.get("blocks")
+    })
+    # page-locality: a block on page P holding other pages' words means the
+    # separation script globbed the document into a mega-block — downstream
+    # extraction then mixes coordinate spaces and grouping attributes the whole
+    # document to one record
+    word_page = {w["id"]: w["page"] for w in words}
+    cross_page_blocks = []
+    for page_entry in separation.get("pages", []):
+        page_num = page_entry.get("page")
+        for block in page_entry.get("blocks", []):
+            n_foreign = sum(
+                1 for w in block.get("words", [])
+                if word_page.get(w.get("id"), page_num) != page_num
+            )
+            if n_foreign:
+                cross_page_blocks.append(
+                    f"{block.get('block_id')}@p{page_num} ({n_foreign} foreign words)"
+                )
+    detected_records = [str(r.get("record_id")) for r in record_sep.get("records", [])]
+    grouped_records  = {str(r.get("record_id")) for r in grouped}
+    records_without_blocks = [r for r in detected_records if r not in grouped_records]
+
+    problems = []
+    if not extracted:
+        problems.append("no blocks extracted on any page")
+    elif total_pages and pages_with_blocks / total_pages < 0.5:
+        problems.append(
+            f"blocks found on only {pages_with_blocks}/{total_pages} pages"
+        )
+    if cross_page_blocks:
+        problems.append(
+            f"{len(cross_page_blocks)} block(s) contain words from other pages "
+            f"(blocks must be page-local): {cross_page_blocks[:5]}"
+        )
+    # one stray record out of many is a boundary artifact; a large fraction
+    # means block separation dropped whole records (degenerate)
+    if detected_records and len(records_without_blocks) / len(detected_records) > 0.2:
+        problems.append(
+            f"{len(records_without_blocks)}/{len(detected_records)} detected record(s) "
+            f"received no blocks: {records_without_blocks}"
+        )
+
+    health = {
+        "degenerate":             bool(problems),
+        "problems":               problems,
+        "total_pages":            total_pages,
+        "pages_with_blocks":      pages_with_blocks,
+        "records_detected":       len(detected_records),
+        "records_with_blocks":    len(grouped_records),
+        "records_without_blocks": records_without_blocks,
+        "blocks_extracted":       len(extracted),
+        "cross_page_blocks":      cross_page_blocks,
+    }
+    for problem in problems:
+        print(f"  WARNING: degenerate pipeline output — {problem}", file=sys.stderr)
+    return health
+
+
 # ── main ──────────────────────────────────────────────────────────────────────
 
 def main() -> None:
@@ -275,6 +352,14 @@ def main() -> None:
     with open(grouped_path, "w", encoding="utf-8") as f:
         json.dump(grouped, f, indent=2, ensure_ascii=False)
     print(f"Done. {len(grouped)} record(s) → {grouped_path}")
+
+    # 8. Health check → pipeline_health.json
+    health = _health_check(words, record_sep, separation, results, grouped)
+    health_path = os.path.join(out_dir, "pipeline_health.json")
+    with open(health_path, "w", encoding="utf-8") as f:
+        json.dump(health, f, indent=2, ensure_ascii=False)
+    if health["degenerate"]:
+        print(f"WARNING: degenerate output, see {health_path}", file=sys.stderr)
 
 
 if __name__ == "__main__":

@@ -88,6 +88,36 @@ STEP 4 — Assign content rows to blocks
       of its own). Track the node and column layout of the last block emitted on the
       previous page to detect this.
 
+────────────────────────────────────────────────────────────────
+PROHIBITED HEURISTICS — these overfit the sample pages and break on unseen pages
+────────────────────────────────────────────────────────────────
+
+The script will run on OTHER pages of the same document family, not just the sample
+CSV. The following shortcuts fit the sample but silently drop data later. Do NOT:
+
+  - Suppress, filter, or skip kv blocks based on page position or page index
+    (e.g. "kv blocks only appear on the first page", "drop kv candidates on
+    continuation pages"). A kv node can appear on ANY page — once per record —
+    and records start mid-document.
+  - Filter blocks based on HOW MANY blocks of a type were detected on a page
+    (e.g. "if fewer than 2 kv nodes matched, discard all kv candidates").
+    Detect each block independently on its own evidence.
+  - Assume a fixed number of records or blocks per page, or that all template
+    nodes appear on every page / before a new record starts.
+  - Let continuation handling discard a page's own header-band detections:
+    continuation logic only applies to rows ABOVE the first header band; it must
+    never remove or override blocks whose headers were found on the page.
+  - Hard-code absolute y-coordinates or page numbers from the sample CSV.
+  - Build blocks that span pages. Blocks are PAGE-LOCAL (this is validated after
+    the script runs and a violation is a hard failure): a block emitted under
+    page P must contain ONLY page-P words. When a table's rows continue onto the
+    next page, emit a separate continuation block of the same node on that page
+    (Step 4) — never absorb later pages' words into the header page's block, and
+    never synthesize a global cross-page y-axis by stacking page heights.
+
+A page where a node's header genuinely does not appear simply emits no block for
+that node — that is the only legitimate reason to skip one.
+
 STEP 5 — Output
   Write `<out_path>/block_separation.json`:
   {{

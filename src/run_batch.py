@@ -281,6 +281,13 @@ def parse_args(argv: Sequence[str]) -> tuple[argparse.Namespace, list[str]]:
         help="Forwarded to run.py: pages per LLM call for test ground truth (default: 20).",
     )
     run_options.add_argument(
+        "--holdout-pages",
+        type=int,
+        default=argparse.SUPPRESS,
+        metavar="N",
+        help="Forwarded to run.py: train pages hidden from script generation (0 disables).",
+    )
+    run_options.add_argument(
         "--caveman",
         action="store_true",
         default=argparse.SUPPRESS,
@@ -304,6 +311,7 @@ def build_forwarded_args(args: argparse.Namespace, unknown_args: Sequence[str]) 
         ("--train-threshold", "train_threshold"),
         ("--train-max-retries", "train_max_retries"),
         ("--gt-test-window", "gt_test_window"),
+        ("--holdout-pages", "holdout_pages"),
     ):
         if hasattr(args, attr):
             forwarded.extend([flag, str(getattr(args, attr))])

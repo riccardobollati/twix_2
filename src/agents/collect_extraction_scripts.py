@@ -36,11 +36,15 @@ def collect_extraction_scripts_node(state: dict[str, Any]) -> dict[str, Any]:
     # Codex writes <template_id>.py into its CWD (block_samples/<id>/); move each
     # .py file found there into extraction_scripts/.
     os.makedirs(extraction_scripts_dir, exist_ok=True)
+    current_ids = {str(n.get("node_id")) for n in (state.get("template") or [])}
     collected = []
     missing: list[str] = []
     for template_id in sorted(os.listdir(block_samples_dir)):
         sample_dir = os.path.join(block_samples_dir, template_id)
         if not os.path.isdir(sample_dir):
+            continue
+        if current_ids and template_id not in current_ids:
+            print(f"  skipping stale sample folder {template_id!r} (not in current template)")
             continue
         found = False
         for fname in os.listdir(sample_dir):

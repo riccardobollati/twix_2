@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 import random
+import shutil
 import time
 from collections import defaultdict
 from typing import Any
@@ -43,6 +44,14 @@ def block_samples_node(state: dict[str, Any]) -> dict[str, Any]:
     blocks_json = os.path.join(train_dir, "block_separation.json")
     with open(blocks_json, encoding="utf-8") as f:
         separation = json.load(f)
+
+    # start from a clean slate: sample folders left by a previous run (with a
+    # different template) otherwise leak into block_extraction_scripting and
+    # collect_extraction_scripts, which iterate over block_samples/* and crash
+    # on node ids the current template no longer has
+    samples_root = os.path.join(train_dir, "block_samples")
+    if os.path.isdir(samples_root):
+        shutil.rmtree(samples_root)
 
     # Collect all instances: template_block_id -> list of (page_num, full_block_id, block_dict)
     instances: dict[str, list[tuple[int, str, dict]]] = defaultdict(list)

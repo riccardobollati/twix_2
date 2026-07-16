@@ -58,7 +58,7 @@ def run_record_separation_node(state: dict[str, Any]) -> dict[str, Any]:
     """
     train_dir   = os.path.dirname(state["pdf_path"])
     script_path = os.path.join(train_dir, "record_separation.py")
-    ocr_csv     = state["ocr_csv_path"]
+    ocr_csv     = state.get("build_ocr_csv_path") or state["ocr_csv_path"]
 
     t0 = time.time()
     error = _run_script(script_path, ocr_csv, train_dir)
@@ -87,7 +87,7 @@ def record_separation_node(state: dict[str, Any]) -> dict[str, Any]:
         record_separation.py into train_dir.
     """
     template_json = json.dumps(state["template"], indent=2)
-    ocr_csv_path  = state["ocr_csv_path"]
+    ocr_csv_path  = state.get("build_ocr_csv_path") or state["ocr_csv_path"]
     train_dir     = os.path.dirname(state["pdf_path"])
     script_path   = os.path.join(train_dir, "record_separation.py")
 

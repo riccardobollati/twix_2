@@ -113,11 +113,19 @@ def block_extraction_scripting_node(state: dict[str, Any]) -> dict[str, Any]:
     extraction_scripts_dir = os.path.join(train_dir, "extraction_scripts")
     os.makedirs(extraction_scripts_dir, exist_ok=True)
 
-    # create the list of ids
-    template_ids = sorted(
-        d for d in os.listdir(block_samples_dir)
-        if os.path.isdir(os.path.join(block_samples_dir, d))
-    )
+    # create the list of ids — restricted to nodes of the CURRENT template so a
+    # stale sample folder from an earlier run (different template) can't crash
+    # the run or spawn a codex session for a node that no longer exists
+    current_ids = {str(n.get("node_id")) for n in (state.get("template") or [])}
+    template_ids = []
+    for d in sorted(os.listdir(block_samples_dir)):
+        if not os.path.isdir(os.path.join(block_samples_dir, d)):
+            continue
+        if current_ids and d not in current_ids:
+            print(f"block_extraction_scripting: skipping stale sample folder {d!r} "
+                  "(not a node of the current template)")
+            continue
+        template_ids.append(d)
 
     if not template_ids:
         print("block_extraction_scripting: no block sample folders found")

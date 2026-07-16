@@ -82,6 +82,16 @@ def save_metadata_node(state: dict[str, Any]) -> dict[str, Any]:
             "agentic_pipeline_cost":  _find("grouping"),
             "ground_truth_cost":      _find("ground_truth"),
         }
+        # degenerate-output flag from pipeline.py (empty/partial extraction):
+        # an accuracy produced by a degenerate run is a pipeline abort, not a
+        # model score — keep the flag next to it so charts can tell them apart
+        health_path = os.path.join(pipeline_dir, "pipeline_health.json")
+        if os.path.isfile(health_path):
+            with open(health_path, encoding="utf-8") as f:
+                health = json.load(f)
+            if health.get("degenerate"):
+                test_eval["degenerate_pipeline"] = True
+                test_eval["pipeline_problems"] = health.get("problems", [])
 
     # ── totals ────────────────────────────────────────────────────────────────
     total_duration = sum(c.get("duration_s", 0) for c in all_costs)

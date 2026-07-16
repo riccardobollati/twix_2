@@ -71,6 +71,36 @@ Record-separation procedure (per Example 6 of the paper):
    in the current record reappears in the new row, that row is starting a new cycle
    through the template — close the current record and start fresh.
 
+   ANCHOR-VALUE REFINEMENT — verify a boundary before closing a record:
+   The field-revisit signal alone over-splits real documents, because field labels
+   also reappear WITHIN one record: page headers reprint on every page of a
+   multi-page record, and summary/disclaimer sections can echo label words.
+   To make boundaries robust, use identifying VALUES, not just labels:
+     - Inspect the sample CSV and pick one or two ANCHOR FIELDS: kv fields whose
+       value identifies a record instance (an id / number / reference / date —
+       e.g. "Contract No", "Invoice #", "Order Number"). Prefer fields whose value
+       actually CHANGES between candidate records in the sample.
+     - When the boundary check (4.b) fires, extract the anchor field's value near
+       row r. If the anchor value EQUALS the current record's anchor value, this is
+       the same record re-printing its header (page break) — do NOT close the
+       record; keep accumulating (and do not re-arm the boundary on these rows).
+     - If the anchor value DIFFERS (or the anchor label appears with a new value),
+       close the record.
+   If no usable anchor field exists in the template, fall back to the plain
+   field-revisit rule.
+
+   ADDITIONAL GUARDS:
+     - Rows that match NO template field (legal text, disclaimers, signature lines,
+       free-text notes) must never trigger, arm, or influence a boundary — treat
+       them as inert content of the current record.
+     - If two template nodes have IDENTICAL or near-identical field sets, a match on
+       those shared fields is ambiguous between the nodes: never treat cross-matches
+       between signature-duplicate nodes as evidence that the template restarted.
+       (A node carrying a "signature_duplicate_of" key was already detected as the
+       twin of that other node_id — treat their field matches as interchangeable.)
+     - Verify on the sample CSV that the number of records produced is plausible
+       (e.g. against the count of distinct anchor values) and print both numbers.
+
 5. After scanning all rows, flush the final accumulated record (even if not all nodes
    were visited — append whatever remains as the last record).
 6. Assign every word in the document to exactly one record, based on which record's

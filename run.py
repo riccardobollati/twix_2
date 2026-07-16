@@ -149,6 +149,15 @@ def main() -> None:
         help="Number of pages to use as the test set (default: all remaining pages after train).",
     )
     parser.add_argument(
+        "--holdout-pages", type=int, default=None, metavar="N",
+        help=(
+            "Number of train pages hidden from script generation but included in "
+            "the train eval, so overfitted scripts fail where the repair loop can "
+            "fix them. Default: auto (2 when train has ≥4 pages, 1 at 3, else 0). "
+            "Pass 0 to disable."
+        ),
+    )
+    parser.add_argument(
         "--group-rows", action="store_true",
         help=(
             "Group OCR words into row-level entries: words on the same horizontal "
@@ -221,6 +230,7 @@ def main() -> None:
         "train_accuracy_threshold":   args.train_threshold,
         "train_repair_max_retries":   args.train_max_retries,
         **({"gt_test_window": args.gt_test_window} if args.gt_test_window is not None else {}),
+        **({"holdout_pages": args.holdout_pages} if args.holdout_pages is not None else {}),
         **({"use_caveman": True} if args.caveman else {}),
         **({"save_log": True} if args.save_log else {}),
     })

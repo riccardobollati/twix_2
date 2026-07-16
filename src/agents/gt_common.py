@@ -26,6 +26,12 @@ from src.ground_truth_gen.ground_truth import _parse_json, _load_page_ocr
 
 _MAX_WORKERS = 4  # parallel LLM calls for independent windows
 
+# GT-volume sanity check: a window whose extracted text is below this fraction
+# of its pages' OCR text almost certainly under-extracted (truncated response,
+# only-first-page output, JSON parse failure) and is retried once.
+_MIN_GT_COVERAGE = 0.2
+_MIN_OCR_CHARS = 500  # skip the check on near-empty pages
+
 
 def _render_page_b64(page) -> str:
     buf = io.BytesIO()
@@ -38,53 +44,114 @@ def _node_order(template: list[dict]) -> dict[str, int]:
     return {str(node.get("node_id", i)): i for i, node in enumerate(template)}
 
 
+def _identity_dict(block: dict) -> dict | None:
+    """Key→value dict usable as a record identity: a kv block's data, or the
+    single row of a one-row table (header nodes are often typed as tables)."""
+    data = block.get("data")
+    if isinstance(data, dict):
+        return data
+    if isinstance(data, list) and len(data) == 1 and isinstance(data[0], dict):
+        return data[0]
+    return None
+
+
+def _same_kv_identity(prev: dict, nxt: dict) -> bool:
+    """True when nxt's leading block repeats an identity block of prev with the
+    same values — the same logical record whose header reprints on every page
+    (e.g. a per-page contract header). Requires at least one shared non-empty
+    value and no conflicting non-empty values."""
+    next_blocks = nxt.get("data", [])
+    if not next_blocks:
+        return False
+    fd = _identity_dict(next_blocks[0])
+    if fd is None:
+        return False
+    first_bid = str(next_blocks[0].get("block_id", ""))
+    for block in prev.get("data", []):
+        if str(block.get("block_id", "")) != first_bid:
+            continue
+        bd = _identity_dict(block)
+        if bd is None:
+            continue
+        fd_items = {(k, str(v).strip()) for k, v in fd.items() if v}
+        bd_items = {(k, str(v).strip()) for k, v in bd.items() if v}
+        if fd_items and fd_items == bd_items:
+            return True
+    return False
+
+
 def _should_merge(prev: dict, nxt: dict, order: dict[str, int]) -> bool:
     """True when nxt is a continuation of prev.
 
     A continuation means the first block of nxt has a template index
     >= the last block of prev (the template node sequence has not reset).
     A record starting at the template's FIRST node (index 0) is a genuinely
-    new record, never a continuation.
+    new record — unless its leading kv block repeats the previous record's
+    values (same contract/order id), in which case the header merely
+    reprinted at the window cut and the record continues.
     """
     prev_blocks = prev.get("data", [])
     next_blocks = nxt.get("data",  [])
     if not prev_blocks or not next_blocks:
         return False
+    if _same_kv_identity(prev, nxt):
+        return True
     last_idx  = order.get(str(prev_blocks[-1].get("block_id", "")), -1)
     first_idx = order.get(str(next_blocks[0].get("block_id",  "")), -1)
     return last_idx >= 0 and first_idx > 0 and first_idx >= last_idx
 
 
 def _merge_records(prev: dict, nxt: dict) -> dict:
-    """Merge nxt into prev.
+    """Merge nxt into prev, block by block.
 
-    If both share the same node at the boundary (e.g. a table that spans a
-    window cut), their block data is concatenated; otherwise the blocks are
-    simply appended.
+    A next-block whose block_id already exists in prev is the same template
+    node seen again across the window cut: table rows are concatenated, kv
+    values are unioned (non-empty values from nxt win). Blocks of nodes prev
+    has not seen yet are appended. This covers both a table split mid-window
+    and a per-page kv header that reprints at the top of every window.
     """
-    prev_blocks = prev.get("data", [])
-    next_blocks = nxt.get("data",  [])
-    if not prev_blocks or not next_blocks:
-        return {**prev, "data": prev_blocks + next_blocks}
+    merged = list(prev.get("data", []))
+    by_bid = {str(b.get("block_id", "")): i for i, b in enumerate(merged)}
 
-    last_bid  = str(prev_blocks[-1].get("block_id", ""))
-    first_bid = str(next_blocks[0].get("block_id",  ""))
-
-    if last_bid == first_bid:
-        ba, bb = prev_blocks[-1], next_blocks[0]
+    for bb in nxt.get("data", []):
+        bid = str(bb.get("block_id", ""))
+        i = by_bid.get(bid)
+        if i is None:
+            by_bid[bid] = len(merged)
+            merged.append(bb)
+            continue
+        ba = merged[i]
         if ba.get("type") == "table":
             rows_a = ba["data"] if isinstance(ba.get("data"), list) else []
             rows_b = bb["data"] if isinstance(bb.get("data"), list) else []
-            merged_block = {**ba, "data": rows_a + rows_b}
+            if rows_a == rows_b:
+                # identical block reprinted at the window cut (per-page header
+                # block) — not new rows
+                merged[i] = ba
+            else:
+                merged[i] = {**ba, "data": rows_a + rows_b}
         else:  # kv — keep non-empty values from bb, fall back to ba
             da = ba.get("data") if isinstance(ba.get("data"), dict) else {}
             db = bb.get("data") if isinstance(bb.get("data"), dict) else {}
-            merged_block = {**ba, "data": {**da, **{k: v for k, v in db.items() if v}}}
-        merged_data = prev_blocks[:-1] + [merged_block] + next_blocks[1:]
-    else:
-        merged_data = prev_blocks + next_blocks
+            merged[i] = {**ba, "data": {**da, **{k: v for k, v in db.items() if v}}}
 
-    return {**prev, "data": merged_data}
+    return {**prev, "data": merged}
+
+
+def _gt_chars(page_recs: list[dict]) -> int:
+    """Total characters of extracted values — proxy for how much of the
+    window's content the LLM actually returned."""
+    total = 0
+    for rec in page_recs:
+        for block in rec.get("data", []):
+            data = block.get("data")
+            if isinstance(data, list):
+                for row in data:
+                    if isinstance(row, dict):
+                        total += sum(len(str(v)) for v in row.values() if v)
+            elif isinstance(data, dict):
+                total += sum(len(str(v)) for v in data.values() if v)
+    return total
 
 
 def generate_ground_truth(
@@ -109,7 +176,7 @@ def generate_ground_truth(
     order = _node_order(template)
 
     # ── build one payload per window (page rendering is not thread-safe) ──────
-    payloads: list[tuple[list[int], list]] = []
+    payloads: list[tuple[list[int], list, int]] = []  # (page_nums, content, ocr_chars)
     with pdfplumber.open(pdf_path) as pdf:
         total = len(pdf.pages)
         windows = [list(range(i, min(i + window, total))) for i in range(0, total, window)]
@@ -134,15 +201,17 @@ def generate_ground_truth(
                     "image_url": {"url": f"data:image/png;base64,{_render_page_b64(pdf.pages[idx])}"},
                 })
 
+            ocr_chars = 0
             if ocr_csv and isfile(ocr_csv):
                 for page_num in page_nums:
                     ocr_text = _load_page_ocr(ocr_csv, page_num)
+                    ocr_chars += len(ocr_text)
                     content.append({
                         "type": "text",
                         "text": f"OCR words on page {page_num} (exact character sequences, reading order):\n{ocr_text}",
                     })
 
-            payloads.append((page_nums, content))
+            payloads.append((page_nums, content, ocr_chars))
 
     # ── parallel LLM calls, consumed in window order ──────────────────────────
     def _call(content: list):
@@ -152,26 +221,57 @@ def generate_ground_truth(
         ])
 
     with ThreadPoolExecutor(max_workers=min(_MAX_WORKERS, len(payloads))) as executor:
-        futures = [executor.submit(_call, content) for _, content in payloads]
+        futures = [executor.submit(_call, content) for _, content, _ in payloads]
         responses = [f.result() for f in futures]  # futures are in window order
 
     input_tokens = output_tokens = total_tokens = 0
-    all_windows: list[tuple[list[int], list[dict]]] = []   # (page_nums, stamped_recs)
 
-    for (page_nums, _), response in zip(payloads, responses):
-        pages_str = ", ".join(str(p) for p in page_nums)
+    def _parse_window(response, pages_str: str) -> list[dict]:
+        nonlocal input_tokens, output_tokens, total_tokens
         inp, out, tot = split_tokens(response.usage_metadata or {})
         input_tokens  += inp
         output_tokens += out
         total_tokens  += tot
-
         try:
-            parsed    = _parse_json(response.content)
-            page_recs = parsed.get("records", [])
+            return _parse_json(response.content).get("records", [])
         except (json.JSONDecodeError, AttributeError) as exc:
             print(f"  pages {pages_str}... WARN: {exc}")
             print(f"  [RAW RESPONSE]\n{response.content}\n  [END RAW]")
-            page_recs = []
+            return []
+
+    all_windows: list[tuple[list[int], list[dict]]] = []   # (page_nums, stamped_recs)
+
+    for (page_nums, content, ocr_chars), response in zip(payloads, responses):
+        pages_str = ", ".join(str(p) for p in page_nums)
+        page_recs = _parse_window(response, pages_str)
+
+        # coverage sanity check: retry once when the window returned far less
+        # text than its pages contain (truncated/partial responses otherwise
+        # become silently incomplete ground truth)
+        if ocr_chars >= _MIN_OCR_CHARS:
+            coverage = _gt_chars(page_recs) / ocr_chars
+            if coverage < _MIN_GT_COVERAGE:
+                print(
+                    f"  pages {pages_str}... WARN: low GT coverage "
+                    f"({coverage:.0%} of {ocr_chars} OCR chars) — retrying window"
+                )
+                retry_content = content + [{
+                    "type": "text",
+                    "text": (
+                        "Your previous attempt returned far less data than these pages "
+                        "contain. Extract EVERY record and EVERY row from ALL the pages "
+                        "listed above — do not stop after the first page."
+                    ),
+                }]
+                retry_recs = _parse_window(_call(retry_content), pages_str + " (retry)")
+                if _gt_chars(retry_recs) > _gt_chars(page_recs):
+                    page_recs = retry_recs
+                coverage = _gt_chars(page_recs) / ocr_chars
+                if coverage < _MIN_GT_COVERAGE:
+                    print(
+                        f"  pages {pages_str}... WARN: GT coverage still low after retry "
+                        f"({coverage:.0%}) — ground truth for this window is likely incomplete"
+                    )
 
         # stamp pages on every block, then store for boundary-merge pass
         n_blocks = 0

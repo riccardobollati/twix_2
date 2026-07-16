@@ -113,6 +113,25 @@ Additional requirements:
 - Use the template "fields" as the canonical key names in all output dicts.
 - Use word positions (x0, top, x1, bottom) to group words into rows/columns and to
   match labels to values. Do not hard-code pixel thresholds; derive them from the data.
+- COLUMN BOUNDARIES (table blocks): derive the column x-centers from the header
+  band of THE BLOCK BEING EXTRACTED, at call time — locate each field label's
+  words inside `block["words"]` and use their positions as the column anchors.
+  Never bake in x-coordinates measured on the samples: unseen pages shift
+  horizontally, and stale anchors silently swap adjacent columns (values land
+  under the wrong field, which is worse than a missing value). If the block has
+  no header band of its own (a continuation block), fall back to clustering the
+  data words by x-position into as many columns as the template has fields, and
+  assign columns to fields left-to-right in template order.
+- After assigning cells, sanity-check the column mapping: the detected columns'
+  left-to-right order must match the template "fields" order (when the labels are
+  present). If a value row systematically fills a column whose header words were
+  never found, prefer the positional (left-to-right) assignment.
+- Row-filter guards: do not reject data rows with strict regexes on token counts
+  or exact value formats (e.g. "row must have >= 9 tokens", "first token must be
+  a pure integer", "tokens 2-3 must match a date pattern"). OCR on unseen pages
+  produces merged/split tokens and o/0 confusions; strict filters silently drop
+  every row. Prefer positional evidence (a word under the first column's anchor)
+  and treat format checks as soft signals only.
 - Be generalizable: the function must work correctly on any instance of block type
   "{template_id}", not only the sampled ones.
 - Use only the Python standard library. Do not import any external packages.

@@ -41,6 +41,8 @@ class ExtractionState(TypedDict):
     eval_mode:         bool  # whether to create a test split
 
     eval_pages:      NotRequired[int]        # max test pages (None = all remaining)
+    holdout_pages:   NotRequired[int]        # train pages hidden from script generation
+                                             # but included in train eval (None = auto)
     gt_test_window:  NotRequired[int]        # pages per LLM call for test GT (default 20)
     block_codex_models: NotRequired[dict]    # template_id → codex model string
     llm_model:          NotRequired[str]     # name of the vision LLM used for this run
@@ -55,7 +57,9 @@ class ExtractionState(TypedDict):
     # ── set by environment_creation_node ─────────────────────────────────────
     agent_space:        NotRequired[str]       # path to agent_space working directory
     pdf_path:           NotRequired[str]       # path to the train PDF
-    ocr_csv_path:       NotRequired[str]       # path to the train OCR CSV
+    ocr_csv_path:       NotRequired[str]       # path to the train OCR CSV (all train pages)
+    build_ocr_csv_path: NotRequired[str]       # train OCR minus held-out pages — what
+                                               # the generated scripts are built against
     pdf_pages:          NotRequired[list[str]] # base64 images of train pages
     actual_train_pages: NotRequired[int]       # actual number of train pages used
 
@@ -131,6 +135,34 @@ def _dedup_fields(template: list[dict]) -> None:
             seen[name] += 1
             deduped.append(name if seen[name] == 1 else f"{name} ({seen[name]})")
         node["fields"] = deduped
+
+
+def _flag_signature_duplicates(template: list[dict]) -> list[str]:
+    """Mark nodes whose field sets are identical to another node's.
+
+    Separation scripts identify nodes by their field labels; two nodes with the
+    same signature are indistinguishable that way, which corrupts record
+    boundaries (a re-match on the twin looks like the template restarting).
+    Stamps ``signature_duplicate_of`` on the later node — the flag rides along
+    in the template JSON embedded into every downstream codex prompt.
+    Returns one warning message per duplicate pair.
+    """
+    warnings: list[str] = []
+    seen: dict[frozenset, Any] = {}
+    for node in template:
+        signature = frozenset(str(f).strip().lower() for f in node.get("fields") or [])
+        if not signature:
+            continue
+        if signature in seen:
+            node["signature_duplicate_of"] = seen[signature]
+            warnings.append(
+                f"node_id {node.get('node_id')} has the same field signature as "
+                f"node_id {seen[signature]} — separation scripts cannot tell them "
+                "apart by field labels alone"
+            )
+        else:
+            seen[signature] = node.get("node_id")
+    return warnings
 
 
 # ---------------------------------------------------------------------------
@@ -239,6 +271,10 @@ def template_inference_node(state: ExtractionState, llm: BaseChatModel) -> dict[
         raise RuntimeError(
             f"template_inference failed after {_MAX_ATTEMPTS} attempt(s): {last_error}"
         )
+
+    sig_warnings = _flag_signature_duplicates(parsed.get("template", []))
+    for warning in sig_warnings:
+        print(f"  warning: template_inference: {warning}")
 
     template_path = os.path.join(os.path.dirname(state["agent_space"]), "template.json")
     with open(template_path, "w", encoding="utf-8") as f:
