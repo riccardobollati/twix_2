@@ -19,8 +19,13 @@ def _maybe_merge_single_block(path: str, template: list) -> None:
       - kv:    collapse all records into 1 record, blocks kept distinct
 
     Pass 2 — any template:
-      Within each record, merge consecutive blocks that share the same bid and are
-      of type table (handles a table that spans multiple pages).
+      Within each record, merge ALL blocks that share the same node and are of
+      type table into one block (rows concatenated in block order). Page-local
+      separation emits one continuation block per page; when a record's tables
+      interleave across pages (6,7,8 / 6,7,8 …) those continuations are never
+      adjacent, so a consecutive-only merge leaves them apart and the eval
+      counts every continuation as an extra node — which rewards scripts that
+      glob whole documents into one cross-page mega-block instead.
     """
     with open(path, encoding="utf-8") as f:
         records = json.load(f)
@@ -48,38 +53,39 @@ def _maybe_merge_single_block(path: str, template: list) -> None:
             print(f"  merged {n_records} record(s) → 1 record, {len(all_blocks)} block(s)")
             changed = True
 
-    # ── pass 2: merge consecutive same-node table blocks within each record ───
-    # block_id follows "<node_id>_<instance>", so the prefix is a node_id
+    # ── pass 2: merge same-node table blocks within each record ───────────────
+    # block_id follows "<node_id>_<instance>", so the prefix is a node_id.
+    # Blocks arrive in page order, so concatenating in block order preserves
+    # row order across the record's pages.
     node_type_by_id = {
         str(node.get("node_id", i)): node.get("type")
         for i, node in enumerate(template)
     }
     new_records = []
     for record in records:
-        blocks     = record.get("data", [])
-        new_blocks = []
-        i = 0
-        while i < len(blocks):
-            block   = blocks[i]
+        new_blocks: list[dict] = []
+        merged_at: dict[str, int] = {}  # node_id → index of its block in new_blocks
+        n_merged: dict[str, int] = {}
+        for block in record.get("data", []):
             node_id = str(block.get("block_id", "")).rsplit("_", 1)[0]
-            if node_type_by_id.get(node_id) == "table":
-                group = [block]
-                j = i + 1
-                while j < len(blocks) and str(blocks[j].get("block_id", "")).rsplit("_", 1)[0] == node_id:
-                    group.append(blocks[j])
-                    j += 1
-                if len(group) > 1:
-                    first       = group[0]
-                    merged_rows = [row for b in group for row in b.get("data", [])]
-                    new_blocks.append({**first, "data": merged_rows})
-                    print(f"  merged {len(group)} consecutive table block(s) for node_id={node_id} → {len(merged_rows)} rows")
-                    changed = True
-                else:
-                    new_blocks.append(block)
-                i = j
-            else:
+            if node_type_by_id.get(node_id) != "table":
                 new_blocks.append(block)
-                i += 1
+                continue
+            if node_id not in merged_at:
+                merged_at[node_id] = len(new_blocks)
+                new_blocks.append(block)
+                continue
+            target = new_blocks[merged_at[node_id]]
+            rows_a = target.get("data")
+            rows_b = block.get("data")
+            rows_a = rows_a if isinstance(rows_a, list) else []
+            rows_b = rows_b if isinstance(rows_b, list) else []
+            new_blocks[merged_at[node_id]] = {**target, "data": rows_a + rows_b}
+            n_merged[node_id] = n_merged.get(node_id, 1) + 1
+            changed = True
+        for node_id, count in n_merged.items():
+            total_rows = len(new_blocks[merged_at[node_id]].get("data", []))
+            print(f"  merged {count} table block(s) for node_id={node_id} → {total_rows} rows")
         new_records.append({**record, "data": new_blocks})
 
     if changed:

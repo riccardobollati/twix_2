@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import os
 import threading
 import time
@@ -9,12 +10,23 @@ from src.agents._ui import spinner as _spinner
 from src.models.codex import DEFAULT_CODEX_MODEL, codex_silent
 
 
-def _build_prompt(eval_txt: str, extraction_script_ids: list[str]) -> str:
+def _build_prompt(eval_txt: str, extraction_script_ids: list[str], health_problems: list[str]) -> str:
     scripts_list = "\n".join(
         f"  - extraction_scripts/{sid}.py" for sid in sorted(extraction_script_ids)
     )
+    health_section = ""
+    if health_problems:
+        problems = "\n".join(f"  - {p}" for p in health_problems)
+        health_section = f"""
+PIPELINE-HEALTH VIOLATIONS  (from train_eval/pipeline_health.json)
+==================================================================
+These are HARD failures — the run is rejected while any of them remains, no
+matter how good the accuracy looks:
+{problems}
+"""
     return f"""You are debugging a PDF data-extraction pipeline. Fix the Python scripts \
 in the current directory so the pipeline output better matches the ground truth.
+{health_section}
 
 PIPELINE OVERVIEW
 =================
@@ -62,6 +74,9 @@ PRIORITY FIXES BY ERROR CODE
   Spurious extra blocks are being emitted.
   Fix block_separation.py or the relevant extraction script — add a guard so the
   rule only fires when the block clearly exists on the page.
+  NOTE: per-page CONTINUATION blocks of the same node are NOT spurious — the
+  pipeline merges same-node table blocks within a record downstream. NEVER "fix"
+  extra-node errors by absorbing several pages' words into one block.
 
 [R-CELL-DIFFERS] / [R-KV-VALUE-DIFFERS]
   Field values are extracted incorrectly.
@@ -78,6 +93,14 @@ ANTI-OVERFITTING RULES  (MANDATORY — violations cause test-set failures)
    Counts must emerge from the algorithm — never be hard-coded.
 4. NEVER branch on the document name, page-number values, or any fixed metadata.
 5. Every modified script must work correctly on pages it has never seen.
+6. Blocks are PAGE-LOCAL (validated after every run; a violation rejects the run):
+   a block emitted under page P in block_separation.json may contain ONLY page-P
+   words. Table rows continuing onto later pages must be emitted as separate
+   continuation blocks of the same node on each of those pages — the pipeline
+   merges them into one logical node downstream. Never absorb later pages' words
+   into one block and never synthesize a global cross-page y-axis.
+7. NEVER suppress or drop kv blocks based on page position/index or on how many
+   blocks of a type were detected on a page.
 
 Read the existing scripts first to understand the current logic, then make targeted
 fixes that address the errors listed above without breaking what already works.
@@ -109,6 +132,18 @@ def train_repair_node(state: dict[str, Any]) -> dict[str, Any]:
     else:
         eval_txt = "(eval.txt not found)"
 
+    # Read pipeline-health violations (they fail the gate regardless of accuracy)
+    health_problems: list[str] = []
+    health_path = os.path.join(train_eval_dir, "pipeline_health.json")
+    if os.path.isfile(health_path):
+        try:
+            with open(health_path, encoding="utf-8") as f:
+                health = json.load(f)
+            if health.get("degenerate"):
+                health_problems = health.get("problems", [])
+        except (OSError, json.JSONDecodeError):
+            pass
+
     # Collect extraction script IDs
     scripts_dir = os.path.join(pipeline_dir, "extraction_scripts")
     extraction_ids: list[str] = []
@@ -119,7 +154,7 @@ def train_repair_node(state: dict[str, Any]) -> dict[str, Any]:
             if name.endswith(".py") and not name.startswith("_")
         ]
 
-    prompt = _build_prompt(eval_txt, extraction_ids)
+    prompt = _build_prompt(eval_txt, extraction_ids, health_problems)
 
     label = f"train_repair (attempt {attempts})"
     stop_event = threading.Event()

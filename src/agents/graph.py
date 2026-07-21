@@ -38,23 +38,37 @@ def _route_after_train_eval(state: dict) -> str:
         print(f"  warning: could not read {eval_json} ({exc}) — skipping repair, proceeding to grouping")
         return "grouping"
 
+    # A repair round can "improve" train accuracy by violating pipeline
+    # invariants (e.g. cross-page mega-blocks that game a small train set), so
+    # a degenerate health report fails the gate even above the accuracy
+    # threshold — the violations are handed to the next repair round.
+    health_problems: list[str] = []
+    health_json = os.path.join(document_dir, "pipeline", "train_eval", "pipeline_health.json")
+    try:
+        with open(health_json, encoding="utf-8") as f:
+            health = json.load(f)
+        if health.get("degenerate"):
+            health_problems = health.get("problems", [])
+    except (OSError, json.JSONDecodeError):
+        pass
+
     attempts    = state.get("train_repair_attempts", 0)
     max_retries = state.get("train_repair_max_retries", 3)
 
-    if accuracy >= threshold:
+    if accuracy >= threshold and not health_problems:
         print(f"  train accuracy {accuracy:.3f} >= {threshold:.3f} — proceeding to test phase")
         return "grouping"
+
+    if accuracy >= threshold:
+        reason = f"train pipeline output is degenerate: {'; '.join(health_problems)}"
+    else:
+        reason = f"train accuracy {accuracy:.3f} < {threshold:.3f}"
+
     if attempts >= max_retries:
-        print(
-            f"  train accuracy {accuracy:.3f} < {threshold:.3f} "
-            f"but max retries ({max_retries}) exhausted — proceeding anyway"
-        )
+        print(f"  {reason} but max retries ({max_retries}) exhausted — proceeding anyway")
         return "grouping"
 
-    print(
-        f"  train accuracy {accuracy:.3f} < {threshold:.3f} "
-        f"— starting repair attempt {attempts + 1}/{max_retries}"
-    )
+    print(f"  {reason} — starting repair attempt {attempts + 1}/{max_retries}")
     return "codex_fix"
 
 
