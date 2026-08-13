@@ -118,8 +118,8 @@ Run `python run.py --help` for the complete interface. Important options are:
 | `--gt-test-window N` | Pages per test-ground-truth call; default `20` |
 | `--reuse-ocr` | Reuse the existing full OCR CSV instead of regenerating it |
 | `--group-rows` | Experimental row-level OCR instead of word-level OCR |
-| `--caveman` | Prefix Codex prompts with `/caveman full` to reduce output tokens |
-| `--save-log` | Save Codex JSONL output and exact prompts under `debug/` |
+| `--caveman` | Prefix block-separation, extraction, and repair Codex prompts with `/caveman full`; the record-separation session is currently unaffected |
+| `--save-log` | Save Codex JSONL output and exact prompts for block separation, extraction, and repair under `debug/`; record separation is currently not logged |
 
 `--pages` is a request, not an unconditional count. In eval mode the train split
 is capped at half of the usable structured pages so at least one page remains
@@ -315,9 +315,8 @@ flowchart LR
     REL --> EX["extraction_scripts/<node_id>.py"]
     REC --> GROUP["Assign block uid to record spans"]
     EX --> GROUP
-    GROUP --> MERGE["Merge same-node table continuations"]
-    MERGE --> JSON["grouped.json"]
-    MERGE --> HEALTH["pipeline_health.json"]
+    GROUP --> JSON["grouped.json"]
+    GROUP --> HEALTH["pipeline_health.json"]
 ```
 
 The runtime writes:
@@ -330,8 +329,12 @@ The runtime writes:
 - `pipeline_health.json` — silent-failure and invariants report.
 
 Grouping first uses strict page/y containment. A greatest-overlap fallback
-handles blocks that straddle a computed record boundary. Same-node table blocks
-inside one record are concatenated in physical order.
+handles blocks that straddle a computed record boundary. The copied standalone
+runner leaves page-local continuation blocks as separate entries in each record.
+During a repository-managed graph run, the subsequent `merge_records` node uses
+`template.json` to concatenate same-node table continuations in physical order;
+that post-processing step is not included in the portable bundle. The health
+report is produced by the standalone runner before graph-level merging.
 
 Health is marked degenerate if there are no extracted blocks, blocks appear on
 fewer than half of input pages, any block contains foreign-page words, or more
@@ -429,10 +432,12 @@ flowchart TD
     SMALL --> GT
 ```
 
-The raw pre-merge response is retained as `not_merged_gt.json`. Suspiciously
-low content coverage causes one window retry. A completely empty large-window
-result retries the entire input with five-page windows; if that is also empty,
-the run fails instead of producing a misleading perfect/zero comparison.
+For test evaluation, the raw pre-merge response is retained as
+`not_merged_gt.json`; train evaluation does not persist its raw response.
+Suspiciously low content coverage causes one window retry. A completely empty
+large-window result retries the entire input with five-page windows; if that is
+also empty, the run fails instead of producing a misleading perfect/zero
+comparison.
 
 Ground truth is still model-generated. It is a practical experimental reference,
 not a substitute for human annotation.
@@ -488,9 +493,11 @@ accuracy = 0.50 * typed_node_F1
 ```
 
 `RecordMatchF1`, untyped node F1, path accuracy, and note agreement are reported
-diagnostics; they do not directly enter the headline value. The default `0.9`
-threshold controls PASS/BORDERLINE/FAIL reporting and the optional train repair
-gate, not the score formula.
+diagnostics; they do not directly enter the headline value. Evaluation reports
+use a fixed `0.9` threshold for PASS/BORDERLINE/FAIL. The repair gate instead
+uses `--train-threshold`, whose default is `0.0` (disabled); changing the repair
+threshold does not change the report threshold. Neither threshold changes the
+score formula.
 
 `eval.json` is machine-readable. `eval.txt` groups actionable reason codes such
 as missing records, extra nodes, row loss, cell differences, wrong-column
@@ -505,7 +512,7 @@ mapping, and parent mismatches; this report is also the input to repair.
 ├── metadata.json                    # provenance, config, models, costs, scores
 ├── metadata/
 │   └── cost.json                    # generation-time phase report
-├── debug/                           # optional Codex JSONL logs + prompts
+├── debug/                           # optional partial Codex JSONL logs + prompts
 ├── agent_space/
 │   ├── train/                       # eval mode: cropped train PDF/OCR/work files
 │   └── test/                        # eval mode: cropped test PDF/OCR
@@ -592,8 +599,9 @@ python viz_batch_results.py data
 ```
 
 - `viz_bb.py` draws OCR word boxes.
-- `viz_blocks.py` draws colored detected-block bounds and annotates model
-  routing from metadata.
+- `viz_blocks.py` draws colored detected-block bounds and lists detected block
+  IDs and types. Its current metadata lookup does not reliably display routing
+  models because routing is keyed by node ID while blocks use instance IDs.
 - `viz_agent_log.py` renders Codex JSONL events, commands, prompts, stderr, and
   token usage.
 - `viz_batch_results.py` creates accuracy, token/cost, phase, break-even, and
@@ -604,12 +612,16 @@ python viz_batch_results.py data
 - Python dependencies are pinned in `requirements.txt`.
 - OCR is regenerated by default.
 - Block sampling uses a deterministic seed derived from the document name.
-- `metadata.json` records the source SHA-256, detected start page, split sizes,
-  run configuration, selected models, phase costs, repair history, health
-  failures, and train/test scores.
+- `metadata.json` records the source SHA-256, detected start page, train/test
+  split sizes, requested page/holdout settings, repair threshold and retry
+  limit, test-ground-truth window, selected models, phase costs, repair history,
+  test health failures when degenerate, and train/test scores. It does not
+  currently record the resolved automatic holdout size or the `--group-rows`,
+  `--reuse-ocr`, `--caveman`, and `--save-log` flags.
 - Generated scripts are retained, so extraction can be replayed without the
   original model calls.
-- `--save-log` retains exact Codex streams and prompts for deeper audits.
+- `--save-log` retains exact Codex streams and prompts for block separation,
+  extraction, and repair. The record-separation session is not currently logged.
 
 Remote model and Codex outputs are not guaranteed to be byte-identical over
 time. Preserve the complete artifact directory when an experiment must be
