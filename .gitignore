@@ -6,5 +6,4 @@ env
 
 *.pyc
 src/ground_truth_generator_y
-test_2.py
-test
+outputs/

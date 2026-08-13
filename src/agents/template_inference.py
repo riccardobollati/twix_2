@@ -36,6 +36,9 @@ class ExtractionState(TypedDict):
     # ── inputs to graph.invoke ────────────────────────────────────────────────
     full_pdf_path:     str   # path to the original full PDF
     full_ocr_csv_path: str   # path to the full OCR CSV (all pages)
+    output_dir:        NotRequired[str]  # artifact directory (defaults beside input PDF)
+    source_sha256:     NotRequired[str]  # fingerprint of the original input PDF
+    codex_model:       NotRequired[str]  # default code-generation/repair model
     doc_name:          str   # document folder name, used to name split PDFs
     train_pages:       int   # number of pages requested for the train set
     eval_mode:         bool  # whether to create a test split
@@ -48,6 +51,11 @@ class ExtractionState(TypedDict):
     llm_model:          NotRequired[str]     # name of the vision LLM used for this run
     use_caveman:        NotRequired[bool]    # prepend /caveman to every codex prompt
     save_log:           NotRequired[bool]    # save raw codex session output to debug/
+
+    # ── set by detect_beginning_node ─────────────────────────────────────────
+    detected_start_page: NotRequired[int]    # first physical page with structured data
+    beginning_confidence: NotRequired[str]
+    beginning_reason:     NotRequired[str]
 
     # ── train-repair loop ────────────────────────────────────────────────────────
     train_accuracy_threshold: NotRequired[float]  # accuracy target; 0.0 = disabled

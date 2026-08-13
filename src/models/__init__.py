@@ -2,6 +2,13 @@ import os
 
 from langchain_core.language_models.chat_models import BaseChatModel
 
+try:
+    from dotenv import load_dotenv
+except ImportError:
+    pass
+else:
+    load_dotenv()
+
 _PROVIDERS: dict[str, str] = {
     "openai": "src.models.openai",
     "azure":  "src.models.azure",

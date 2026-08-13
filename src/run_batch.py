@@ -41,6 +41,7 @@ class JobState:
     started_at: float | None = None
     finished_at: float | None = None
     last_line: str = "Waiting to start"
+    key_preview: str | None = None
     line_count: int = 0
     process: asyncio.subprocess.Process | None = field(default=None, repr=False)
 
@@ -99,6 +100,7 @@ class TerminalDashboard:
 
         lines = [
             "run.py batch dashboard",
+            self._key_preview_line(),
             (
                 f"Queued: {queued}  Running: {running}  Succeeded: {succeeded}  "
                 f"Failed: {failed}  Cancelled: {cancelled}  "
@@ -139,6 +141,16 @@ class TerminalDashboard:
 
         return "\n".join(lines) + "\n"
 
+    def _key_preview_line(self) -> str:
+        previews = list(dict.fromkeys(
+            job.key_preview for job in self.jobs if job.key_preview is not None
+        ))
+        if not previews:
+            return "using kwy: <waiting>"
+        if len(previews) == 1:
+            return f"using kwy: {previews[0]}"
+        return "using kwy: " + ", ".join(previews)
+
     def _status_label(self, job: JobState) -> str:
         if job.status == "running":
             spinner = SPINNER_FRAMES[self.frame % len(SPINNER_FRAMES)]
@@ -165,6 +177,20 @@ def positive_float(value: str) -> float:
     parsed = float(value)
     if parsed <= 0:
         raise argparse.ArgumentTypeError("value must be greater than zero")
+    return parsed
+
+
+def nonnegative_int(value: str) -> int:
+    parsed = int(value)
+    if parsed < 0:
+        raise argparse.ArgumentTypeError("value must be zero or greater")
+    return parsed
+
+
+def probability(value: str) -> float:
+    parsed = float(value)
+    if not 0.0 <= parsed <= 1.0:
+        raise argparse.ArgumentTypeError("value must be between 0 and 1")
     return parsed
 
 
@@ -235,10 +261,17 @@ def parse_args(argv: Sequence[str]) -> tuple[argparse.Namespace, list[str]]:
     run_options = parser.add_argument_group("run.py options")
     run_options.add_argument(
         "--pages",
-        type=int,
+        type=positive_int,
         default=argparse.SUPPRESS,
         metavar="N",
-        help="Forwarded to run.py: number of first pages to use as the training set.",
+        help="Forwarded to run.py: number of structured pages used for training.",
+    )
+    run_options.add_argument(
+        "--start-page",
+        type=positive_int,
+        default=argparse.SUPPRESS,
+        metavar="N",
+        help="Forwarded to run.py: fixed physical record start page.",
     )
     run_options.add_argument(
         "--eval",
@@ -248,7 +281,7 @@ def parse_args(argv: Sequence[str]) -> tuple[argparse.Namespace, list[str]]:
     )
     run_options.add_argument(
         "--eval-pages",
-        type=int,
+        type=positive_int,
         default=argparse.SUPPRESS,
         metavar="N",
         help="Forwarded to run.py: number of pages to use as the test set.",
@@ -260,29 +293,35 @@ def parse_args(argv: Sequence[str]) -> tuple[argparse.Namespace, list[str]]:
         help="Forwarded to run.py: group OCR words into row-level entries.",
     )
     run_options.add_argument(
+        "--reuse-ocr",
+        action="store_true",
+        default=argparse.SUPPRESS,
+        help="Forwarded to run.py: explicitly reuse each document's existing OCR CSV.",
+    )
+    run_options.add_argument(
         "--train-threshold",
-        type=float,
+        type=probability,
         default=argparse.SUPPRESS,
         metavar="FLOAT",
         help="Forwarded to run.py: train accuracy threshold for repair.",
     )
     run_options.add_argument(
         "--train-max-retries",
-        type=int,
+        type=nonnegative_int,
         default=argparse.SUPPRESS,
         metavar="N",
         help="Forwarded to run.py: maximum number of repair attempts.",
     )
     run_options.add_argument(
         "--gt-test-window",
-        type=int,
+        type=positive_int,
         default=argparse.SUPPRESS,
         metavar="N",
         help="Forwarded to run.py: pages per LLM call for test ground truth (default: 20).",
     )
     run_options.add_argument(
         "--holdout-pages",
-        type=int,
+        type=nonnegative_int,
         default=argparse.SUPPRESS,
         metavar="N",
         help="Forwarded to run.py: train pages hidden from script generation (0 disables).",
@@ -307,6 +346,7 @@ def build_forwarded_args(args: argparse.Namespace, unknown_args: Sequence[str]) 
 
     for flag, attr in (
         ("--pages", "pages"),
+        ("--start-page", "start_page"),
         ("--eval-pages", "eval_pages"),
         ("--train-threshold", "train_threshold"),
         ("--train-max-retries", "train_max_retries"),
@@ -319,6 +359,7 @@ def build_forwarded_args(args: argparse.Namespace, unknown_args: Sequence[str]) 
     for flag, attr in (
         ("--eval", "eval"),
         ("--group-rows", "group_rows"),
+        ("--reuse-ocr", "reuse_ocr"),
         ("--caveman", "caveman"),
         ("--save-log", "save_log"),
     ):
@@ -372,8 +413,10 @@ def build_command(args: argparse.Namespace, forwarded_args: Sequence[str], job: 
         args.python,
         "-u",
         str(args.run_script.resolve()),
-        job.name,
+        str(job.pdf_path),
         *forwarded_args,
+        "--out-dir",
+        str(job.folder),
     ]
 
 
@@ -393,6 +436,8 @@ async def stream_output(stream: asyncio.StreamReader, job: JobState) -> None:
             log.write(decoded if decoded.endswith("\n") else decoded + "\n")
             stripped = decoded.strip()
             if stripped:
+                if stripped.startswith("using kwy: "):
+                    job.key_preview = stripped.removeprefix("using kwy: ")
                 job.last_line = stripped
                 job.line_count += 1
 

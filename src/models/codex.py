@@ -5,7 +5,7 @@ import subprocess
 from src.agents._usage import split_tokens
 
 
-DEFAULT_CODEX_MODEL = "gpt-5.4"
+DEFAULT_CODEX_MODEL = os.getenv("CODEX_MODEL", "gpt-5.4")
 CODEX_TIMEOUT_S = 1800  # hard cap for one codex session
 _CAVEMAN_PREFIX = "/caveman full\n\n"
 _SCOPE_PREFIX = (

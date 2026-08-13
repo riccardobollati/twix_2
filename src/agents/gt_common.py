@@ -21,7 +21,7 @@ from langchain_core.messages import HumanMessage, SystemMessage
 
 from src.agents._usage import split_tokens
 from src.ground_truth_gen.prompt import build_prompt
-from src.ground_truth_gen.ground_truth import _parse_json, _load_page_ocr
+from src.ground_truth_gen.helpers import load_page_ocr, parse_json_response
 
 
 _MAX_WORKERS = 4  # parallel LLM calls for independent windows
@@ -31,6 +31,7 @@ _MAX_WORKERS = 4  # parallel LLM calls for independent windows
 # only-first-page output, JSON parse failure) and is retried once.
 _MIN_GT_COVERAGE = 0.2
 _MIN_OCR_CHARS = 500  # skip the check on near-empty pages
+_EMPTY_GT_FALLBACK_WINDOW = 5
 
 
 def _render_page_b64(page) -> str:
@@ -154,14 +155,14 @@ def _gt_chars(page_recs: list[dict]) -> int:
     return total
 
 
-def generate_ground_truth(
+def _generate_ground_truth_once(
     pdf_path: str,
     ocr_csv: str | None,
     template: list[dict],
     llm: BaseChatModel,
     window: int,
 ) -> tuple[list[dict], list[dict], dict]:
-    """Generate LLM ground-truth records for every page of pdf_path.
+    """Generate LLM ground-truth records once for every page of pdf_path.
 
     Windows are sent to the LLM in parallel (up to _MAX_WORKERS at a time) and
     the results are consumed in window order before the boundary-merge pass.
@@ -204,7 +205,7 @@ def generate_ground_truth(
             ocr_chars = 0
             if ocr_csv and isfile(ocr_csv):
                 for page_num in page_nums:
-                    ocr_text = _load_page_ocr(ocr_csv, page_num)
+                    ocr_text = load_page_ocr(ocr_csv, page_num)
                     ocr_chars += len(ocr_text)
                     content.append({
                         "type": "text",
@@ -233,7 +234,7 @@ def generate_ground_truth(
         output_tokens += out
         total_tokens  += tot
         try:
-            return _parse_json(response.content).get("records", [])
+            return parse_json_response(response.content).get("records", [])
         except (json.JSONDecodeError, AttributeError) as exc:
             print(f"  pages {pages_str}... WARN: {exc}")
             print(f"  [RAW RESPONSE]\n{response.content}\n  [END RAW]")
@@ -309,3 +310,58 @@ def generate_ground_truth(
         "total_tokens":  total_tokens,
     }
     return records, raw_records, usage
+
+
+def generate_ground_truth(
+    pdf_path: str,
+    ocr_csv: str | None,
+    template: list[dict],
+    llm: BaseChatModel,
+    window: int,
+) -> tuple[list[dict], list[dict], dict]:
+    """Generate ground truth, retrying an empty result with 5-page windows.
+
+    Large windows can exhaust the model's output-token budget and yield a
+    parseable but empty ``records`` list. Such output is never valid for the
+    structured PDFs reaching this phase. Retry the complete generation once
+    with smaller windows, aggregate both attempts' usage, and fail explicitly
+    if the fallback is still empty instead of producing a misleading score.
+    """
+    records, raw_records, usage = _generate_ground_truth_once(
+        pdf_path, ocr_csv, template, llm, window
+    )
+    if records:
+        return records, raw_records, usage
+
+    if window <= _EMPTY_GT_FALLBACK_WINDOW:
+        raise RuntimeError(
+            f"ground-truth generation returned no records with window={window}"
+        )
+
+    print(
+        "  WARNING: ground-truth generation returned an empty record list; "
+        f"retrying all pages with window={_EMPTY_GT_FALLBACK_WINDOW}"
+    )
+    retry_records, retry_raw_records, retry_usage = _generate_ground_truth_once(
+        pdf_path,
+        ocr_csv,
+        template,
+        llm,
+        _EMPTY_GT_FALLBACK_WINDOW,
+    )
+    combined_usage = {
+        key: (usage.get(key, 0) or 0) + (retry_usage.get(key, 0) or 0)
+        for key in ("input_tokens", "output_tokens", "total_tokens")
+    }
+    combined_usage.update({
+        "empty_result_fallback": True,
+        "initial_window": window,
+        "effective_window": _EMPTY_GT_FALLBACK_WINDOW,
+    })
+
+    if not retry_records:
+        raise RuntimeError(
+            "ground-truth generation returned no records after retrying with "
+            f"window={_EMPTY_GT_FALLBACK_WINDOW}"
+        )
+    return retry_records, retry_raw_records, combined_usage

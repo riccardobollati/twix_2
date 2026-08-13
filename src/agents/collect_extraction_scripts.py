@@ -8,6 +8,10 @@ from typing import Any
 
 # src/pipeline.py sits one level above this file (src/agents/)
 _PIPELINE_SRC = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "pipeline.py")
+_PIPELINE_REQUIREMENTS = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+    "pipeline_requirements.txt",
+)
 
 
 def collect_extraction_scripts_node(state: dict[str, Any]) -> dict[str, Any]:
@@ -93,9 +97,11 @@ def collect_extraction_scripts_node(state: dict[str, Any]) -> dict[str, Any]:
     else:
         print("  warning: record_separation.py not found in train_dir, skipping")
 
-    # ── 7. copy src/pipeline.py into pipeline/ ────────────────────────────────
+    # ── 6. copy the standalone runner and its minimal dependencies ───────────
     shutil.copy2(_PIPELINE_SRC, os.path.join(pipeline_dir, "pipeline.py"))
     print(f"  pipeline.py          → pipeline/pipeline.py")
+    shutil.copy2(_PIPELINE_REQUIREMENTS, os.path.join(pipeline_dir, "requirements.txt"))
+    print(f"  requirements.txt     → pipeline/requirements.txt")
     print(f"collect_extraction_scripts: pipeline ready at {pipeline_dir}")
 
     own_entry: dict = {

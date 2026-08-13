@@ -39,7 +39,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 from src.eval.convert import load_json_dedup
 from src.eval.render import render_to_file
 from src.eval.score import score as eval_score
-from src.ground_truth_gen.ground_truth import _load_page_ocr, _parse_json, _render_page_b64
+from src.ground_truth_gen.helpers import load_page_ocr, parse_json_response, render_page_b64
 from src.ground_truth_gen.prompt import build_prompt
 from src.agents.ground_truth import _node_order, _should_merge, _merge_records
 from src.agents.grouping import _maybe_merge_single_block
@@ -120,11 +120,11 @@ def _generate_ground_truth(
             for idx in win_indices:
                 content.append({
                     "type": "image_url",
-                    "image_url": {"url": f"data:image/png;base64,{_render_page_b64(pdf.pages[idx])}"},
+                    "image_url": {"url": f"data:image/png;base64,{render_page_b64(pdf.pages[idx])}"},
                 })
             if ocr_path and os.path.isfile(ocr_path):
                 for page_num in page_nums:
-                    ocr_text = _load_page_ocr(ocr_path, page_num)
+                    ocr_text = load_page_ocr(ocr_path, page_num)
                     content.append({
                         "type": "text",
                         "text": f"OCR words on page {page_num} (exact character sequences, reading order):\n{ocr_text}",
@@ -135,7 +135,7 @@ def _generate_ground_truth(
                 HumanMessage(content=content),
             ])
             try:
-                parsed     = _parse_json(response.content)
+                parsed     = parse_json_response(response.content)
                 page_recs  = parsed.get("records", [])
             except (json.JSONDecodeError, AttributeError) as exc:
                 print(f"WARN: {exc}")

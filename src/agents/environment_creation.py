@@ -19,14 +19,6 @@ def _get_page_count(pdf_path: str) -> int:
         return len(pdf.pages)
 
 
-def _crop_pdf(src: str, dst: str, max_pages: int) -> None:
-    doc = pdfium.PdfDocument(src)
-    n = min(max_pages, len(doc))
-    new_doc = pdfium.PdfDocument.new()
-    new_doc.import_pages(doc, list(range(n)))
-    new_doc.save(dst)
-
-
 def _crop_ocr_csv(src: str, dst: str, max_pages: int) -> None:
     with open(src, encoding="utf-8") as fin, \
          open(dst, "w", newline="", encoding="utf-8") as fout:
@@ -83,19 +75,30 @@ def environment_creation_node(state: ExtractionState) -> dict[str, Any]:
     eval_pages_req    = state.get("eval_pages")
 
     total_pages = _get_page_count(full_pdf_path)
-    data_dir    = os.path.dirname(full_pdf_path)
+    requested_start = state.get("detected_start_page", 1)
+    if not 1 <= requested_start <= total_pages:
+        raise ValueError(
+            f"start page {requested_start} is outside the PDF's 1–{total_pages} page range"
+        )
+    source_start = requested_start
+    usable_pages = total_pages - source_start + 1
+    data_dir = state.get("output_dir") or os.path.dirname(full_pdf_path)
+    os.makedirs(data_dir, exist_ok=True)
     # create the agent_space dir
     agent_space = os.path.join(data_dir, "agent_space")
     os.makedirs(agent_space, exist_ok=True)
 
     if eval_mode:
-        if total_pages < 2:
+        if usable_pages < 2:
             raise RuntimeError(
-                f"eval_mode requires a PDF with at least 2 pages to split into "
-                f"train and test, but {full_pdf_path} has {total_pages}"
+                "eval_mode requires at least 2 structured-data pages to split "
+                f"into train and test, but only {usable_pages} remain from "
+                f"physical page {source_start} in {full_pdf_path}"
             )
-        actual_train_pages = max(1, min(train_pages_req, total_pages // 2))
-        test_start = actual_train_pages + 1
+        actual_train_pages = max(1, min(train_pages_req, usable_pages // 2))
+        train_start = source_start
+        train_end = train_start + actual_train_pages - 1
+        test_start = train_end + 1
         test_end = (
             min(test_start + eval_pages_req - 1, total_pages)
             if eval_pages_req is not None else total_pages
@@ -113,17 +116,20 @@ def environment_creation_node(state: ExtractionState) -> dict[str, Any]:
         test_ocr  = os.path.join(test_dir,  "ocr_extraction.csv")
 
         # create training data
-        _crop_pdf(full_pdf_path, train_pdf, actual_train_pages)
-        _crop_ocr_csv(full_ocr_csv_path, train_ocr, actual_train_pages)
+        _extract_page_range_pdf(full_pdf_path, train_pdf, train_start, train_end)
+        _extract_page_range_ocr(
+            full_ocr_csv_path, train_ocr, train_start, train_end,
+            remap_offset=train_start - 1,
+        )
         # create test data
         _extract_page_range_pdf(full_pdf_path, test_pdf, test_start, test_end)
         _extract_page_range_ocr(
             full_ocr_csv_path, test_ocr, test_start, test_end,
-            remap_offset=actual_train_pages,
+            remap_offset=test_start - 1,
         )
         print(
-            f"  Train: pages 1–{actual_train_pages} → {train_dir}\n"
-            f"  Test:  pages {test_start}–{test_end} → {test_dir}"
+            f"  Train: source pages {train_start}–{train_end} → {train_dir}\n"
+            f"  Test:  source pages {test_start}–{test_end} → {test_dir}"
         )
 
         ws_pdf = train_pdf
@@ -136,12 +142,20 @@ def environment_creation_node(state: ExtractionState) -> dict[str, Any]:
             "test_end":      test_end,
         }
     else:
-        actual_train_pages = train_pages_req
+        actual_train_pages = max(1, min(train_pages_req, usable_pages))
+        train_start = source_start
+        train_end = train_start + actual_train_pages - 1
         ws_pdf = os.path.join(agent_space, f"{doc_name}.pdf")
         ws_ocr = os.path.join(agent_space, "ocr_extraction.csv")
-        _crop_pdf(full_pdf_path, ws_pdf, actual_train_pages)
-        _crop_ocr_csv(full_ocr_csv_path, ws_ocr, actual_train_pages)
-        print(f"  Cropped to {actual_train_pages} page(s) → {agent_space}")
+        _extract_page_range_pdf(full_pdf_path, ws_pdf, train_start, train_end)
+        _extract_page_range_ocr(
+            full_ocr_csv_path, ws_ocr, train_start, train_end,
+            remap_offset=train_start - 1,
+        )
+        print(
+            f"  Cropped source pages {train_start}–{train_end} "
+            f"({actual_train_pages} page(s)) → {agent_space}"
+        )
         out = {}
 
     pdf_pages = _render_pages(ws_pdf, actual_train_pages)

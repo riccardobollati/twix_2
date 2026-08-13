@@ -13,8 +13,8 @@ from langchain_core.messages import HumanMessage, SystemMessage
 
 from src.agents._usage import apply_usage, split_tokens
 
-MODEL_EASY = "gpt-5.4-mini"
-MODEL_HARD = "gpt-5.4"
+MODEL_EASY = os.getenv("CODEX_EASY_MODEL", "gpt-5.4-mini")
+MODEL_HARD = os.getenv("CODEX_HARD_MODEL", os.getenv("CODEX_MODEL", "gpt-5.4"))
 
 _MAX_SAMPLES = 5
 _MAX_WORKERS = 4  # parallel classification calls

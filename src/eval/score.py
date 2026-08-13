@@ -28,62 +28,6 @@ def _pr_f1(tp: int, fp: int, fn: int) -> tuple[float, float, float]:
     return p, r, (0.0 if (p + r) == 0 else 2 * p * r / (p + r))
 
 
-def validate_tree(tree: dict) -> list[str]:
-    """Return list of validation errors for the ground-truth pages/blocks format. Empty = ok."""
-    errors = []
-    if not isinstance(tree, dict):
-        return ["root is not an object"]
-    pages = tree.get("pages")
-    if not isinstance(pages, list):
-        errors.append("`pages` is not a list")
-        return errors
-    if len(pages) == 0:
-        errors.append("`pages` is empty")
-    seen_block_ids: set = set()
-    for pi, page in enumerate(pages):
-        if not isinstance(page, dict):
-            errors.append(f"pages[{pi}] is not an object")
-            continue
-        if "page" not in page:
-            errors.append(f"pages[{pi}] missing `page`")
-        blocks = page.get("blocks")
-        if not isinstance(blocks, list):
-            errors.append(f"pages[{pi}] `blocks` is not a list")
-            continue
-        for bi, block in enumerate(blocks):
-            if not isinstance(block, dict):
-                errors.append(f"pages[{pi}].blocks[{bi}] is not an object")
-                continue
-            for k in ("type", "block_id", "data"):
-                if k not in block:
-                    errors.append(f"pages[{pi}].blocks[{bi}] missing field `{k}`")
-            block_type = block.get("type")
-            if block_type not in ("table", "kv"):
-                errors.append(
-                    f"pages[{pi}].blocks[{bi}] type={block_type!r} not in {{table, kv}}"
-                )
-            bid = block.get("block_id")
-            if bid in seen_block_ids:
-                errors.append(f"pages[{pi}].blocks[{bi}] duplicate block_id {bid!r}")
-            seen_block_ids.add(bid)
-            data = block.get("data")
-            if block_type == "table":
-                if not isinstance(data, list):
-                    errors.append(f"pages[{pi}].blocks[{bi}] table `data` is not a list")
-                else:
-                    for ri, row in enumerate(data):
-                        if not isinstance(row, dict):
-                            errors.append(
-                                f"pages[{pi}].blocks[{bi}].data[{ri}] is not a dict"
-                            )
-            elif block_type == "kv":
-                if not isinstance(data, (dict, list)):
-                    errors.append(
-                        f"pages[{pi}].blocks[{bi}] kv `data` is not a dict or list"
-                    )
-    return errors
-
-
 # --------------------------------------------------------------------------- #
 # Path utilities for content_diffs
 # --------------------------------------------------------------------------- #

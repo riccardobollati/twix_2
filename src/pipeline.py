@@ -2,7 +2,7 @@
 """Standalone extraction pipeline.
 
 Usage:
-    python pipeline.py <pdf_path>
+    python pipeline.py <pdf_path> [--out-dir DIR]
 
 Steps:
   1. OCR extraction with pdfplumber
@@ -138,6 +138,9 @@ def _load_extractors(pipeline_dir: str) -> dict:
             f"extractor_{template_id}",
             os.path.join(scripts_dir, fname),
         )
+        if spec is None or spec.loader is None:
+            print(f"  warning: extractor {fname} has no import loader, skipping")
+            continue
         module = importlib.util.module_from_spec(spec)
         try:
             spec.loader.exec_module(module)
@@ -298,6 +301,18 @@ def main() -> None:
     pdf_path     = os.path.abspath(args.pdf_path)
     pipeline_dir = os.path.dirname(os.path.abspath(__file__))
     out_dir      = os.path.abspath(args.out_dir) if args.out_dir else os.getcwd()
+
+    if not os.path.isfile(pdf_path):
+        parser.error(f"PDF not found: {pdf_path}")
+    required_paths = [
+        os.path.join(pipeline_dir, "record_separation.py"),
+        os.path.join(pipeline_dir, "block_separation.py"),
+        os.path.join(pipeline_dir, "extraction_scripts"),
+    ]
+    missing = [path for path in required_paths if not os.path.exists(path)]
+    if missing:
+        parser.error("incomplete pipeline; missing: " + ", ".join(missing))
+    os.makedirs(out_dir, exist_ok=True)
 
     # 1. OCR
     print("Extracting OCR...")

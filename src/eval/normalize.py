@@ -127,23 +127,3 @@ def lcs_len(a: list[str], b: list[str]) -> int:
         for k in range(n + 1):
             cur[k] = 0
     return prev[n]
-
-
-def edit_distance_norm(a: str, b: str) -> float:
-    """1 - levenshtein(a,b)/max(|a|,|b|), on normalized strings."""
-    na = normalize(a)
-    nb = normalize(b)
-    if not na and not nb:
-        return 1.0
-    m, n = len(na), len(nb)
-    if m == 0 or n == 0:
-        return 0.0
-    prev = list(range(n + 1))
-    for i in range(1, m + 1):
-        cur = [i] + [0] * n
-        for j in range(1, n + 1):
-            cost = 0 if na[i - 1] == nb[j - 1] else 1
-            cur[j] = min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + cost)
-        prev = cur
-    dist = prev[n]
-    return 1.0 - dist / max(m, n)

@@ -2,6 +2,7 @@
 
 Usage:
     python viz_blocks.py <folder> [page ...]
+    python viz_blocks.py <folder> --pdf-path PATH --blocks-json PATH [page ...]
 
 Arguments:
     folder   Document folder name inside data/ (e.g. id_05_routing).
@@ -71,6 +72,14 @@ def main() -> None:
     )
     parser.add_argument("folder", help="Document folder name inside data/ (e.g. id_05_routing).")
     parser.add_argument("page", nargs="*", type=int, help="Page numbers to render (default: all).")
+    parser.add_argument(
+        "--pdf-path",
+        help="PDF to render (default: the train PDF under the document folder).",
+    )
+    parser.add_argument(
+        "--blocks-json",
+        help="Block-separation JSON to draw (default: the train output).",
+    )
     args = parser.parse_args()
 
     data_root = os.path.join(os.path.dirname(__file__), "data")
@@ -79,12 +88,23 @@ def main() -> None:
         print(f"Error: folder not found: {doc_dir}", file=sys.stderr)
         sys.exit(1)
 
-    train_dir = _find_train_dir(doc_dir)
-    pdf_path  = _find_pdf(train_dir)
+    train_dir = None
+    if not args.pdf_path or not args.blocks_json:
+        train_dir = _find_train_dir(doc_dir)
 
-    blocks_json_path = os.path.join(train_dir, "block_separation.json")
+    pdf_path = (
+        os.path.abspath(args.pdf_path)
+        if args.pdf_path else _find_pdf(train_dir)
+    )
+    blocks_json_path = (
+        os.path.abspath(args.blocks_json)
+        if args.blocks_json else os.path.join(train_dir, "block_separation.json")
+    )
+    if not os.path.isfile(pdf_path):
+        print(f"Error: PDF not found: {pdf_path}", file=sys.stderr)
+        sys.exit(1)
     if not os.path.isfile(blocks_json_path):
-        print(f"Error: block_separation.json not found in {train_dir}", file=sys.stderr)
+        print(f"Error: block-separation JSON not found: {blocks_json_path}", file=sys.stderr)
         sys.exit(1)
 
     with open(blocks_json_path, encoding="utf-8") as f:

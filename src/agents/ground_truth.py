@@ -57,4 +57,8 @@ def ground_truth_node(state: dict[str, Any], llm: BaseChatModel, window: int = 3
     duration = time.time() - t0
     cost: dict = {"phase": "ground_truth", "duration_s": round(duration, 3)}
     apply_usage(cost, usage["input_tokens"], usage["output_tokens"], usage["total_tokens"])
+    if usage.get("empty_result_fallback"):
+        cost["empty_result_fallback"] = True
+        cost["initial_window"] = usage["initial_window"]
+        cost["effective_window"] = usage["effective_window"]
     return {"cost": [cost]}

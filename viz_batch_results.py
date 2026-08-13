@@ -7,6 +7,9 @@ Outputs saved to <folder>/results/:
     accuracy.png    – train (per loop iteration) vs test accuracy per document
     train_cost.png  – train-phase tokens and duration: ground truth vs code gen
     test_cost.png   – test-phase latency (pipeline vs GT) and GT token usage
+    phase_cost_overall.png – mean phase spend share and variance across documents
+    phase_token_distributions.png – token-cost histograms for the five phases
+    <name>/phase_cost.png   – USD spend by generation/fixing phase for one document
 """
 
 from __future__ import annotations
@@ -25,6 +28,23 @@ PRICE_INPUT_PER_M       = 2.50   # hard model (gpt-5.4)
 PRICE_OUTPUT_PER_M      = 15.00  # hard model (gpt-5.4)
 PRICE_INPUT_EASY_PER_M  = 0.75   # easy model (gpt-5.4-mini)
 PRICE_OUTPUT_EASY_PER_M = 4.50   # easy model (gpt-5.4-mini)
+
+
+PHASE_COST_LABELS = {
+    "template_inference": "Infer template",
+    "record_separation": "Record separation",
+    "block_separation": "Block separation",
+    "data_extraction": "Data extraction",
+    "fixing_loops": "Fixing loops",
+}
+
+PHASE_COST_COLORS = {
+    "template_inference": "#4C72B0",
+    "record_separation": "#55A868",
+    "block_separation": "#C44E52",
+    "data_extraction": "#8172B2",
+    "fixing_loops": "#CCB974",
+}
 
 
 # ── data loading ──────────────────────────────────────────────────────────────
@@ -74,6 +94,39 @@ def _pipeline_cost_usd(phases: list[dict], block_models: dict | None) -> float:
     return total
 
 
+def _extraction_cost_usd(d: dict) -> float:
+    """Return extraction USD cost, combining routing and all block scripts."""
+    total = 0.0
+    block_models = d.get("block_models")
+    for phase in d.get("pipeline_phases", []):
+        phase_name = phase.get("phase")
+        if phase_name == "block_difficulty_router":
+            total += _cost_usd(phase)
+        elif phase_name == "block_extraction_scripting":
+            total += _pipeline_cost_usd([phase], block_models)
+    return total
+
+
+def _phase_costs_usd(d: dict) -> dict[str, float]:
+    """Return the requested generation/fixing spend buckets in USD."""
+    pipeline_costs: dict[str, float] = {}
+    for phase in d.get("pipeline_phases", []):
+        phase_name = phase.get("phase")
+        if phase_name in {"template_inference", "record_separation", "block_separation"}:
+            pipeline_costs[phase_name] = (
+                pipeline_costs.get(phase_name, 0.0) + _cost_usd(phase)
+            )
+
+    repairs = d.get("train_eval", {}).get("repairs") or []
+    return {
+        "template_inference": pipeline_costs.get("template_inference", 0.0),
+        "record_separation": pipeline_costs.get("record_separation", 0.0),
+        "block_separation": pipeline_costs.get("block_separation", 0.0),
+        "data_extraction": _extraction_cost_usd(d),
+        "fixing_loops": sum(_cost_usd(repair) for repair in repairs),
+    }
+
+
 def _split_tokens(cost: dict) -> tuple[float, float]:
     """Return (input_tokens, output_tokens) from a cost entry.
 
@@ -85,6 +138,28 @@ def _split_tokens(cost: dict) -> tuple[float, float]:
     if not inp and not out:
         out = cost.get("tokens", 0)
     return inp, out
+
+
+def _total_tokens(cost: dict) -> float:
+    """Return total input plus output tokens for one cost entry."""
+    inp, out = _split_tokens(cost)
+    return inp + out
+
+
+def _phase_tokens(d: dict) -> dict[str, float]:
+    """Return total token usage for each generation/fixing phase."""
+    totals = {key: 0.0 for key in PHASE_COST_LABELS}
+    for phase in d.get("pipeline_phases", []):
+        phase_name = phase.get("phase")
+        if phase_name in {"template_inference", "record_separation", "block_separation"}:
+            totals[phase_name] += _total_tokens(phase)
+        elif phase_name in {"block_difficulty_router", "block_extraction_scripting"}:
+            # The scripting entry already aggregates every extraction block.
+            totals["data_extraction"] += _total_tokens(phase)
+
+    repairs = d.get("train_eval", {}).get("repairs") or []
+    totals["fixing_loops"] = sum(_total_tokens(repair) for repair in repairs)
+    return totals
 
 
 def _pipeline_totals(phases: list[dict]) -> tuple[float, float, float]:
@@ -177,7 +252,6 @@ def plot_accuracy(docs: list[dict], out_path: str) -> None:
     plt.savefig(out_path, dpi=150)
     plt.close()
     print(f"Saved: {out_path}")
-
 
 # ── helpers for stacked token bars ───────────────────────────────────────────
 
@@ -594,6 +668,142 @@ def plot_cost_vs_blocks(docs: list[dict], out_path: str) -> None:
 
 # ── plot 7: per-document overview ────────────────────────────────────────────
 
+def _plot_phase_pie(
+    costs: dict[str, float],
+    out_path: str,
+    title: str,
+) -> None:
+    """Plot one document's non-zero phase costs as a USD pie chart."""
+    phase_keys = [key for key in PHASE_COST_LABELS if costs.get(key, 0) > 0]
+    if not phase_keys:
+        return
+
+    values = [costs[key] for key in phase_keys]
+    colors = [PHASE_COST_COLORS[key] for key in phase_keys]
+    total = sum(values)
+
+    fig, ax = plt.subplots(figsize=(8, 6))
+    wedges, _, autotexts = ax.pie(
+        values,
+        colors=colors,
+        startangle=90,
+        counterclock=False,
+        autopct=lambda pct: f"{pct:.1f}%" if pct >= 2 else "",
+        wedgeprops={"linewidth": 1, "edgecolor": "white"},
+    )
+    for text in autotexts:
+        text.set_fontsize(8)
+
+    legend_labels = [
+        f"{PHASE_COST_LABELS[key]} — ${costs[key]:.4f}"
+        for key in phase_keys
+    ]
+    ax.legend(wedges, legend_labels, loc="center left", bbox_to_anchor=(1, 0.5))
+    ax.set_title(f"{title}\nTotal: ${total:.4f}")
+    ax.set_aspect("equal")
+
+    plt.tight_layout()
+    plt.savefig(out_path, dpi=150, bbox_inches="tight")
+    plt.close()
+    print(f"Saved: {out_path}")
+
+
+def plot_overall_phase_cost(docs: list[dict], out_path: str) -> None:
+    """Plot mean per-document phase percentages and population variance."""
+    percentages = []
+    for d in docs:
+        costs = _phase_costs_usd(d)
+        total = sum(costs.values())
+        if total > 0:
+            percentages.append({key: value / total * 100 for key, value in costs.items()})
+
+    if not percentages:
+        return
+
+    phase_keys = [
+        key for key in PHASE_COST_LABELS
+        if any(row[key] > 0 for row in percentages)
+    ]
+    means = [float(np.mean([row[key] for row in percentages])) for key in phase_keys]
+    variances = [float(np.var([row[key] for row in percentages])) for key in phase_keys]
+    colors = [PHASE_COST_COLORS[key] for key in phase_keys]
+
+    fig, ax = plt.subplots(figsize=(9, 6))
+    wedges, _, autotexts = ax.pie(
+        means,
+        colors=colors,
+        startangle=90,
+        counterclock=False,
+        autopct=lambda pct: f"{pct:.1f}%" if pct >= 2 else "",
+        wedgeprops={"linewidth": 1, "edgecolor": "white"},
+    )
+    for text in autotexts:
+        text.set_fontsize(8)
+
+    legend_labels = [
+        f"{PHASE_COST_LABELS[key]} — mean {mean:.1f}% · variance {variance:.1f} pp²"
+        for key, mean, variance in zip(phase_keys, means, variances)
+    ]
+    ax.legend(wedges, legend_labels, loc="center left", bbox_to_anchor=(1, 0.5))
+    ax.set_title(f"Average Phase Spend Share Across {len(percentages)} Documents")
+    ax.set_aspect("equal")
+
+    plt.tight_layout()
+    plt.savefig(out_path, dpi=150, bbox_inches="tight")
+    plt.close()
+    print(f"Saved: {out_path}")
+
+
+def plot_phase_token_distributions(docs: list[dict], out_path: str) -> None:
+    """Plot one token-cost histogram per phase across all documents."""
+    if not docs:
+        return
+
+    per_doc = [_phase_tokens(d) for d in docs]
+    layout = [
+        ["template_inference", "record_separation", "block_separation"],
+        ["data_extraction", "fixing_loops", "."],
+    ]
+    fig, axes = plt.subplot_mosaic(layout, figsize=(15, 9))
+
+    for phase_key, ax in axes.items():
+        values = np.asarray([row[phase_key] for row in per_doc], dtype=float)
+        mean = float(np.mean(values))
+        std = float(np.std(values))
+
+        ax.hist(
+            values,
+            bins="auto",
+            color=PHASE_COST_COLORS[phase_key],
+            edgecolor="white",
+            alpha=0.9,
+        )
+        ax.axvline(
+            mean,
+            color="black",
+            linestyle="--",
+            linewidth=1.5,
+            label=f"Mean {mean:,.0f}\nStd dev {std:,.0f}",
+        )
+        ax.set_title(PHASE_COST_LABELS[phase_key])
+        ax.set_xlabel("Tokens")
+        ax.set_ylabel("Documents")
+        ax.xaxis.set_major_formatter(mticker.EngFormatter())
+        ax.yaxis.set_major_locator(mticker.MaxNLocator(integer=True))
+        ax.grid(axis="y", alpha=0.3)
+        ax.legend(fontsize=8)
+
+    fig.suptitle(
+        f"Phase Token Cost Distributions Across {len(docs)} Documents",
+        fontsize=13,
+        fontweight="bold",
+    )
+    plt.tight_layout()
+    plt.savefig(out_path, dpi=150, bbox_inches="tight")
+    plt.close()
+    print(f"Saved: {out_path}")
+
+
 def plot_document(d: dict, out_dir: str) -> None:
     """Two-panel overview for a single document: accuracy (left) + break-even & blocks (right)."""
     name    = d["_name"]
@@ -675,6 +885,12 @@ def plot_document(d: dict, out_dir: str) -> None:
     plt.close()
     print(f"Saved: {out_path}")
 
+    _plot_phase_pie(
+        _phase_costs_usd(d),
+        os.path.join(doc_dir, "phase_cost.png"),
+        f"{name}: Generation & Fixing Spend",
+    )
+
 
 # ── main ──────────────────────────────────────────────────────────────────────
 
@@ -698,6 +914,10 @@ def main() -> None:
     plot_break_even(    docs, os.path.join(out_dir, "break_even.png"))
     plot_combined(      docs, os.path.join(out_dir, "combined.png"))
     plot_cost_vs_blocks(docs, os.path.join(out_dir, "cost_vs_blocks.png"))
+    plot_overall_phase_cost(docs, os.path.join(out_dir, "phase_cost_overall.png"))
+    plot_phase_token_distributions(
+        docs, os.path.join(out_dir, "phase_token_distributions.png")
+    )
 
     for d in docs:
         plot_document(d, out_dir)

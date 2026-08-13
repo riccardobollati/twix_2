@@ -1,24 +1,24 @@
 """Entry point for PDF template inference and evaluation.
 
 Usage:
-    python run.py <name>
-    python run.py <name> --pages 2
-    python run.py <name> --eval
+    python run.py path/to/document.pdf
+    python run.py path/to/document.pdf --out-dir outputs/example
+    python run.py <benchmark-name> --eval
 
-    <name> is the document folder name under data/.
-    Expected layout:
-        data/<name>/<name>.pdf
+    A benchmark name remains shorthand for data/<name>/<name>.pdf. Direct PDF
+    inputs default to outputs/<pdf-stem>/ unless --out-dir is supplied.
 
-    Outputs written to data/<name>/:
+    Outputs written to the selected output directory:
         ocr_extraction_full.csv        – full word-level OCR dump (step 1)
         template.json                  – inferred template
         pipeline/grouped.json          – records extracted by the pipeline
         pipeline/ground_truth.json     – LLM ground truth (only with --eval)
         pipeline/eval.json / eval.txt  – evaluation results (only with --eval)
 
-    With --eval the PDF is split into train (pages 1..N) and test (remaining
-    pages). The graph builds the pipeline on the train set, then runs it on the
-    test set, generates ground truth via vision LLM, and scores the result.
+    The graph detects and skips cover/index front matter before creating the
+    train set. With --eval, the remaining pages are split into train and test;
+    the graph builds the pipeline on train, runs it on test, generates ground
+    truth via vision LLM, and scores the result.
 
 Environment variables:
     LLM_PROVIDER    Provider name (default: openai). See src/models/ for available providers.
@@ -30,14 +30,24 @@ from __future__ import annotations
 
 import argparse
 import csv
+import hashlib
 import json
 import os
 import sys
+from pathlib import Path
+
+try:
+    from dotenv import load_dotenv
+except ImportError:
+    pass
+else:
+    load_dotenv()
 
 import pdfplumber
 
 from src.agents.graph import build_graph
 from src.models import get_llm
+from src.models.codex import DEFAULT_CODEX_MODEL
 
 
 # ---------------------------------------------------------------------------
@@ -121,21 +131,95 @@ def extract_ocr_full(pdf_path: str, output_path: str, group_rows: bool = False) 
             row_id += len(page_words)
 
 
+def _sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as source:
+        for chunk in iter(lambda: source.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def resolve_document(document: str, out_dir: str | None) -> tuple[Path, Path, str]:
+    """Resolve a PDF input while preserving the legacy benchmark-name shorthand."""
+    direct_path = Path(document).expanduser()
+    legacy_dir = Path("data") / document
+    legacy_path = legacy_dir / f"{document}.pdf"
+
+    if direct_path.is_file():
+        pdf_path = direct_path.resolve()
+        doc_name = pdf_path.stem
+        output_dir = (
+            Path(out_dir).expanduser().resolve()
+            if out_dir
+            else (Path("outputs") / doc_name).resolve()
+        )
+    elif legacy_path.is_file():
+        pdf_path = legacy_path.resolve()
+        doc_name = document
+        output_dir = (
+            Path(out_dir).expanduser().resolve() if out_dir else legacy_dir.resolve()
+        )
+    else:
+        raise FileNotFoundError(
+            f"PDF not found: {document!r}. Pass a PDF path or a benchmark name "
+            f"whose file exists at {legacy_path}."
+        )
+
+    return pdf_path, output_dir, doc_name
+
+
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 
+def _positive_int(value: str) -> int:
+    parsed = int(value)
+    if parsed <= 0:
+        raise argparse.ArgumentTypeError("value must be greater than zero")
+    return parsed
+
+
+def _nonnegative_int(value: str) -> int:
+    parsed = int(value)
+    if parsed < 0:
+        raise argparse.ArgumentTypeError("value must be zero or greater")
+    return parsed
+
+
+def _probability(value: str) -> float:
+    parsed = float(value)
+    if not 0.0 <= parsed <= 1.0:
+        raise argparse.ArgumentTypeError("value must be between 0 and 1")
+    return parsed
+
+
+def _api_key_preview() -> str:
+    provider = os.getenv("LLM_PROVIDER", "openai").lower()
+    variable = "AZURE_OPENAI_API_KEY" if provider == "azure" else "OPENAI_API_KEY"
+    key = os.getenv(variable, "")
+    return key[:10] if key else "<not set>"
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Infer the structural template of a PDF document."
+        description="Generate extraction code and structured data from a PDF document."
     )
     parser.add_argument(
-        "name",
-        help="Document name — must match the folder under data/ (e.g. 'invoice_2024').",
+        "document",
+        help="Input PDF path, or a benchmark name under data/ for backward compatibility.",
     )
     parser.add_argument(
-        "--pages", type=int, default=3, metavar="N",
-        help="Number of first pages to use as the training set (default: 3).",
+        "--out-dir",
+        metavar="DIR",
+        help="Artifact directory (default: outputs/<pdf-stem> for direct PDF inputs).",
+    )
+    parser.add_argument(
+        "--pages", type=_positive_int, default=3, metavar="N",
+        help="Number of structured-data pages to use as the training set (default: 3).",
+    )
+    parser.add_argument(
+        "--start-page", type=_positive_int, default=None, metavar="N",
+        help="Physical page where records begin; skips automatic front-matter detection.",
     )
     parser.add_argument(
         "--eval", action="store_true",
@@ -145,11 +229,11 @@ def main() -> None:
         ),
     )
     parser.add_argument(
-        "--eval-pages", type=int, default=None, metavar="N",
+        "--eval-pages", type=_positive_int, default=None, metavar="N",
         help="Number of pages to use as the test set (default: all remaining pages after train).",
     )
     parser.add_argument(
-        "--holdout-pages", type=int, default=None, metavar="N",
+        "--holdout-pages", type=_nonnegative_int, default=None, metavar="N",
         help=(
             "Number of train pages hidden from script generation but included in "
             "the train eval, so overfitted scripts fail where the repair loop can "
@@ -166,7 +250,11 @@ def main() -> None:
         ),
     )
     parser.add_argument(
-        "--train-threshold", type=float, default=0.0, metavar="FLOAT",
+        "--reuse-ocr", action="store_true",
+        help="Reuse an existing OCR CSV. By default OCR is regenerated for reproducibility.",
+    )
+    parser.add_argument(
+        "--train-threshold", type=_probability, default=0.0, metavar="FLOAT",
         help=(
             "If set to a value > 0, the pipeline checks train accuracy after the "
             "train eval phase. If accuracy is below this threshold it launches a "
@@ -175,11 +263,11 @@ def main() -> None:
         ),
     )
     parser.add_argument(
-        "--train-max-retries", type=int, default=3, metavar="N",
+        "--train-max-retries", type=_nonnegative_int, default=3, metavar="N",
         help="Maximum number of Codex repair attempts before proceeding regardless (default: 3).",
     )
     parser.add_argument(
-        "--gt-test-window", type=int, default=None, metavar="N",
+        "--gt-test-window", type=_positive_int, default=None, metavar="N",
         help="Pages per LLM call when generating test ground truth (default: 20).",
     )
     parser.add_argument(
@@ -192,43 +280,54 @@ def main() -> None:
     )
     args = parser.parse_args()
 
+    print(f"using kwy: {_api_key_preview()}", file=sys.stderr)
+
     total_steps = 2
 
     # --- resolve paths ---
-    data_dir     = os.path.join("data", args.name)
-    pdf_path     = os.path.join(data_dir, f"{args.name}.pdf")
-    ocr_csv_path = os.path.join(data_dir, "ocr_extraction_full.csv")
-
-    if not os.path.isfile(pdf_path):
-        print(f"Error: PDF not found at {pdf_path}", file=sys.stderr)
+    try:
+        pdf_path, output_dir, doc_name = resolve_document(args.document, args.out_dir)
+    except FileNotFoundError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
         sys.exit(1)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    ocr_csv_path = output_dir / "ocr_extraction_full.csv"
 
     # --- step 1: full OCR extraction ---
-    if os.path.isfile(ocr_csv_path) and not args.group_rows:
-        print(f"[1/{total_steps}] OCR already exists, skipping.", file=sys.stderr)
+    if args.reuse_ocr and ocr_csv_path.is_file() and not args.group_rows:
+        print(f"[1/{total_steps}] Reusing OCR at {ocr_csv_path}.", file=sys.stderr)
     else:
         mode = "row-level" if args.group_rows else "word-level"
         print(f"[1/{total_steps}] Extracting full OCR ({mode}) from {pdf_path} ...", file=sys.stderr)
-        extract_ocr_full(pdf_path, ocr_csv_path, group_rows=args.group_rows)
+        extract_ocr_full(str(pdf_path), str(ocr_csv_path), group_rows=args.group_rows)
         print(f"[1/{total_steps}] OCR saved to {ocr_csv_path}", file=sys.stderr)
 
     # --- step 2: run graph ---
     # The graph handles everything:
-    #   environment_creation → template_inference → record_separation →
-    #   run_record_separation → block_separation → run_block_separation →
+    #   detect_beginning → environment_creation → template_inference →
+    #   record_separation → run_record_separation → block_separation →
+    #   run_block_separation →
     #   block_samples → block_extraction_scripting → collect_extraction_scripts →
     #   grouping [→ ground_truth → eval]  (last two only when eval_mode=True)
     print(f"[2/{total_steps}] Running graph ...", file=sys.stderr)
     graph = build_graph(get_llm(), train_repair_max_retries=args.train_max_retries)
     graph.invoke({
-        "full_pdf_path":              pdf_path,
-        "full_ocr_csv_path":          ocr_csv_path,
-        "doc_name":                   args.name,
+        "full_pdf_path":              str(pdf_path),
+        "full_ocr_csv_path":          str(ocr_csv_path),
+        "output_dir":                 str(output_dir),
+        "source_sha256":              _sha256(pdf_path),
+        "codex_model":                DEFAULT_CODEX_MODEL,
+        "doc_name":                   doc_name,
         "train_pages":                args.pages,
         "eval_mode":                  args.eval,
         "eval_pages":                 args.eval_pages,
         "train_accuracy_threshold":   args.train_threshold,
         "train_repair_max_retries":   args.train_max_retries,
+        **({
+            "detected_start_page": args.start_page,
+            "beginning_confidence": "manual",
+            "beginning_reason": "Start page supplied with --start-page.",
+        } if args.start_page is not None else {}),
         **({"gt_test_window": args.gt_test_window} if args.gt_test_window is not None else {}),
         **({"holdout_pages": args.holdout_pages} if args.holdout_pages is not None else {}),
         **({"use_caveman": True} if args.caveman else {}),
@@ -236,8 +335,8 @@ def main() -> None:
     })
     print(f"[2/{total_steps}] Graph complete.", file=sys.stderr)
 
-    pipeline_dir = os.path.join(data_dir, "pipeline")
-    print(f"  template    → {os.path.join(data_dir, 'template.json')}", file=sys.stderr)
+    pipeline_dir = os.path.join(output_dir, "pipeline")
+    print(f"  template    → {os.path.join(output_dir, 'template.json')}", file=sys.stderr)
     print(f"  grouped     → {os.path.join(pipeline_dir, 'grouped.json')}", file=sys.stderr)
     if args.eval:
         print(f"  ground truth → {os.path.join(pipeline_dir, 'ground_truth.json')}", file=sys.stderr)

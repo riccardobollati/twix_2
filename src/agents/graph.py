@@ -11,6 +11,7 @@ from src.agents.block_extraction_scripting import block_extraction_scripting_nod
 from src.agents.block_samples import block_samples_node
 from src.agents.block_separation import block_separation_node, run_block_separation_node
 from src.agents.collect_extraction_scripts import collect_extraction_scripts_node
+from src.agents.detect_beginning import detect_beginning_node
 from src.agents.environment_creation import environment_creation_node
 from src.agents.eval import eval_node
 from src.agents.ground_truth import ground_truth_node
@@ -103,6 +104,10 @@ def build_graph(llm: BaseChatModel, train_repair_max_retries: int = 3):
 
     _llm_model = getattr(llm, "model_name", None) or getattr(llm, "model", None) or "unknown"
     graph.add_node(
+        "detect_beginning",
+        lambda state: detect_beginning_node(state, llm),
+    )
+    graph.add_node(
         "environment_creation",
         lambda state: {**environment_creation_node(state), "llm_model": _llm_model},
     )
@@ -126,7 +131,19 @@ def build_graph(llm: BaseChatModel, train_repair_max_retries: int = 3):
     graph.add_node("eval", eval_node)
     graph.add_node("save_metadata", save_metadata_node)
 
-    graph.add_edge(START, "environment_creation")
+    graph.add_conditional_edges(
+        START,
+        lambda state: (
+            "environment_creation"
+            if state.get("detected_start_page") is not None
+            else "detect_beginning"
+        ),
+        {
+            "detect_beginning": "detect_beginning",
+            "environment_creation": "environment_creation",
+        },
+    )
+    graph.add_edge("detect_beginning", "environment_creation")
     graph.add_edge("environment_creation", "template_inference")
     graph.add_edge("template_inference", "record_separation")
     graph.add_edge("record_separation", "run_record_separation")
