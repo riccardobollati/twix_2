@@ -10,6 +10,8 @@ Outputs saved to <folder>/results/:
     phase_cost_overall.png – mean phase spend share and variance across documents
     phase_token_distributions.png – token-cost histograms for the five phases
     <name>/phase_cost.png   – USD spend by generation/fixing phase for one document
+    token_type_spend_average.png – mean input/output spend mix by phase
+    <name>/token_breakdown.png – input/output tokens by phase and overall
 """
 
 from __future__ import annotations
@@ -44,6 +46,16 @@ PHASE_COST_COLORS = {
     "block_separation": "#C44E52",
     "data_extraction": "#8172B2",
     "fixing_loops": "#CCB974",
+}
+
+TOKEN_TYPE_LABELS = {
+    "input": "Input",
+    "output": "Output",
+}
+
+TOKEN_TYPE_COLORS = {
+    "input": "#4C72B0",
+    "output": "#DD8452",
 }
 
 
@@ -133,11 +145,95 @@ def _split_tokens(cost: dict) -> tuple[float, float]:
     Falls back to treating a legacy ``tokens`` total as output when the split
     fields are absent (backward-compatible with older metadata files).
     """
-    inp = cost.get("input_tokens", 0)
-    out = cost.get("output_tokens", 0)
+    inp = cost.get("input_tokens") or cost.get("inputTokens") or 0
+    out = cost.get("output_tokens") or cost.get("outputTokens") or 0
     if not inp and not out:
         out = cost.get("tokens", 0)
     return inp, out
+
+
+def _split_token_types(cost: dict) -> dict[str, float]:
+    """Return input and output token counts for plotting."""
+    inp, output = _split_tokens(cost)
+    return {
+        "input": float(inp or 0),
+        "output": float(output or 0),
+    }
+
+
+def _empty_token_breakdown() -> dict[str, float]:
+    return {key: 0.0 for key in TOKEN_TYPE_LABELS}
+
+
+def _add_token_breakdown(target: dict[str, float], source: dict[str, float]) -> None:
+    for key in TOKEN_TYPE_LABELS:
+        target[key] += source.get(key, 0.0)
+
+
+def _phase_token_breakdowns(d: dict) -> dict[str, dict[str, float]]:
+    """Return input/output token counts for the five phase buckets."""
+    totals = {key: _empty_token_breakdown() for key in PHASE_COST_LABELS}
+    for phase in d.get("pipeline_phases", []):
+        phase_name = phase.get("phase")
+        if phase_name in {"template_inference", "record_separation", "block_separation"}:
+            bucket = phase_name
+        elif phase_name in {"block_difficulty_router", "block_extraction_scripting"}:
+            bucket = "data_extraction"
+        else:
+            continue
+        _add_token_breakdown(totals[bucket], _split_token_types(phase))
+
+    for repair in d.get("train_eval", {}).get("repairs") or []:
+        _add_token_breakdown(totals["fixing_loops"], _split_token_types(repair))
+    return totals
+
+
+def _token_spend_breakdown(
+    cost: dict,
+    inp_price: float = PRICE_INPUT_PER_M,
+    out_price: float = PRICE_OUTPUT_PER_M,
+) -> dict[str, float]:
+    """Return USD spend split into input and output."""
+    tokens = _split_token_types(cost)
+    return {
+        "input": tokens["input"] * inp_price / 1_000_000,
+        "output": tokens["output"] * out_price / 1_000_000,
+    }
+
+
+def _phase_token_spend_breakdowns(d: dict) -> dict[str, dict[str, float]]:
+    """Return USD token-type spend for each phase, respecting block models."""
+    totals = {key: _empty_token_breakdown() for key in PHASE_COST_LABELS}
+    block_models = d.get("block_models") or {}
+
+    for phase in d.get("pipeline_phases", []):
+        phase_name = phase.get("phase")
+        if phase_name in {"template_inference", "record_separation", "block_separation"}:
+            _add_token_breakdown(totals[phase_name], _token_spend_breakdown(phase))
+        elif phase_name == "block_difficulty_router":
+            _add_token_breakdown(totals["data_extraction"], _token_spend_breakdown(phase))
+        elif phase_name == "block_extraction_scripting":
+            blocks = phase.get("blocks")
+            if blocks and block_models:
+                for block in blocks:
+                    model = block_models.get(str(block.get("id", "")), "")
+                    prices = (
+                        (PRICE_INPUT_EASY_PER_M, PRICE_OUTPUT_EASY_PER_M)
+                        if "mini" in model
+                        else (PRICE_INPUT_PER_M, PRICE_OUTPUT_PER_M)
+                    )
+                    _add_token_breakdown(
+                        totals["data_extraction"],
+                        _token_spend_breakdown(block, *prices),
+                    )
+            else:
+                _add_token_breakdown(
+                    totals["data_extraction"], _token_spend_breakdown(phase)
+                )
+
+    for repair in d.get("train_eval", {}).get("repairs") or []:
+        _add_token_breakdown(totals["fixing_loops"], _token_spend_breakdown(repair))
+    return totals
 
 
 def _total_tokens(cost: dict) -> float:
@@ -804,6 +900,154 @@ def plot_phase_token_distributions(docs: list[dict], out_path: str) -> None:
     print(f"Saved: {out_path}")
 
 
+def _with_overall(
+    phases: dict[str, dict[str, float]],
+) -> dict[str, dict[str, float]]:
+    """Copy phase values and append their token-type total as ``overall``."""
+    result = {
+        phase: {key: values.get(key, 0.0) for key in TOKEN_TYPE_LABELS}
+        for phase, values in phases.items()
+    }
+    overall = _empty_token_breakdown()
+    for values in phases.values():
+        _add_token_breakdown(overall, values)
+    result["overall"] = overall
+    return result
+
+
+def _format_token_count(value: float) -> str:
+    if value >= 1_000_000:
+        return f"{value / 1_000_000:.1f}M"
+    if value >= 1_000:
+        return f"{value / 1_000:.1f}k"
+    return f"{value:,.0f}"
+
+
+def plot_document_token_breakdown(d: dict, out_path: str) -> None:
+    """Plot input and output tokens by phase and overall."""
+    panels = _with_overall(_phase_token_breakdowns(d))
+    panel_keys = list(PHASE_COST_LABELS) + ["overall"]
+    panel_labels = PHASE_COST_LABELS | {"overall": "Overall"}
+
+    fig, axes = plt.subplots(2, 3, figsize=(15, 9))
+    for phase_key, ax in zip(panel_keys, axes.flat):
+        values = panels[phase_key]
+        token_keys = list(TOKEN_TYPE_LABELS)
+        heights = [values[key] for key in token_keys]
+        bars = ax.bar(
+            np.arange(len(token_keys)),
+            heights,
+            color=[TOKEN_TYPE_COLORS[key] for key in token_keys],
+        )
+        ax.set_title(f"{panel_labels[phase_key]}\nTotal {_format_token_count(sum(heights))}")
+        ax.set_xticks(np.arange(len(token_keys)))
+        ax.set_xticklabels([TOKEN_TYPE_LABELS[key] for key in token_keys])
+        ax.set_ylabel("Tokens")
+        ax.yaxis.set_major_formatter(mticker.EngFormatter())
+        ax.grid(axis="y", alpha=0.3)
+        if any(heights):
+            ax.bar_label(
+                bars,
+                labels=[_format_token_count(value) if value else "" for value in heights],
+                padding=3,
+                fontsize=8,
+            )
+            ax.margins(y=0.15)
+        else:
+            ax.text(
+                0.5, 0.5, "No token data", transform=ax.transAxes,
+                ha="center", va="center", color="dimgray",
+            )
+
+    fig.suptitle(
+        f"{d['_name']}: Token Breakdown by Phase",
+        fontsize=13,
+        fontweight="bold",
+    )
+    plt.tight_layout()
+    plt.savefig(out_path, dpi=150, bbox_inches="tight")
+    plt.close()
+    print(f"Saved: {out_path}")
+
+
+def _mean_token_type_percentages(
+    breakdowns: list[dict[str, float]],
+) -> tuple[dict[str, float], int]:
+    """Average within-document token-type percentages for non-empty rows."""
+    percentages = []
+    for values in breakdowns:
+        total = sum(values.get(key, 0.0) for key in TOKEN_TYPE_LABELS)
+        if total > 0:
+            percentages.append(
+                {
+                    key: values.get(key, 0.0) / total * 100
+                    for key in TOKEN_TYPE_LABELS
+                }
+            )
+    means = {
+        key: (
+            float(np.mean([row[key] for row in percentages]))
+            if percentages else 0.0
+        )
+        for key in TOKEN_TYPE_LABELS
+    }
+    return means, len(percentages)
+
+
+def plot_average_token_type_spend(docs: list[dict], out_path: str) -> None:
+    """Plot mean per-document USD spend percentages by phase and overall.
+
+    Percentages are computed within each document first and then averaged, so
+    a high-token document does not dominate the batch result. Documents with no
+    spend for a particular phase are omitted only from that phase's average.
+    """
+    per_doc = [_with_overall(_phase_token_spend_breakdowns(d)) for d in docs]
+    panel_keys = list(PHASE_COST_LABELS) + ["overall"]
+    panel_labels = PHASE_COST_LABELS | {"overall": "Overall"}
+
+    fig, axes = plt.subplots(2, 3, figsize=(15, 9))
+    for phase_key, ax in zip(panel_keys, axes.flat):
+        token_keys = list(TOKEN_TYPE_LABELS)
+        mean_by_type, document_count = _mean_token_type_percentages(
+            [doc_values[phase_key] for doc_values in per_doc]
+        )
+        means = [mean_by_type[key] for key in token_keys]
+        bars = ax.bar(
+            np.arange(len(token_keys)),
+            means,
+            color=[TOKEN_TYPE_COLORS[key] for key in token_keys],
+        )
+        ax.set_title(f"{panel_labels[phase_key]}\n{document_count} document(s)")
+        ax.set_xticks(np.arange(len(token_keys)))
+        ax.set_xticklabels([TOKEN_TYPE_LABELS[key] for key in token_keys])
+        ax.set_ylabel("Average share of phase spend")
+        ax.set_ylim(0, 110)
+        ax.yaxis.set_major_formatter(mticker.PercentFormatter(xmax=100))
+        ax.grid(axis="y", alpha=0.3)
+        if document_count:
+            ax.bar_label(
+                bars,
+                labels=[f"{value:.1f}%" if value else "" for value in means],
+                padding=3,
+                fontsize=8,
+            )
+        else:
+            ax.text(
+                0.5, 0.5, "No spend data", transform=ax.transAxes,
+                ha="center", va="center", color="dimgray",
+            )
+
+    fig.suptitle(
+        "Average Input / Output Spend Share by Phase",
+        fontsize=13,
+        fontweight="bold",
+    )
+    plt.tight_layout()
+    plt.savefig(out_path, dpi=150, bbox_inches="tight")
+    plt.close()
+    print(f"Saved: {out_path}")
+
+
 def plot_document(d: dict, out_dir: str) -> None:
     """Two-panel overview for a single document: accuracy (left) + break-even & blocks (right)."""
     name    = d["_name"]
@@ -890,6 +1134,10 @@ def plot_document(d: dict, out_dir: str) -> None:
         os.path.join(doc_dir, "phase_cost.png"),
         f"{name}: Generation & Fixing Spend",
     )
+    plot_document_token_breakdown(
+        d,
+        os.path.join(doc_dir, "token_breakdown.png"),
+    )
 
 
 # ── main ──────────────────────────────────────────────────────────────────────
@@ -917,6 +1165,9 @@ def main() -> None:
     plot_overall_phase_cost(docs, os.path.join(out_dir, "phase_cost_overall.png"))
     plot_phase_token_distributions(
         docs, os.path.join(out_dir, "phase_token_distributions.png")
+    )
+    plot_average_token_type_spend(
+        docs, os.path.join(out_dir, "token_type_spend_average.png")
     )
 
     for d in docs:

@@ -46,7 +46,9 @@ There are two kinds of model-driven work:
 ## Requirements
 
 - Python 3.14
-- the `codex` CLI installed, authenticated, and available on `PATH`
+- the `codex` CLI installed and available on `PATH`, with API-key
+  authentication stored in `~/.codex-api` (the profile used by the
+  `codex-api` alias)
 - an OpenAI or Azure OpenAI credential
 
 Create the environment:

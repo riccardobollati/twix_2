@@ -6,6 +6,8 @@ from src.agents._usage import split_tokens
 
 
 DEFAULT_CODEX_MODEL = os.getenv("CODEX_MODEL", "gpt-5.4")
+# Mirror the codex-api shell alias without relying on shell alias expansion.
+CODEX_API_HOME = os.getenv("CODEX_API_HOME", os.path.expanduser("~/.codex-api"))
 CODEX_TIMEOUT_S = 1800  # hard cap for one codex session
 _CAVEMAN_PREFIX = "/caveman full\n\n"
 _SCOPE_PREFIX = (
@@ -47,6 +49,7 @@ def _codex_exec(prompt, dir_path, task, model: str, caveman: bool, silent: bool,
             stderr=subprocess.PIPE if silent else None,
             text=True,
             timeout=CODEX_TIMEOUT_S,
+            env={**os.environ, "CODEX_HOME": CODEX_API_HOME},
         )
     except subprocess.TimeoutExpired:
         print(f"[codex] task {task} timed out after {CODEX_TIMEOUT_S}s", flush=True)
