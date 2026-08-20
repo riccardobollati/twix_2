@@ -9,7 +9,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any
 
 from src.agents._ui import FRAMES as _FRAMES, GREEN_TICK as _GREEN_TICK
-from src.models.codex import DEFAULT_CODEX_MODEL, codex_silent
+from src.models.opencode import DEFAULT_OPENCODE_MODEL, opencode_silent
 from src.prompts.block_extraction_scripting_prompt import PROMPT_BLOCK_EXTRACTION_SCRIPTING
 
 
@@ -19,7 +19,7 @@ MAX_ATTEMPTS = 3
 # ── animated display ──────────────────────────────────────────────────────────
 
 class _Display:
-    """Thread-safe multi-line spinner for parallel Codex sessions."""
+    """Thread-safe multi-line spinner for parallel OpenCode sessions."""
 
     def __init__(self, ids: list[str]) -> None:
         self._ids = ids
@@ -96,11 +96,11 @@ def _load_template_node(agent_space: str, template_id: str) -> dict:
 # ── node ──────────────────────────────────────────────────────────────────────
 
 def block_extraction_scripting_node(state: dict[str, Any]) -> dict[str, Any]:
-    """For each block type, run a Codex instance (in parallel) inside its sample folder
+    """For each block type, run OpenCode (in parallel) inside its sample folder
     to generate a Python extraction script generalizable to all instances of that block.
 
     Creates agent_space/extraction_scripts/ and writes one <template_id>.py per block type.
-    Each Codex session is retried up to MAX_ATTEMPTS times when it exits non-zero or
+    Each OpenCode session is retried up to MAX_ATTEMPTS times when it exits non-zero or
     fails to produce the script file.
 
     Reads:
@@ -115,7 +115,7 @@ def block_extraction_scripting_node(state: dict[str, Any]) -> dict[str, Any]:
 
     # create the list of ids — restricted to nodes of the CURRENT template so a
     # stale sample folder from an earlier run (different template) can't crash
-    # the run or spawn a codex session for a node that no longer exists
+    # the run or spawn an OpenCode session for a node that no longer exists
     current_ids = {str(n.get("node_id")) for n in (state.get("template") or [])}
     template_ids = []
     for d in sorted(os.listdir(block_samples_dir)):
@@ -134,13 +134,16 @@ def block_extraction_scripting_node(state: dict[str, Any]) -> dict[str, Any]:
     display = _Display(template_ids)
     spinner_thread = display.start()
 
-    block_codex_models = state.get("block_codex_models") or {}
+    block_opencode_models = state.get("block_opencode_models") or {}
     use_caveman = state.get("use_caveman", False)
     debug_dir   = os.path.join(os.path.dirname(agent_space), "debug") if state.get("save_log") else None
     t0 = time.time()
 
     def _run(template_id: str) -> tuple[str, bool, int | None, int | None, int | None]:
-        model       = block_codex_models.get(template_id, DEFAULT_CODEX_MODEL)
+        model = block_opencode_models.get(
+            template_id,
+            state.get("opencode_model", DEFAULT_OPENCODE_MODEL),
+        )
         sample_dir  = os.path.join(block_samples_dir, template_id)
         script_path = os.path.join(sample_dir, f"{template_id}.py")
         template_node = _load_template_node(agent_space, template_id)
@@ -148,7 +151,14 @@ def block_extraction_scripting_node(state: dict[str, Any]) -> dict[str, Any]:
         inp = out = tot = None
         for attempt in range(1, MAX_ATTEMPTS + 1):
             log_path = os.path.join(debug_dir, f"block_extraction_{template_id}_{attempt}.log") if debug_dir else None
-            rc, inp, out, tot = codex_silent(prompt, sample_dir, task=f"block_extraction_scripting_{template_id}", model=model, caveman=use_caveman, log_path=log_path)
+            rc, inp, out, tot = opencode_silent(
+                prompt,
+                sample_dir,
+                task=f"block_extraction_scripting_{template_id}",
+                model=model,
+                caveman=use_caveman,
+                log_path=log_path,
+            )
             if rc == 0 and os.path.isfile(script_path):
                 return template_id, True, inp, out, tot
         return template_id, False, inp, out, tot

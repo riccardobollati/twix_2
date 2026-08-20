@@ -20,12 +20,13 @@ class GroundTruthFallbackTests(unittest.TestCase):
         ]
 
         records, raw_records, usage = generate_ground_truth(
-            "document.pdf", "ocr.csv", [], object(), 20
+            "document.pdf", "ocr.csv", [], object(), 20, include_images=True
         )
 
         self.assertEqual(records, fallback_records)
         self.assertEqual(raw_records, fallback_records)
         self.assertEqual([call.args[-1] for call in generate_once.call_args_list], [20, 5])
+        self.assertTrue(all(call.kwargs["include_images"] for call in generate_once.call_args_list))
         self.assertEqual(usage["input_tokens"], 140)
         self.assertEqual(usage["output_tokens"], 30)
         self.assertTrue(usage["empty_result_fallback"])

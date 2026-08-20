@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Visualize Codex session JSONL logs from the debug/ folder.
+"""Visualize OpenCode session JSONL logs from the debug/ folder.
 
 Usage:
     python viz_agent_log.py data/<name>/debug/           # interactive picker
@@ -32,10 +32,10 @@ _TAIL_LINES = 8
 # ── log parsing ───────────────────────────────────────────────────────────────
 
 def _parse_log(path: Path) -> tuple[list[dict], dict | None, str]:
-    """Return (events, usage, stderr_text) for a Codex JSONL log file.
+    """Return (events, aggregate usage, stderr_text) for an OpenCode JSONL log.
 
     - events:      every parsed JSON object from stdout
-    - usage:       dict from the turn.completed event, or None
+    - usage:       aggregate of all step_finish token objects, or None
     - stderr_text: content after the '--- stderr ---' separator, if any
     """
     raw = path.read_text(encoding="utf-8", errors="replace")
@@ -47,7 +47,13 @@ def _parse_log(path: Path) -> tuple[list[dict], dict | None, str]:
         stdout_part = raw
 
     events: list[dict] = []
-    usage: dict | None = None
+    usage_totals = {
+        "input_tokens": 0,
+        "cached_input_tokens": 0,
+        "output_tokens": 0,
+        "reasoning_output_tokens": 0,
+    }
+    found_usage = False
     for line in stdout_part.splitlines():
         line = line.strip()
         if not line:
@@ -57,22 +63,29 @@ def _parse_log(path: Path) -> tuple[list[dict], dict | None, str]:
         except json.JSONDecodeError:
             continue
         events.append(obj)
-        if obj.get("type") == "turn.completed" and "usage" in obj:
-            usage = obj["usage"]
+        part = obj.get("part") if isinstance(obj.get("part"), dict) else {}
+        if obj.get("type") == "step_finish" or part.get("type") == "step-finish":
+            tokens = part.get("tokens") if isinstance(part.get("tokens"), dict) else {}
+            cache = tokens.get("cache") if isinstance(tokens.get("cache"), dict) else {}
+            uncached = int(tokens.get("input") or 0)
+            cached = int(cache.get("read") or 0) + int(cache.get("write") or 0)
+            usage_totals["input_tokens"] += uncached + cached
+            usage_totals["cached_input_tokens"] += cached
+            usage_totals["output_tokens"] += int(tokens.get("output") or 0)
+            usage_totals["reasoning_output_tokens"] += int(tokens.get("reasoning") or 0)
+            found_usage = found_usage or bool(tokens)
 
-    return events, usage, stderr_text
+    return events, usage_totals if found_usage else None, stderr_text
 
 
 def _count_items(events: list[dict]) -> tuple[int, int]:
-    """Return (n_messages, n_commands) from completed item events."""
+    """Return (n_messages, n_commands) from OpenCode events."""
     msgs = cmds = 0
     for ev in events:
-        if ev.get("type") != "item.completed":
-            continue
-        t = ev.get("item", {}).get("type", "")
-        if t == "agent_message":
+        t = ev.get("type")
+        if t == "text":
             msgs += 1
-        elif t == "command_execution":
+        elif t == "tool_use":
             cmds += 1
     return msgs, cmds
 
@@ -115,10 +128,13 @@ def _render_agent_message(item: dict, seq: int) -> None:
 
 
 def _render_command(item: dict, seq: int) -> None:
-    raw_cmd = item.get("command", "")
-    output  = (item.get("aggregated_output") or "").rstrip()
-    code    = item.get("exit_code")
-    status  = item.get("status", "")
+    state = item.get("state") if isinstance(item.get("state"), dict) else {}
+    tool_input = state.get("input") if isinstance(state.get("input"), dict) else {}
+    raw_cmd = tool_input.get("command") or tool_input.get("cmd") or item.get("tool", "")
+    output = str(state.get("output") or "").rstrip()
+    metadata = state.get("metadata") if isinstance(state.get("metadata"), dict) else {}
+    code = metadata.get("exit") if metadata.get("exit") is not None else metadata.get("exit_code")
+    status = state.get("status", "")
 
     success = code == 0
     failed  = (code is not None and code != 0) or status == "failed"
@@ -202,7 +218,7 @@ def render_log(path: Path) -> None:
     ))
     console.print()
 
-    # ── prompt (saved alongside the log by codex_silent) ──────────────────────
+    # ── prompt (saved alongside the log by opencode_silent) ───────────────────
     prompt_path = path.with_suffix(".prompt")
     if prompt_path.exists():
         prompt_text = prompt_path.read_text(encoding="utf-8", errors="replace").strip()
@@ -221,25 +237,16 @@ def render_log(path: Path) -> None:
     for ev in events:
         t = ev.get("type", "")
 
-        # skip boilerplate / in-progress duplicates
-        if t in ("thread.started", "turn.started", "turn.completed", "item.started"):
+        if t in ("step_start", "step_finish"):
             continue
 
-        if t == "item.completed":
-            item      = ev.get("item", {})
-            item_type = item.get("type", "")
+        if t in ("text", "tool_use"):
+            item = ev.get("part", {})
             seq += 1
-            if item_type == "agent_message":
+            if t == "text":
                 _render_agent_message(item, seq)
-            elif item_type == "command_execution":
+            elif t == "tool_use":
                 _render_command(item, seq)
-            else:
-                console.print(Panel(
-                    Syntax(json.dumps(item, indent=2), "json", theme="monokai"),
-                    title=f"[dim]{item_type}  #{seq}[/]",
-                    border_style="dim",
-                    box=box.ROUNDED,
-                ))
 
     # ── token summary ─────────────────────────────────────────────────────────
     console.print()
@@ -279,7 +286,7 @@ def pick_and_render(log_dir: Path) -> None:
         sys.exit(1)
 
     t = Table(
-        title=f"[bold]Codex Session Logs[/]  [dim]{log_dir}[/]",
+        title=f"[bold]OpenCode Session Logs[/]  [dim]{log_dir}[/]",
         box=box.ROUNDED,
         border_style="bright_white",
         show_lines=True,
@@ -317,7 +324,7 @@ def pick_and_render(log_dir: Path) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Visualize Codex session JSONL logs from the debug/ folder."
+        description="Visualize OpenCode session JSONL logs from the debug/ folder."
     )
     parser.add_argument(
         "path",

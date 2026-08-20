@@ -15,6 +15,7 @@ from typing_extensions import TypedDict
 
 from src.agents._ui import spinner as _spinner
 from src.agents._usage import apply_usage, split_tokens
+from src.ground_truth_gen.helpers import load_ocr_pages
 from src.prompts.template_inference_prompt import PROMPT_TEMPLATE_INFERENCE
 
 
@@ -38,7 +39,7 @@ class ExtractionState(TypedDict):
     full_ocr_csv_path: str   # path to the full OCR CSV (all pages)
     output_dir:        NotRequired[str]  # artifact directory (defaults beside input PDF)
     source_sha256:     NotRequired[str]  # fingerprint of the original input PDF
-    codex_model:       NotRequired[str]  # default code-generation/repair model
+    opencode_model:    NotRequired[str]  # default code-generation/repair model
     doc_name:          str   # document folder name, used to name split PDFs
     train_pages:       int   # number of pages requested for the train set
     eval_mode:         bool  # whether to create a test split
@@ -47,10 +48,12 @@ class ExtractionState(TypedDict):
     holdout_pages:   NotRequired[int]        # train pages hidden from script generation
                                              # but included in train eval (None = auto)
     gt_test_window:  NotRequired[int]        # pages per LLM call for test GT (default 20)
-    block_codex_models: NotRequired[dict]    # template_id → codex model string
-    llm_model:          NotRequired[str]     # name of the vision LLM used for this run
-    use_caveman:        NotRequired[bool]    # prepend /caveman to every codex prompt
-    save_log:           NotRequired[bool]    # save raw codex session output to debug/
+    block_opencode_models: NotRequired[dict] # template_id → OpenCode model string
+    llm_model:          NotRequired[str]     # name of the DeepSeek model used for this run
+    ground_truth_model: NotRequired[str]     # OpenAI model used for held-out test GT
+    no_routing:         NotRequired[bool]    # use the easy model for every block type
+    use_caveman:        NotRequired[bool]    # prepend /caveman to every OpenCode prompt
+    save_log:           NotRequired[bool]    # save raw OpenCode session output to debug/
 
     # ── set by detect_beginning_node ─────────────────────────────────────────
     detected_start_page: NotRequired[int]    # first physical page with structured data
@@ -68,7 +71,6 @@ class ExtractionState(TypedDict):
     ocr_csv_path:       NotRequired[str]       # path to the train OCR CSV (all train pages)
     build_ocr_csv_path: NotRequired[str]       # train OCR minus held-out pages — what
                                                # the generated scripts are built against
-    pdf_pages:          NotRequired[list[str]] # base64 images of train pages
     actual_train_pages: NotRequired[int]       # actual number of train pages used
 
     # eval-only — set by environment_creation_node when eval_mode=True
@@ -152,7 +154,7 @@ def _flag_signature_duplicates(template: list[dict]) -> list[str]:
     same signature are indistinguishable that way, which corrupts record
     boundaries (a re-match on the twin looks like the template restarting).
     Stamps ``signature_duplicate_of`` on the later node — the flag rides along
-    in the template JSON embedded into every downstream codex prompt.
+    in the template JSON embedded into every downstream OpenCode prompt.
     Returns one warning message per duplicate pair.
     """
     warnings: list[str] = []
@@ -178,7 +180,7 @@ def _flag_signature_duplicates(template: list[dict]) -> list[str]:
 # ---------------------------------------------------------------------------
 
 def template_inference_node(state: ExtractionState, llm: BaseChatModel) -> dict[str, Any]:
-    """Send PDF page images to a vision LLM to infer the document template.
+    """Send page OCR layouts to DeepSeek to infer the document template.
 
     The LLM call is retried up to 3 times: JSON parse errors and structural
     validation errors are fed back into the conversation. Duplicate field
@@ -186,22 +188,25 @@ def template_inference_node(state: ExtractionState, llm: BaseChatModel) -> dict[
     they are deduped deterministically with " (2)", " (3)" suffixes.
 
     Reads:
-        state["pdf_pages"]  – list of base64-encoded image strings (up to 3).
+        state["ocr_csv_path"]       – train OCR with split-local page numbers.
+        state["actual_train_pages"] – number of training pages to inspect.
 
     Writes:
         messages            – appends the assistant response(s).
         template            – list of template node dicts (type, fields, bid, child, node_id).
         metadata            – list of fixed metadata phrase strings.
-        pdf_pages           – cleared ([]) so page images are not carried in graph state.
     """
-    content: list[dict[str, Any]] = [
-        {"type": "text", "text": "Here are the first pages of the PDF document:"},
+    content = [
+        "Here are the training pages as OCR layouts. Coordinates are PDF points; "
+        "use y positions for lines and x spans for columns and key/value alignment."
     ]
-    for image_b64 in state["pdf_pages"]:
-        content.append({
-            "type": "image_url",
-            "image_url": {"url": f"data:image/png;base64,{image_b64}"},
-        })
+    page_numbers = range(1, state["actual_train_pages"] + 1)
+    ocr_pages = load_ocr_pages(state["ocr_csv_path"], page_numbers)
+    for page_number in page_numbers:
+        layout = ocr_pages[page_number]["layout"]
+        content.append(
+            f"Page {page_number} OCR layout:\n{layout or '[no OCR words]'}"
+        )
 
     stop_event = threading.Event()
     spinner_thread = threading.Thread(
@@ -211,7 +216,7 @@ def template_inference_node(state: ExtractionState, llm: BaseChatModel) -> dict[
 
     messages: list[BaseMessage] = [
         SystemMessage(content=PROMPT_TEMPLATE_INFERENCE),
-        HumanMessage(content=content),
+        HumanMessage(content="\n\n".join(content)),
     ]
     responses: list[BaseMessage] = []
     input_tokens = output_tokens = total_tokens = 0
@@ -295,6 +300,5 @@ def template_inference_node(state: ExtractionState, llm: BaseChatModel) -> dict[
         "messages": responses,
         "template": parsed.get("template", []),
         "metadata": parsed.get("metadata", []),
-        "pdf_pages": [],  # drop base64 page images from graph state
         "cost": [cost_entry],
     }

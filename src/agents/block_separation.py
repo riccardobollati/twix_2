@@ -9,7 +9,7 @@ import time
 from typing import Any
 
 from src.agents._ui import spinner as _spinner
-from src.models.codex import DEFAULT_CODEX_MODEL, codex_silent
+from src.models.opencode import DEFAULT_OPENCODE_MODEL, opencode_silent
 from src.prompts.block_separation_prompt import PROMPT_BLOCK_SEPARATION
 
 
@@ -50,7 +50,7 @@ def _validate_output(out_dir: str, ocr_csv: str | None = None) -> str | None:
     # that globs "everything until the next header band" across pages builds a
     # mega-block on the header's page that swallows the rest of the document
     # (rows that continue on later pages must be emitted as continuation
-    # blocks on THEIR page instead). Enforce it so the codex retry loop gets
+    # blocks on THEIR page instead). Enforce it so the OpenCode retry loop gets
     # the violation as feedback rather than shipping the bug to test pages.
     if ocr_csv and os.path.isfile(ocr_csv):
         word_pages = _word_pages(ocr_csv)
@@ -116,9 +116,9 @@ def run_block_separation_node(state: dict[str, Any]) -> dict[str, Any]:
 
 
 def block_separation_node(state: dict[str, Any]) -> dict[str, Any]:
-    """Ask codex to write a block-separation script tailored to the inferred template.
+    """Ask OpenCode to write a block-separation script for the inferred template.
 
-    After each codex attempt the generated script is executed and its output
+    After each OpenCode attempt the generated script is executed and its output
     validated; failures are fed back into the prompt for the next attempt
     (up to 3 attempts).
 
@@ -126,7 +126,7 @@ def block_separation_node(state: dict[str, Any]) -> dict[str, Any]:
         state["template"]       – list of template node dicts from template_inference.
         state["metadata"]       – metadata patterns from template_inference.
         state["ocr_csv_path"]   – path to the full OCR CSV.
-        state["agent_space"]    – working directory where codex will write the script.
+        state["agent_space"]    – workspace used to locate the train directory.
 
     Writes:
         Nothing new to state; side-effect is the script written inside agent_space.
@@ -159,18 +159,19 @@ def block_separation_node(state: dict[str, Any]) -> dict[str, Any]:
 
         t0 = time.time()
         log_path = os.path.join(debug_dir, f"block_separation_{attempt}.log") if state.get("save_log") else None
-        returncode, input_t, output_t, total_t = codex_silent(
+        returncode, input_t, output_t, total_t = opencode_silent(
             prompt, train_dir, task="block_separation",
-            model=DEFAULT_CODEX_MODEL, caveman=state.get("use_caveman", False), log_path=log_path,
+            model=state.get("opencode_model", DEFAULT_OPENCODE_MODEL),
+            caveman=state.get("use_caveman", False), log_path=log_path,
         )
         duration = time.time() - t0
 
         # run the generated script and validate its output
         last_error = None
         if returncode != 0:
-            last_error = f"codex exited {returncode}"
+            last_error = f"OpenCode exited {returncode}"
         elif not os.path.isfile(script_path):
-            last_error = "codex did not produce block_separation.py"
+            last_error = "OpenCode did not produce block_separation.py"
         else:
             last_error = _run_script(script_path, ocr_csv_path, train_dir)
 

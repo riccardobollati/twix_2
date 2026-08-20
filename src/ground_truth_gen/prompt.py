@@ -5,12 +5,24 @@ from __future__ import annotations
 import json as _json
 
 
-def build_prompt(template: list[dict]) -> str:
+def build_prompt(template: list[dict], *, include_images: bool = False) -> str:
     template_json = _json.dumps(template, indent=2)
 
+    if include_images:
+        input_description = (
+            "one or more document page images and the exact OCR word list for "
+            "each page. Use the images for layout and the OCR text as the "
+            "authoritative character source."
+        )
+    else:
+        input_description = (
+            "one or more document pages as layout-preserving OCR. Each line "
+            "includes y coordinates and each word includes its x span. Use "
+            "these coordinates to reconstruct rows, columns, and key/value alignment."
+        )
+
     return f"""\
-You are a data-extraction assistant. You will receive one or more document page images
-and, when available, the OCR word list for each page.
+You are a data-extraction assistant. You will receive {input_description}
 Extract all data blocks visible across the pages, grouped into records, according to
 the template and record-separation rules below.
 
@@ -105,8 +117,7 @@ Rules:
 6. Copy text exactly as printed — same spelling, capitalisation, punctuation,
    spacing, and abbreviations. Do NOT paraphrase, normalise, or infer.
    When an OCR word list is provided, use those exact character sequences as the
-   authoritative source for every value; do not reinterpret or correct them based
-   on the image alone.
+   authoritative source for every value; do not reinterpret or correct it.
 7. Use empty string "" for any field with no visible value.
 8. Output only the JSON object — no prose, no markdown fences.
 9. Emit records in strict top-to-bottom order. Within each record, emit blocks in

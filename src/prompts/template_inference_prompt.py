@@ -1,5 +1,5 @@
 PROMPT_TEMPLATE_INFERENCE=""" 
-You are a document structure inference agent. You will receive images of the first few pages (up to 3) of a PDF document collection that shares the same visual template. Your job is to analyze the visual layout and return two things:
+You are a document structure inference agent. You will receive OCR layouts for the training pages of a PDF document collection that shares the same visual template. Each OCR line includes y coordinates and each word includes its x span. Use that geometry to reconstruct rows, columns, alignment, and whitespace. Your job is to analyze the document layout and return two things:
 
 1. **The template**: the structural blueprint of repeating data blocks (tables and key-value sections).
 2. **The metadata**: fixed text that frames the document but is not part of any data block.

@@ -8,12 +8,14 @@ TWIX 2 is a thesis research system for learning a reusable structured-data
 extractor from a small sample of a template-based PDF family. It combines:
 
 - `pdfplumber` OCR and geometry extraction;
-- vision LLM calls for front-matter detection, template inference, block
-  difficulty routing, and LLM-generated ground truth;
-- the Codex CLI for writing document-specific Python separation and extraction
+- DeepSeek calls over layout-preserving OCR for front-matter detection, template
+  inference, block difficulty routing, and train ground truth;
+- OpenAI vision calls over page images plus exact OCR for final held-out ground truth;
+- the OpenCode CLI for writing document-specific Python separation and extraction
   scripts; and
 - LangGraph for orchestration, train evaluation, optional repair, test
-  extraction, scoring, and metadata collection.
+  extraction, scoring, and metadata collection. Both direct DeepSeek calls and
+  OpenCode model calls are routed through OpenRouter.
 
 The output is both the extracted JSON and a portable `pipeline/` directory that
 can process unseen PDFs with the same layout without running LangGraph or making
@@ -37,17 +39,19 @@ python -m compileall -q run.py fix.py rescore.py single_eval.py src
 ```
 
 There is no configured linter. The tests are offline and must not make API
-calls. Full pipeline runs require a configured vision provider and an
-authenticated `codex` executable on `PATH`.
+calls. Full pipeline runs require `OPENROUTER_API_KEY` and OpenCode available as
+`opencode` on `PATH`; DeepSeek recommends OpenCode 1.14.24 or newer.
 
 Environment selection:
 
-- `LLM_PROVIDER=openai` uses `src/models/openai.py` and requires
-  `OPENAI_API_KEY`; `OPENAI_MODEL` overrides the vision model.
-- `LLM_PROVIDER=azure` uses `src/models/azure.py` and the Azure variables in
-  `.env.example`.
-- `CODEX_MODEL`, `CODEX_EASY_MODEL`, and `CODEX_HARD_MODEL` select the code
-  generation and routing targets.
+- `LLM_PROVIDER=openrouter` uses `src/models/openrouter.py` and requires
+  `OPENROUTER_API_KEY`; `OPENROUTER_MODEL` overrides the direct-call model.
+- `OPENROUTER_REASONING_EFFORT` controls direct-call reasoning.
+- `OPENAI_API_KEY` and `OPENAI_MODEL` configure the OpenAI vision model used
+  only for final held-out/test ground truth (`gpt-5.4` by default).
+- `OPENCODE_MODEL`, `OPENCODE_EASY_MODEL`, and `OPENCODE_HARD_MODEL` select
+  OpenCode's `provider/model` code-generation and routing targets. OpenRouter
+  targets use `openrouter/<publisher>/<model>`.
 - Never print, commit, or replace `.env`. The CLI currently prints only the
   first ten key characters for batch-job identification.
 
@@ -58,8 +62,8 @@ Environment selection:
 | `run.py` | Main CLI, input resolution, full-document OCR, graph invocation |
 | `src/agents/graph.py` | LangGraph topology and train-repair routing |
 | `src/agents/` | Individual graph phases and shared graph state |
-| `src/prompts/` | Contracts given to vision models and Codex |
-| `src/models/` | Vision-provider factory and Codex CLI wrapper |
+| `src/prompts/` | Contracts given to DeepSeek and OpenCode |
+| `src/models/` | DeepSeek provider and OpenCode CLI wrapper |
 | `src/pipeline.py` | Portable, model-free runtime copied into every generated pipeline |
 | `src/eval/` | Format conversion, alignment, content/structure scoring, report rendering |
 | `src/ground_truth_gen/` | Ground-truth prompt plus OCR/render/JSON helpers |
@@ -67,7 +71,7 @@ Environment selection:
 | `single_eval.py` | Evaluate a generated pipeline on another PDF or page sample |
 | `fix.py` | Regenerate test ground truth/eval for one legacy `data/<id>` run |
 | `rescore.py` | Re-score saved artifacts with current `src/eval` code, without LLM calls |
-| `viz_*.py` | Bounding-box, block, Codex-log, and batch-result visualizations |
+| `viz_*.py` | Bounding-box, block, OpenCode-log, and batch-result visualizations |
 | `tests/` | Offline `unittest` regressions |
 
 `data/`, `outputs/`, `env/`, `.env`, PDFs, OCR dumps, and generated artifacts
@@ -103,6 +107,8 @@ Important implications:
 - With `--eval`, the generated pipeline is built on the train split and the
   final `grouping` phase runs it on the test split. Without `--eval`, grouping
   runs on the cropped training PDF.
+- `--no-routing` skips difficulty-model calls and assigns
+  `OPENCODE_EASY_MODEL` to every extraction block.
 - The graph recursion limit is derived from `--train-max-retries`; keep the
   compile-time and state values synchronized.
 
@@ -119,7 +125,7 @@ In eval mode, at least two usable structured pages are required. The train size
 is capped at half of the usable pages so at least one test page remains.
 
 The holdout is an anti-overfitting aid: template inference still sees every
-train-page image, but generated separation code and its downstream block samples
+train-page OCR layout, but generated separation code and its downstream block samples
 use `ocr_extraction_build.csv`, which excludes the last held-out train pages.
 `train_eval` then runs the finished pipeline on all train pages.
 
@@ -160,7 +166,7 @@ within a record; it is not the lookup key.
 
 ### Generated-script contracts
 
-Codex writes three script layers:
+OpenCode writes three script layers:
 
 1. `record_separation.py <ocr.csv> <out_dir>` writes
    `record_separation.json` with record IDs and per-page word/y ranges.
@@ -171,7 +177,7 @@ Codex writes three script layers:
 
 Separation generation is retried at most three times. Each attempt is executed
 with the active Python interpreter, has a 300-second runtime timeout, and must
-pass basic JSON validation. Codex sessions themselves have an 1800-second
+pass basic JSON validation. OpenCode sessions themselves have an 1800-second
 timeout.
 
 Never weaken these invariants:
@@ -220,7 +226,9 @@ its semantics between `train_eval.py` and `ground_truth.py`.
 - Train ground truth uses five-page windows; test defaults to twenty pages.
 - Independent windows are called concurrently, but results are consumed in page
   order.
-- Images and exact OCR text are sent together.
+- Train ground truth sends layout-preserving OCR to DeepSeek through OpenRouter.
+  Final held-out/test ground truth sends images and exact OCR text together to
+  OpenAI, keeping the evaluation reference independent of the training model.
 - A window with suspiciously low value-character coverage is retried once.
 - Records crossing a window boundary are merged using template order and
   repeated identity values.
@@ -256,7 +264,7 @@ contribute zero content, preventing survivorship bias.
 The scorer normalizes Unicode compatibility characters, whitespace, case,
 dash/quote variants, surrounding formatting punctuation, numeric formatting,
 and spurious intra-token spaces. `eval.txt` is the actionable repair report;
-reason codes there are consumed by the Codex repair prompt.
+reason codes there are consumed by the OpenCode repair prompt.
 
 Scorer behavior has changed over the project. Never compare old and new saved
 accuracies blindly: run `python rescore.py ...` and record the resulting
@@ -334,7 +342,7 @@ python -m compileall -q run.py fix.py rescore.py single_eval.py src
 
 Add focused offline regressions for bug fixes. Do not make tests depend on the
 ignored `data/` corpus, credentials, live provider output, or the installed
-Codex service.
+OpenCode service.
 
 ## Known sharp edges
 

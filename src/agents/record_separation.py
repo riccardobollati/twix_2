@@ -9,7 +9,7 @@ import time
 from typing import Any
 
 from src.agents._ui import spinner as _spinner
-from src.models.codex import codex_silent
+from src.models.opencode import DEFAULT_OPENCODE_MODEL, opencode_silent
 from src.prompts.record_separation_prompt_2 import PROMPT_RECORD_SEPARATION
 
 
@@ -71,16 +71,16 @@ def run_record_separation_node(state: dict[str, Any]) -> dict[str, Any]:
 
 
 def record_separation_node(state: dict[str, Any]) -> dict[str, Any]:
-    """Ask codex to write a record-separation script tailored to the inferred template.
+    """Ask OpenCode to write a record-separation script for the inferred template.
 
     A "record" is one full instance of the repeating template structure on a page.
     The generated script detects record boundaries from the vertical word distribution.
-    After each codex attempt the generated script is executed and its output validated;
+    After each OpenCode attempt the generated script is executed and validated;
     failures are fed back into the prompt for the next attempt.
 
     Reads:
         state["template"]       – list of template node dicts from template_inference.
-        state["ocr_csv_path"]   – path to the train OCR CSV (passed to codex for context).
+        state["ocr_csv_path"]   – path to the train OCR CSV (available to OpenCode).
         state["pdf_path"]       – used to derive train_dir (where the script is written).
 
     Writes:
@@ -110,14 +110,20 @@ def record_separation_node(state: dict[str, Any]) -> dict[str, Any]:
         spinner_thread.start()
 
         t0 = time.time()
-        returncode, input_t, output_t, total_t = codex_silent(prompt, train_dir, task="record_separation")
+        returncode, input_t, output_t, total_t = opencode_silent(
+            prompt,
+            train_dir,
+            task="record_separation",
+            model=state.get("opencode_model", DEFAULT_OPENCODE_MODEL),
+            caveman=state.get("use_caveman", False),
+        )
         duration = time.time() - t0
 
         # run the generated script and validate its output
         if returncode != 0:
-            last_error = f"codex exited {returncode}"
+            last_error = f"OpenCode exited {returncode}"
         elif not os.path.isfile(script_path):
-            last_error = "codex did not produce record_separation.py"
+            last_error = "OpenCode did not produce record_separation.py"
         else:
             last_error = _run_script(script_path, ocr_csv_path, train_dir)
 

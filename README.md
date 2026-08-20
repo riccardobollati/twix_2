@@ -9,7 +9,8 @@ Given a PDF containing repeated records, it produces:
 2. generated Python code for record detection, block detection, and field
    extraction;
 3. structured JSON extracted by that code;
-4. optional train/test evaluation against vision-LLM-generated ground truth;
+4. optional train/test evaluation against DeepSeek train ground truth and an
+   OpenAI vision reference on held-out pages;
    and
 5. a standalone, model-free `pipeline/` bundle for unseen PDFs with the same
    layout.
@@ -19,17 +20,18 @@ key-value regions in stable document families, not arbitrary one-off PDFs.
 
 ## How the system works
 
-TWIX separates reasoning from repeatable execution. Vision models inspect a few
-page images to identify the document's structure. The Codex CLI then writes
-ordinary Python programs specialized to that structure. Once those programs
-are built, the packaged pipeline extracts future documents using only
-`pdfplumber` and the Python standard library.
+TWIX separates reasoning from repeatable execution. DeepSeek models accessed
+through OpenRouter inspect layout-preserving OCR to identify the document's
+structure. OpenCode, also routed through OpenRouter, then writes ordinary Python
+programs specialized to that structure. Once those programs are built, the
+packaged pipeline extracts future documents using only `pdfplumber` and the
+Python standard library.
 
 ```mermaid
 flowchart LR
     A["Template-family PDF"] --> B["OCR words + geometry"]
-    A --> C["Vision reasoning"]
-    B --> D["Codex-generated Python"]
+    B --> C["OpenRouter / DeepSeek reasoning"]
+    B --> D["OpenCode via OpenRouter"]
     C --> D
     D --> E["Standalone pipeline bundle"]
     E --> F["Structured records JSON"]
@@ -38,18 +40,27 @@ flowchart LR
 
 There are two kinds of model-driven work:
 
-- Vision LLM calls return structured JSON for front-matter detection, template
-  inference, easy/hard block routing, and ground truth.
-- Codex sessions write executable Python files for record separation, block
-  separation, per-block extraction, and optional repair.
+- OpenRouter calls to DeepSeek return structured JSON for front-matter
+  detection, template inference, easy/hard block routing, and train ground truth.
+- OpenAI vision calls generate the final reference on never-seen test pages.
+- OpenCode sessions use OpenRouter models to write executable Python files for
+  record separation, block separation, per-block extraction, and optional
+  repair.
+
+DeepSeek V4 does not accept image inputs. TWIX therefore serializes each OCR
+page into compact lines containing y coordinates and per-word x spans. This
+keeps row and column geometry available to the model while using a text-only
+API. The PNG block samples remain useful for human debugging, but routing uses
+their coordinate JSON.
 
 ## Requirements
 
 - Python 3.14
-- the `codex` CLI installed and available on `PATH`, with API-key
-  authentication stored in `~/.codex-api` (the profile used by the
-  `codex-api` alias)
-- an OpenAI or Azure OpenAI credential
+- OpenCode installed and available as `opencode` on `PATH` (DeepSeek recommends
+  version 1.14.24 or newer for V4 integration)
+- an OpenRouter API key; the same `OPENROUTER_API_KEY` can authenticate direct
+  calls and OpenCode's built-in OpenRouter provider
+- an OpenAI API key for final held-out/test ground truth
 
 Create the environment:
 
@@ -60,20 +71,31 @@ python -m pip install -r requirements.txt
 cp .env.example .env
 ```
 
-Configure `.env` for OpenAI:
+Configure `.env` for OpenRouter, OpenAI, and OpenCode:
 
 ```dotenv
-LLM_PROVIDER=openai
+LLM_PROVIDER=openrouter
+OPENROUTER_API_KEY=...
+OPENROUTER_MODEL=deepseek/deepseek-v4-flash
+OPENROUTER_REASONING_EFFORT=high
+
 OPENAI_API_KEY=...
 OPENAI_MODEL=gpt-5.4
 
-CODEX_MODEL=gpt-5.4
-CODEX_EASY_MODEL=gpt-5.4-mini
-CODEX_HARD_MODEL=gpt-5.4
+OPENCODE_MODEL=openrouter/deepseek/deepseek-v4-flash
+OPENCODE_EASY_MODEL=openrouter/deepseek/deepseek-v4-flash
+OPENCODE_HARD_MODEL=openrouter/deepseek/deepseek-v4-pro
 ```
 
-For Azure, set `LLM_PROVIDER=azure` and fill the Azure variables documented in
-`.env.example`. Never commit `.env`.
+Direct OpenRouter calls use catalog slugs such as
+`deepseek/deepseek-v4-flash`. OpenCode model references add OpenCode's provider
+prefix, producing `openrouter/deepseek/deepseek-v4-flash`. To benchmark one
+model everywhere, set all four model variables to the corresponding Flash or
+Pro ID. Never commit `.env`.
+
+Authenticate OpenCode through `OPENROUTER_API_KEY`, or run `/connect` in the
+OpenCode TUI and choose OpenRouter. The repository's `opencode.json` explicitly
+registers both DeepSeek V4 targets; use `/models` to verify the available IDs.
 
 ## Quick start
 
@@ -115,13 +137,14 @@ Run `python run.py --help` for the complete interface. Important options are:
 | `--eval` | Reserve test pages, generate test ground truth, and score |
 | `--eval-pages N` | Limit test pages; default is all pages after train |
 | `--holdout-pages N` | Hide trailing train pages from script generation but include them in train eval |
+| `--no-routing` | Skip difficulty classification and use `OPENCODE_EASY_MODEL` for every block |
 | `--train-threshold F` | Repair below this train accuracy; `0` disables repair |
-| `--train-max-retries N` | Maximum Codex repair rounds; default `3` |
+| `--train-max-retries N` | Maximum OpenCode repair rounds; default `3` |
 | `--gt-test-window N` | Pages per test-ground-truth call; default `20` |
 | `--reuse-ocr` | Reuse the existing full OCR CSV instead of regenerating it |
 | `--group-rows` | Experimental row-level OCR instead of word-level OCR |
-| `--caveman` | Prefix block-separation, extraction, and repair Codex prompts with `/caveman full`; the record-separation session is currently unaffected |
-| `--save-log` | Save Codex JSONL output and exact prompts for block separation, extraction, and repair under `debug/`; record separation is currently not logged |
+| `--caveman` | Prefix OpenCode prompts with `/caveman full` |
+| `--save-log` | Save OpenCode JSONL output and exact prompts for block separation, extraction, and repair under `debug/`; record separation is currently not logged |
 
 `--pages` is a request, not an unconditional count. In eval mode the train split
 is capped at half of the usable structured pages so at least one page remains
@@ -134,21 +157,21 @@ The LangGraph state machine lives in `src/agents/graph.py`.
 ```mermaid
 flowchart TD
     S(["Start"]) --> Q{"--start-page supplied?"}
-    Q -- No --> DB["Detect first structured page<br/>vision batches"]
+    Q -- No --> DB["Detect first structured page<br/>OCR-layout batches"]
     Q -- Yes --> EC
     DB --> EC["Create cropped train/test environment<br/>remap split pages to 1..N"]
-    EC --> TI["Infer template + metadata<br/>vision JSON"]
-    TI --> RS["Generate record_separation.py<br/>Codex"]
+    EC --> TI["Infer template + metadata<br/>DeepSeek JSON"]
+    TI --> RS["Generate record_separation.py<br/>OpenCode"]
     RS --> RSR["Run + validate record separation"]
-    RSR --> BS["Generate block_separation.py<br/>Codex"]
+    RSR --> BS["Generate block_separation.py<br/>OpenCode"]
     BS --> BSR["Run + validate block separation"]
     BSR --> SMP["Crop deterministic block samples"]
-    SMP --> ROUTE["Classify each block EASY/HARD<br/>parallel vision calls"]
-    ROUTE --> EXT["Generate one extractor per detected node<br/>parallel Codex sessions"]
+    SMP --> ROUTE["Classify each block EASY/HARD<br/>parallel DeepSeek calls"]
+    ROUTE --> EXT["Generate one extractor per detected node<br/>parallel OpenCode sessions"]
     EXT --> PACK["Assemble portable pipeline/"]
     PACK --> TE["Run pipeline on all train pages<br/>generate/reuse train GT + score"]
     TE --> GATE{"Threshold met and<br/>health non-degenerate?"}
-    GATE -- "No, retries remain" --> REPAIR["Codex repairs generated scripts"]
+    GATE -- "No, retries remain" --> REPAIR["OpenCode repairs generated scripts"]
     REPAIR --> TE
     GATE -- "Yes / disabled / exhausted" --> RUN["Run pipeline on test PDF<br/>or train PDF without --eval"]
     RUN --> MERGE["Merge logical table continuations"]
@@ -171,8 +194,8 @@ id, page, x0, top, x1, bottom, text
 Word IDs are unique across the source document. Physical page numbers start at
 1. OCR is regenerated by default for reproducibility.
 
-Unless `--start-page` is supplied, `detect_beginning.py` renders chronological
-batches of six pages and asks the vision model for the first genuine
+Unless `--start-page` is supplied, `detect_beginning.py` sends chronological
+batches of six OCR layouts to DeepSeek and asks for the first genuine
 structured-record page. Covers, tables of contents, indexes, and narrative
 introductions are excluded. If no candidate is found, the conservative fallback
 is physical page 1.
@@ -198,12 +221,12 @@ flowchart LR
 
 The automatic holdout is two pages when at least four train pages exist, one
 page with three train pages, and zero with one or two. At least two build pages
-are always retained. Template inference sees all train-page images; the holdout
+are always retained. Template inference sees all train-page OCR layouts; the holdout
 specifically limits the OCR used to generate and sample the executable scripts.
 
 ### 3. Template inference
 
-The vision model classifies structured regions as tables or key-value blocks,
+DeepSeek classifies structured regions as tables or key-value blocks,
 orders them top to bottom, identifies optional/nested patterns, describes block
 complexity, and emits regexes for fixed document/record metadata.
 
@@ -230,7 +253,7 @@ separation code cannot reliably distinguish them by labels alone.
 
 ### 4. Generated separation code
 
-The first Codex session creates `record_separation.py`. It groups OCR words into
+The first OpenCode session creates `record_separation.py`. It groups OCR words into
 rows and finds the smallest vertical spans that complete one pass through the
 template, with anchor-value guards for multi-page header repetition.
 
@@ -239,7 +262,7 @@ removes only regex-confirmed page-frame metadata, assigns following content, and
 emits page-local continuation blocks when a table flows onto another page.
 
 Each generation phase runs its script immediately and validates its JSON. A
-failure is returned to Codex for up to three attempts. Generated-script runs
+failure is returned to OpenCode for up to three attempts. Generated-script runs
 time out after 300 seconds.
 
 The key identity rules are:
@@ -259,12 +282,12 @@ Up to ten deterministic samples per detected node are cropped from the train
 PDF. Each sample has a PNG and a JSON file whose coordinates are relative to
 the crop.
 
-Independent vision calls classify each node:
+Independent DeepSeek calls over the samples' OCR geometry classify each node:
 
 - `EASY` when layout is fixed and values are single-line;
 - `HARD` when samples show variable/repeating structure or multi-line values.
 
-The configured easy/hard Codex model then writes
+The configured easy/hard OpenCode model then writes
 `extraction_scripts/<node_id>.py`. These sessions run in parallel. Every script
 must define:
 
@@ -286,7 +309,7 @@ against five-page-window ground truth. This train evaluation happens even when
 `--train-threshold` is zero; zero disables only automatic repair.
 
 When repair is enabled, the gate fails if accuracy is below the threshold or
-the health report is degenerate. Codex receives `train_eval/eval.txt` plus
+the health report is degenerate. OpenCode receives `train_eval/eval.txt` plus
 health violations and may edit only:
 
 - `record_separation.py`;
@@ -409,18 +432,19 @@ Final grouped records:
 
 ## Ground truth generation
 
-Train and test use the shared generator in `src/agents/gt_common.py`; only their
-window sizes differ. Each window contains rendered page images and exact OCR
-text. Calls are parallel, results are restored to document order, and logical
-records cut by window boundaries are merged using template order and repeated
-identity values.
+Train and test use the shared generator in `src/agents/gt_common.py`. Train
+ground truth sends five-page layout-preserving OCR windows to DeepSeek through
+OpenRouter. Final held-out/test ground truth sends rendered page images plus
+exact OCR text to `OPENAI_MODEL` through the OpenAI API. Calls are parallel,
+results are restored to document order, and logical records cut by window
+boundaries are merged using template order and repeated identity values.
 
 ```mermaid
 flowchart TD
     P["PDF + OCR + template"] --> W["Split pages into windows"]
-    W --> C1["Vision call 1"]
-    W --> C2["Vision call 2"]
-    W --> CN["Vision call N"]
+    W --> C1["Train: DeepSeek<br/>Test: OpenAI vision"]
+    W --> C2["Parallel window call"]
+    W --> CN["Parallel window call N"]
     C1 --> ORDER["Restore window order"]
     C2 --> ORDER
     CN --> ORDER
@@ -514,7 +538,7 @@ mapping, and parent mismatches; this report is also the input to repair.
 ├── metadata.json                    # provenance, config, models, costs, scores
 ├── metadata/
 │   └── cost.json                    # generation-time phase report
-├── debug/                           # optional partial Codex JSONL logs + prompts
+├── debug/                           # optional partial OpenCode JSONL logs + prompts
 ├── agent_space/
 │   ├── train/                       # eval mode: cropped train PDF/OCR/work files
 │   └── test/                        # eval mode: cropped test PDF/OCR
@@ -604,7 +628,7 @@ python viz_batch_results.py data
 - `viz_blocks.py` draws colored detected-block bounds and lists detected block
   IDs and types. Its current metadata lookup does not reliably display routing
   models because routing is keyed by node ID while blocks use instance IDs.
-- `viz_agent_log.py` renders Codex JSONL events, commands, prompts, stderr, and
+- `viz_agent_log.py` renders OpenCode JSONL events, commands, prompts, stderr, and
   token usage.
 - `viz_batch_results.py` creates accuracy, token/cost, phase, break-even, and
   per-document charts under `data/results/`.
@@ -622,10 +646,10 @@ python viz_batch_results.py data
   `--reuse-ocr`, `--caveman`, and `--save-log` flags.
 - Generated scripts are retained, so extraction can be replayed without the
   original model calls.
-- `--save-log` retains exact Codex streams and prompts for block separation,
+- `--save-log` retains exact OpenCode streams and prompts for block separation,
   extraction, and repair. The record-separation session is not currently logged.
 
-Remote model and Codex outputs are not guaranteed to be byte-identical over
+Remote DeepSeek and OpenCode outputs are not guaranteed to be byte-identical over
 time. Preserve the complete artifact directory when an experiment must be
 auditable.
 
@@ -648,6 +672,6 @@ fallback, record grouping, page-locality health checks, batch command
 construction, and execution of a generated pipeline from a fresh directory.
 
 There is no configured linter. Keep new tests offline: they should not require
-the ignored `data/` corpus, credentials, live LLM output, or the Codex service.
+the ignored `data/` corpus, credentials, live LLM output, or the OpenCode service.
 
 For deeper contributor guidance and cross-file invariants, see `AGENTS.md`.

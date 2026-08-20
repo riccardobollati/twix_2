@@ -24,7 +24,7 @@ from src.agents.train_repair import train_repair_node
 
 
 def _route_after_train_eval(state: dict) -> str:
-    """Return 'codex_fix' if repair should run, otherwise 'grouping'."""
+    """Return 'opencode_fix' if repair should run, otherwise 'grouping'."""
     threshold = state.get("train_accuracy_threshold", 0.0)
     if not threshold or threshold <= 0.0:
         return "grouping"
@@ -70,20 +70,28 @@ def _route_after_train_eval(state: dict) -> str:
         return "grouping"
 
     print(f"  {reason} — starting repair attempt {attempts + 1}/{max_retries}")
-    return "codex_fix"
+    return "opencode_fix"
 
 
 def recursion_limit_for(max_repair_retries: int) -> int:
     """Recursion budget for one graph run: the base node chain plus the extra
-    codex_fix → train_eval → routing steps added by each repair round."""
+    opencode_fix → train_eval → routing steps added by each repair round."""
     return 30 + 4 * max_repair_retries
 
 
-def build_graph(llm: BaseChatModel, train_repair_max_retries: int = 3):
+def build_graph(
+    llm: BaseChatModel,
+    train_repair_max_retries: int = 3,
+    *,
+    ground_truth_llm: BaseChatModel | None = None,
+):
     """Build and compile the PDF template inference graph.
 
     Args:
-        llm: Any LangChain-compatible vision chat model (BaseChatModel).
+        llm: The LangChain-compatible DeepSeek chat model.
+        ground_truth_llm: OpenAI vision model for final held-out ground truth.
+            When omitted, the primary model is used without page images for
+            backward compatibility with direct ``build_graph`` callers.
         train_repair_max_retries: maximum repair rounds the run may use — the
             compiled graph's recursion_limit is derived from it, so pass the
             same value given as "train_repair_max_retries" in the invoke state.
@@ -103,13 +111,25 @@ def build_graph(llm: BaseChatModel, train_repair_max_retries: int = 3):
     graph = StateGraph(ExtractionState)
 
     _llm_model = getattr(llm, "model_name", None) or getattr(llm, "model", None) or "unknown"
+    _ground_truth_llm = ground_truth_llm or llm
+    _ground_truth_model = (
+        getattr(_ground_truth_llm, "model_name", None)
+        or getattr(_ground_truth_llm, "model", None)
+        or "unknown"
+    )
     graph.add_node(
         "detect_beginning",
         lambda state: detect_beginning_node(state, llm),
     )
     graph.add_node(
         "environment_creation",
-        lambda state: {**environment_creation_node(state), "llm_model": _llm_model},
+        lambda state: {
+            **environment_creation_node(state),
+            "llm_model": _llm_model,
+            "ground_truth_model": (
+                _ground_truth_model if state.get("eval_mode") else None
+            ),
+        },
     )
     graph.add_node(
         "template_inference",
@@ -124,10 +144,18 @@ def build_graph(llm: BaseChatModel, train_repair_max_retries: int = 3):
     graph.add_node("block_extraction_scripting", block_extraction_scripting_node)
     graph.add_node("collect_extraction_scripts", collect_extraction_scripts_node)
     graph.add_node("train_eval", lambda state: train_eval_node(state, llm))
-    graph.add_node("codex_fix", train_repair_node)
+    graph.add_node("opencode_fix", train_repair_node)
     graph.add_node("grouping", grouping_node)
     graph.add_node("merge_records", merge_records_node)
-    graph.add_node("ground_truth", lambda state: ground_truth_node(state, llm, window=state.get("gt_test_window") or 20))
+    graph.add_node(
+        "ground_truth",
+        lambda state: ground_truth_node(
+            state,
+            _ground_truth_llm,
+            window=state.get("gt_test_window") or 20,
+            include_images=ground_truth_llm is not None,
+        ),
+    )
     graph.add_node("eval", eval_node)
     graph.add_node("save_metadata", save_metadata_node)
 
@@ -158,9 +186,9 @@ def build_graph(llm: BaseChatModel, train_repair_max_retries: int = 3):
     graph.add_conditional_edges(
         "train_eval",
         _route_after_train_eval,
-        {"grouping": "grouping", "codex_fix": "codex_fix"},
+        {"grouping": "grouping", "opencode_fix": "opencode_fix"},
     )
-    graph.add_edge("codex_fix", "train_eval")
+    graph.add_edge("opencode_fix", "train_eval")
     graph.add_edge("grouping", "merge_records")
     graph.add_conditional_edges(
         "merge_records",

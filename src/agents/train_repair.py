@@ -7,7 +7,7 @@ import time
 from typing import Any
 
 from src.agents._ui import spinner as _spinner
-from src.models.codex import DEFAULT_CODEX_MODEL, codex_silent
+from src.models.opencode import DEFAULT_OPENCODE_MODEL, opencode_silent
 
 
 def _build_prompt(eval_txt: str, extraction_script_ids: list[str], health_problems: list[str]) -> str:
@@ -108,7 +108,7 @@ fixes that address the errors listed above without breaking what already works.
 
 
 def train_repair_node(state: dict[str, Any]) -> dict[str, Any]:
-    """Run a Codex session to fix pipeline scripts based on the training eval report.
+    """Run OpenCode to fix pipeline scripts based on the training eval report.
 
     Reads:
         state["agent_space"]           – used to derive pipeline_dir
@@ -167,7 +167,14 @@ def train_repair_node(state: dict[str, Any]) -> dict[str, Any]:
     t0 = time.time()
     debug_dir = os.path.join(document_dir, "debug")
     log_path  = os.path.join(debug_dir, f"train_repair_{attempts}.log") if state.get("save_log") else None
-    returncode, input_t, output_t, total_t = codex_silent(prompt, pipeline_dir, task=f"train_repair_{attempts}", model=DEFAULT_CODEX_MODEL, caveman=state.get("use_caveman", False), log_path=log_path)
+    returncode, input_t, output_t, total_t = opencode_silent(
+        prompt,
+        pipeline_dir,
+        task=f"train_repair_{attempts}",
+        model=state.get("opencode_model", DEFAULT_OPENCODE_MODEL),
+        caveman=state.get("use_caveman", False),
+        log_path=log_path,
+    )
     duration = time.time() - t0
 
     shown_t = (input_t or 0) + (output_t or 0) + (total_t or 0) or None
@@ -176,7 +183,7 @@ def train_repair_node(state: dict[str, Any]) -> dict[str, Any]:
     spinner_thread.join(timeout=0.5)
 
     if returncode != 0:
-        print(f"train_repair_node: codex exited {returncode} on attempt {attempts}")
+        print(f"train_repair_node: OpenCode exited {returncode} on attempt {attempts}")
 
     cost_entry: dict = {
         "phase": f"train_repair_{attempts}",

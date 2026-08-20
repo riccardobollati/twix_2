@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-import base64
 import csv
-import io
 import os
 from typing import Any
 
@@ -52,16 +50,6 @@ def _extract_page_range_ocr(
                 row = dict(row)
                 row["page"] = str(p - remap_offset)
                 writer.writerow(row)
-
-
-def _render_pages(pdf_path: str, n: int) -> list[str]:
-    images: list[str] = []
-    with pdfplumber.open(pdf_path) as pdf:
-        for page in pdf.pages[:n]:
-            buf = io.BytesIO()
-            page.to_image(resolution=150).original.save(buf, format="PNG")
-            images.append(base64.b64encode(buf.getvalue()).decode())
-    return images
 
 
 # ── node ──────────────────────────────────────────────────────────────────────
@@ -158,8 +146,6 @@ def environment_creation_node(state: ExtractionState) -> dict[str, Any]:
         )
         out = {}
 
-    pdf_pages = _render_pages(ws_pdf, actual_train_pages)
-
     # ── held-out validation split ─────────────────────────────────────────────
     # Separation/extraction scripts are generated against the first
     # (train − holdout) pages only; train_eval still runs on ALL train pages.
@@ -188,6 +174,5 @@ def environment_creation_node(state: ExtractionState) -> dict[str, Any]:
         "pdf_path":           ws_pdf,
         "ocr_csv_path":       ws_ocr,
         "build_ocr_csv_path": build_ocr,
-        "pdf_pages":          pdf_pages,
         "actual_train_pages": actual_train_pages,
     }

@@ -330,13 +330,19 @@ def parse_args(argv: Sequence[str]) -> tuple[argparse.Namespace, list[str]]:
         "--caveman",
         action="store_true",
         default=argparse.SUPPRESS,
-        help="Forwarded to run.py: prepend /caveman to every Codex prompt.",
+        help="Forwarded to run.py: prepend /caveman to every OpenCode prompt.",
+    )
+    run_options.add_argument(
+        "--no-routing",
+        action="store_true",
+        default=argparse.SUPPRESS,
+        help="Forwarded to run.py: use the easy model for every extraction block.",
     )
     run_options.add_argument(
         "--save-log",
         action="store_true",
         default=argparse.SUPPRESS,
-        help="Forwarded to run.py: save raw Codex session output to <doc>/debug/.",
+        help="Forwarded to run.py: save raw OpenCode session output to <doc>/debug/.",
     )
     return parser.parse_known_args(argv)
 
@@ -360,6 +366,7 @@ def build_forwarded_args(args: argparse.Namespace, unknown_args: Sequence[str]) 
         ("--eval", "eval"),
         ("--group-rows", "group_rows"),
         ("--reuse-ocr", "reuse_ocr"),
+        ("--no-routing", "no_routing"),
         ("--caveman", "caveman"),
         ("--save-log", "save_log"),
     ):

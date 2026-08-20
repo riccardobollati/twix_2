@@ -1,16 +1,13 @@
-"""Shared LLM ground-truth generator used by both train_eval and ground_truth nodes.
+"""Shared LLM ground-truth generator used by train and held-out evaluation.
 
 Both nodes generate ground truth the same way: the PDF is split into windows of
-consecutive pages, each window is sent to the vision LLM in one call (pages as
-images plus per-page OCR text), and records that continue across a window
-boundary are merged in a final pass. Only the window size differs between the
-train (5) and test (20) callers.
+consecutive pages and records that continue across a window boundary are merged
+in a final pass. Train evaluation sends layout-preserving OCR to DeepSeek. Final
+held-out evaluation sends page images plus exact OCR text to OpenAI.
 """
 
 from __future__ import annotations
 
-import base64
-import io
 import json
 from concurrent.futures import ThreadPoolExecutor
 from os.path import isfile
@@ -21,7 +18,11 @@ from langchain_core.messages import HumanMessage, SystemMessage
 
 from src.agents._usage import split_tokens
 from src.ground_truth_gen.prompt import build_prompt
-from src.ground_truth_gen.helpers import load_page_ocr, parse_json_response
+from src.ground_truth_gen.helpers import (
+    load_ocr_pages,
+    parse_json_response,
+    render_page_b64,
+)
 
 
 _MAX_WORKERS = 4  # parallel LLM calls for independent windows
@@ -32,12 +33,6 @@ _MAX_WORKERS = 4  # parallel LLM calls for independent windows
 _MIN_GT_COVERAGE = 0.2
 _MIN_OCR_CHARS = 500  # skip the check on near-empty pages
 _EMPTY_GT_FALLBACK_WINDOW = 5
-
-
-def _render_page_b64(page) -> str:
-    buf = io.BytesIO()
-    page.to_image(resolution=150).original.save(buf, format="PNG")
-    return base64.b64encode(buf.getvalue()).decode()
 
 
 def _node_order(template: list[dict]) -> dict[str, int]:
@@ -161,6 +156,8 @@ def _generate_ground_truth_once(
     template: list[dict],
     llm: BaseChatModel,
     window: int,
+    *,
+    include_images: bool = False,
 ) -> tuple[list[dict], list[dict], dict]:
     """Generate LLM ground-truth records once for every page of pdf_path.
 
@@ -173,14 +170,25 @@ def _generate_ground_truth_once(
         usage       – {"input_tokens", "output_tokens", "total_tokens"} sums
                       (total_tokens counts calls whose input/output split was unknown)
     """
-    system_prompt = build_prompt(template)
+    if (not ocr_csv or not isfile(ocr_csv)) and not include_images:
+        raise RuntimeError(
+            "DeepSeek ground-truth generation requires an OCR CSV because "
+            "DeepSeek V4 does not accept page images"
+        )
+
+    system_prompt = build_prompt(template, include_images=include_images)
     order = _node_order(template)
 
-    # ── build one payload per window (page rendering is not thread-safe) ──────
-    payloads: list[tuple[list[int], list, int]] = []  # (page_nums, content, ocr_chars)
+    # ── build one text or multimodal payload per window ───────────────────────
+    payloads: list[tuple[list[int], str | list[dict], int]] = []
     with pdfplumber.open(pdf_path) as pdf:
         total = len(pdf.pages)
         windows = [list(range(i, min(i + window, total))) for i in range(0, total, window)]
+        ocr_pages = (
+            load_ocr_pages(ocr_csv, range(1, total + 1))
+            if ocr_csv and isfile(ocr_csv)
+            else {}
+        )
         print(f"  {total} page(s), {len(windows)} window(s) of up to {window}")
 
         for win_indices in windows:
@@ -190,32 +198,48 @@ def _generate_ground_truth_once(
             if len(page_nums) == 1:
                 user_text = f"Extract all records from page {page_nums[0]} of the document."
             else:
+                source_description = "images" if include_images else "OCR layouts"
                 user_text = (
                     f"Extract all records from pages {pages_str} of the document. "
-                    f"The images are provided in page order ({pages_str})."
+                    f"The {source_description} are provided in page order ({pages_str})."
                 )
 
-            content: list = [{"type": "text", "text": user_text}]
-            for idx in win_indices:
-                content.append({
-                    "type": "image_url",
-                    "image_url": {"url": f"data:image/png;base64,{_render_page_b64(pdf.pages[idx])}"},
-                })
+            if include_images:
+                content: str | list[dict] = [{"type": "text", "text": user_text}]
+                for idx in win_indices:
+                    content.append({
+                        "type": "image_url",
+                        "image_url": {
+                            "url": f"data:image/png;base64,{render_page_b64(pdf.pages[idx])}"
+                        },
+                    })
+            else:
+                content = user_text
 
             ocr_chars = 0
             if ocr_csv and isfile(ocr_csv):
                 for page_num in page_nums:
-                    ocr_text = load_page_ocr(ocr_csv, page_num)
+                    ocr_text = ocr_pages[page_num]["text"]
                     ocr_chars += len(ocr_text)
-                    content.append({
-                        "type": "text",
-                        "text": f"OCR words on page {page_num} (exact character sequences, reading order):\n{ocr_text}",
-                    })
+                    if include_images:
+                        content.append({
+                            "type": "text",
+                            "text": (
+                                f"OCR words on page {page_num} (exact character "
+                                f"sequences, reading order):\n{ocr_text}"
+                            ),
+                        })
+                    else:
+                        ocr_layout = ocr_pages[page_num]["layout"]
+                        content += (
+                            f"\n\nPage {page_num} OCR layout (exact text with "
+                            f"PDF-point coordinates):\n{ocr_layout or '[no OCR words]'}"
+                        )
 
             payloads.append((page_nums, content, ocr_chars))
 
     # ── parallel LLM calls, consumed in window order ──────────────────────────
-    def _call(content: list):
+    def _call(content: str | list[dict]):
         return llm.invoke([
             SystemMessage(content=system_prompt),
             HumanMessage(content=content),
@@ -256,14 +280,15 @@ def _generate_ground_truth_once(
                     f"  pages {pages_str}... WARN: low GT coverage "
                     f"({coverage:.0%} of {ocr_chars} OCR chars) — retrying window"
                 )
-                retry_content = content + [{
-                    "type": "text",
-                    "text": (
-                        "Your previous attempt returned far less data than these pages "
-                        "contain. Extract EVERY record and EVERY row from ALL the pages "
-                        "listed above — do not stop after the first page."
-                    ),
-                }]
+                retry_instruction = (
+                    "Your previous attempt returned far less data than these pages "
+                    "contain. Extract EVERY record and EVERY row from ALL the pages "
+                    "listed above — do not stop after the first page."
+                )
+                if isinstance(content, list):
+                    retry_content = content + [{"type": "text", "text": retry_instruction}]
+                else:
+                    retry_content = content + "\n\n" + retry_instruction
                 retry_recs = _parse_window(_call(retry_content), pages_str + " (retry)")
                 if _gt_chars(retry_recs) > _gt_chars(page_recs):
                     page_recs = retry_recs
@@ -318,6 +343,8 @@ def generate_ground_truth(
     template: list[dict],
     llm: BaseChatModel,
     window: int,
+    *,
+    include_images: bool = False,
 ) -> tuple[list[dict], list[dict], dict]:
     """Generate ground truth, retrying an empty result with 5-page windows.
 
@@ -328,7 +355,7 @@ def generate_ground_truth(
     if the fallback is still empty instead of producing a misleading score.
     """
     records, raw_records, usage = _generate_ground_truth_once(
-        pdf_path, ocr_csv, template, llm, window
+        pdf_path, ocr_csv, template, llm, window, include_images=include_images
     )
     if records:
         return records, raw_records, usage
@@ -348,6 +375,7 @@ def generate_ground_truth(
         template,
         llm,
         _EMPTY_GT_FALLBACK_WINDOW,
+        include_images=include_images,
     )
     combined_usage = {
         key: (usage.get(key, 0) or 0) + (retry_usage.get(key, 0) or 0)
