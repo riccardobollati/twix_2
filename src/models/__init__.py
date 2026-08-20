@@ -10,19 +10,18 @@ else:
     load_dotenv()
 
 _PROVIDERS: dict[str, str] = {
-    "openai": "src.models.openai",
-    "azure":  "src.models.azure",
+    "openrouter": "src.models.openrouter",
 }
 
 
 def get_llm() -> BaseChatModel:
-    """Instantiate the LLM for the provider named in LLM_PROVIDER (default: openai).
+    """Instantiate the LLM for the provider in LLM_PROVIDER (default: openrouter).
 
     To add a new provider:
         1. Create src/models/<provider>.py with a get_model() -> BaseChatModel function.
         2. Add an entry to _PROVIDERS above.
     """
-    provider = os.getenv("LLM_PROVIDER", "openai").lower()
+    provider = os.getenv("LLM_PROVIDER", "openrouter").lower()
 
     if provider not in _PROVIDERS:
         raise ValueError(
@@ -33,4 +32,12 @@ def get_llm() -> BaseChatModel:
     module_path = _PROVIDERS[provider]
     import importlib
     module = importlib.import_module(module_path)
+    return module.get_model()
+
+
+def get_ground_truth_llm() -> BaseChatModel:
+    """Return the OpenAI model reserved for held-out/test ground truth."""
+    import importlib
+
+    module = importlib.import_module("src.models.openai")
     return module.get_model()

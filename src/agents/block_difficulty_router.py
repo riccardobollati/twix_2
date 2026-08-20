@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import base64
 import json
 import os
 import re
@@ -12,16 +11,17 @@ from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages import HumanMessage, SystemMessage
 
 from src.agents._usage import apply_usage, split_tokens
+from src.ground_truth_gen.helpers import format_words_layout
 
-MODEL_EASY = os.getenv("CODEX_EASY_MODEL", "gpt-5.4-mini")
-MODEL_HARD = os.getenv("CODEX_HARD_MODEL", os.getenv("CODEX_MODEL", "gpt-5.4"))
+DEFAULT_EASY_MODEL = "openrouter/deepseek/deepseek-v4-flash"
+DEFAULT_HARD_MODEL = "openrouter/deepseek/deepseek-v4-pro"
 
 _MAX_SAMPLES = 5
 _MAX_WORKERS = 4  # parallel classification calls
 
 _SYSTEM_PROMPT = """\
 You are a classification assistant for a PDF data extraction pipeline.
-You will receive sample images and the word text for a single block type \
+You will receive sample OCR layouts for a single block type \
 (a recurring section of a PDF document that appears once or more per page).
 
 Your task is to decide whether extracting this block requires a powerful model (HARD) \
@@ -47,34 +47,25 @@ or
 """
 
 
-def _load_samples(sample_dir: str) -> tuple[list[str], list[str]]:
-    """Return (base64 PNG list, word-text list) for up to _MAX_SAMPLES instances.
-
-    The word-level coordinate JSON is deliberately reduced to the word texts —
-    the images carry the layout signal, so shipping the full coordinate dump
-    only inflates the input tokens.
-    """
+def _load_samples(sample_dir: str) -> list[str]:
+    """Return layout-preserving OCR for up to ``_MAX_SAMPLES`` instances."""
     fnames = sorted(f for f in os.listdir(sample_dir) if f.endswith(".json"))[:_MAX_SAMPLES]
-    images: list[str] = []
-    word_texts: list[str] = []
+    layouts: list[str] = []
     for fname in fnames:
-        base = fname[:-5]
         json_path = os.path.join(sample_dir, fname)
-        img_path  = os.path.join(sample_dir, f"{base}.png")
         try:
             with open(json_path, encoding="utf-8") as f:
                 sample = json.load(f)
-            word_texts.append(" ".join(w.get("text", "") for w in sample.get("words", [])))
+            layout = format_words_layout(sample.get("words", []))
+            if layout:
+                layouts.append(layout)
         except (OSError, json.JSONDecodeError):
             pass
-        if os.path.isfile(img_path):
-            with open(img_path, "rb") as f:
-                images.append(base64.b64encode(f.read()).decode())
-    return images, word_texts
+    return layouts
 
 
 def block_difficulty_router_node(state: dict[str, Any], llm: BaseChatModel) -> dict[str, Any]:
-    """Classify each block type as easy or hard and assign a Codex model accordingly.
+    """Classify each block type and assign an OpenCode model accordingly.
 
     The per-block classification calls are independent and run in parallel.
 
@@ -82,7 +73,7 @@ def block_difficulty_router_node(state: dict[str, Any], llm: BaseChatModel) -> d
         state["pdf_path"]   – used to locate train_dir/block_samples/
 
     Writes:
-        block_codex_models  – dict[template_id, model_string]
+        block_opencode_models  – dict[template_id, model_string]
     """
     t0 = time.time()
     train_dir         = os.path.dirname(state["pdf_path"])
@@ -92,35 +83,44 @@ def block_difficulty_router_node(state: dict[str, Any], llm: BaseChatModel) -> d
         d for d in os.listdir(block_samples_dir)
         if os.path.isdir(os.path.join(block_samples_dir, d))
     )
+    model_easy = os.getenv("OPENCODE_EASY_MODEL", DEFAULT_EASY_MODEL)
+    model_hard = os.getenv(
+        "OPENCODE_HARD_MODEL",
+        os.getenv("OPENCODE_MODEL", DEFAULT_HARD_MODEL),
+    )
+
+    if state.get("no_routing"):
+        model_assignments = {template_id: model_easy for template_id in template_ids}
+        print(
+            "  block_difficulty_router: routing disabled; assigned "
+            f"{model_easy} to all {len(template_ids)} block type(s)"
+        )
+        return {
+            "block_opencode_models": model_assignments,
+            "cost": [{
+                "phase": "block_difficulty_router",
+                "duration_s": round(time.time() - t0, 3),
+                "routing_disabled": True,
+            }],
+        }
 
     def _classify(template_id: str) -> tuple[str, str, tuple[int, int, int]]:
         """Return (model, log message, (input, output, total) tokens) for one block type."""
         sample_dir        = os.path.join(block_samples_dir, template_id)
-        images, word_texts = _load_samples(sample_dir)
+        layouts = _load_samples(sample_dir)
 
-        if not images and not word_texts:
-            return MODEL_HARD, f"{template_id} → no samples, defaulting to hard → {MODEL_HARD}", (0, 0, 0)
+        if not layouts:
+            return model_hard, f"{template_id} → no samples, defaulting to hard → {model_hard}", (0, 0, 0)
 
-        content: list = []
-        content.append({
-            "type": "text",
-            "text": f"Block type '{template_id}' — {len(images)} sample image(s) follow:",
-        })
-        for img_b64 in images:
-            content.append({
-                "type": "image_url",
-                "image_url": {"url": f"data:image/png;base64,{img_b64}"},
-            })
-        if word_texts:
-            listing = "\n".join(f"  sample {i}: {t}" for i, t in enumerate(word_texts))
-            content.append({
-                "type": "text",
-                "text": f"Word texts of the same {len(word_texts)} sample(s):\n{listing}",
-            })
-        content.append({
-            "type": "text",
-            "text": "Classify this block type as EASY or HARD based on the criteria above.",
-        })
+        samples = "\n\n".join(
+            f"Sample {index} OCR layout:\n{layout}"
+            for index, layout in enumerate(layouts, start=1)
+        )
+        content = (
+            f"Block type '{template_id}' — {len(layouts)} sample OCR layout(s):\n\n"
+            f"{samples}\n\nClassify this block type as EASY or HARD based on "
+            "the criteria above."
+        )
 
         difficulty = "hard"
         tokens = (0, 0, 0)
@@ -141,7 +141,7 @@ def block_difficulty_router_node(state: dict[str, Any], llm: BaseChatModel) -> d
         except Exception as exc:
             message = f"{template_id} classification error ({exc}), defaulting to hard"
 
-        model = MODEL_EASY if difficulty == "easy" else MODEL_HARD
+        model = model_easy if difficulty == "easy" else model_hard
         return model, message, tokens
 
     model_assignments: dict[str, str] = {}
@@ -163,6 +163,6 @@ def block_difficulty_router_node(state: dict[str, Any], llm: BaseChatModel) -> d
     cost_entry: dict = {"phase": "block_difficulty_router", "duration_s": round(duration, 3)}
     apply_usage(cost_entry, input_tokens, output_tokens, total_tokens)
     return {
-        "block_codex_models": model_assignments,
+        "block_opencode_models": model_assignments,
         "cost": [cost_entry],
     }

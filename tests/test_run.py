@@ -9,7 +9,13 @@ from types import SimpleNamespace
 from unittest.mock import patch
 
 from run import _api_key_preview, _nonnegative_int, _positive_int, _probability, resolve_document
-from src.run_batch import JobState, TerminalDashboard, build_command
+from src.run_batch import (
+    JobState,
+    TerminalDashboard,
+    build_command,
+    build_forwarded_args,
+    parse_args,
+)
 
 
 class ResolveDocumentTests(unittest.TestCase):
@@ -70,20 +76,20 @@ class ResolveDocumentTests(unittest.TestCase):
         self.assertIn("/datasets/example/example.pdf", command)
         self.assertEqual(command[-2:], ["--out-dir", "/datasets/example"])
 
+    def test_batch_forwards_no_routing(self) -> None:
+        args, unknown = parse_args(["id_60", "--no-routing"])
+
+        forwarded = build_forwarded_args(args, unknown)
+
+        self.assertIn("--no-routing", forwarded)
+
     def test_api_key_preview_uses_active_provider(self) -> None:
         with patch.dict(
             os.environ,
-            {"LLM_PROVIDER": "openai", "OPENAI_API_KEY": "1234567890secret"},
+            {"OPENROUTER_API_KEY": "1234567890secret"},
             clear=True,
         ):
             self.assertEqual(_api_key_preview(), "1234567890")
-
-        with patch.dict(
-            os.environ,
-            {"LLM_PROVIDER": "azure", "AZURE_OPENAI_API_KEY": "abcdefghijsecret"},
-            clear=True,
-        ):
-            self.assertEqual(_api_key_preview(), "abcdefghij")
 
     def test_api_key_preview_handles_missing_key(self) -> None:
         with patch.dict(os.environ, {}, clear=True):

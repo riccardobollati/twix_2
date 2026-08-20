@@ -14,7 +14,13 @@ from src.agents.gt_common import _merge_records, _node_order, _should_merge  # n
 from src.agents.grouping import _maybe_merge_single_block
 
 
-def ground_truth_node(state: dict[str, Any], llm: BaseChatModel, window: int = 3) -> dict[str, Any]:
+def ground_truth_node(
+    state: dict[str, Any],
+    llm: BaseChatModel,
+    window: int = 3,
+    *,
+    include_images: bool = False,
+) -> dict[str, Any]:
     """Generate ground truth for all test pages and save to pipeline/ground_truth.json.
 
     Delegates to the shared generator in gt_common (same semantics as the train
@@ -42,7 +48,14 @@ def ground_truth_node(state: dict[str, Any], llm: BaseChatModel, window: int = 3
     template     = state["template"]
 
     print(f"ground_truth_node: window={window}")
-    records, raw_records, usage = generate_ground_truth(pdf_path, ocr_path, template, llm, window)
+    records, raw_records, usage = generate_ground_truth(
+        pdf_path,
+        ocr_path,
+        template,
+        llm,
+        window,
+        include_images=include_images,
+    )
 
     not_merged_path = os.path.join(pipeline_dir, "not_merged_gt.json")
     with open(not_merged_path, "w", encoding="utf-8") as f:

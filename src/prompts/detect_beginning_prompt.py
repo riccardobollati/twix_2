@@ -1,7 +1,8 @@
 PROMPT_DETECT_BEGINNING = """
 You locate where the extractable, repeated structured-data template begins in a
-PDF. You will receive one chronological batch of page images. Each image is
-preceded by its physical PDF page number.
+PDF. You will receive one chronological batch of page OCR layouts. Each page is
+identified by its physical PDF page number. Every OCR line includes y coordinates,
+and every word includes its x span, so use both text and geometry as layout evidence.
 
 Find the earliest page in this batch that belongs to the document's actual
 structured records: tables, repeated key-value fields, forms, listings, or

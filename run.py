@@ -18,12 +18,15 @@ Usage:
     The graph detects and skips cover/index front matter before creating the
     train set. With --eval, the remaining pages are split into train and test;
     the graph builds the pipeline on train, runs it on test, generates ground
-    truth via vision LLM, and scores the result.
+    truth via DeepSeek, and scores the result.
 
 Environment variables:
-    LLM_PROVIDER    Provider name (default: openai). See src/models/ for available providers.
-    OPENAI_API_KEY  Required when LLM_PROVIDER=openai.
-    OPENAI_MODEL    OpenAI model name (default: src.models.openai.DEFAULT_MODEL).
+    LLM_PROVIDER       Provider name (default and only active provider: openrouter).
+    OPENROUTER_API_KEY Required for direct calls and OpenCode's OpenRouter provider.
+    OPENROUTER_MODEL   Direct-call model (default: deepseek/deepseek-v4-flash).
+    OPENAI_API_KEY     Required with --eval for held-out ground truth.
+    OPENAI_MODEL       Held-out ground-truth model (default: gpt-5.4).
+    OPENCODE_MODEL     OpenCode provider/model used for code generation.
 """
 
 from __future__ import annotations
@@ -46,8 +49,8 @@ else:
 import pdfplumber
 
 from src.agents.graph import build_graph
-from src.models import get_llm
-from src.models.codex import DEFAULT_CODEX_MODEL
+from src.models import get_ground_truth_llm, get_llm
+from src.models.opencode import DEFAULT_OPENCODE_MODEL
 
 
 # ---------------------------------------------------------------------------
@@ -194,9 +197,7 @@ def _probability(value: str) -> float:
 
 
 def _api_key_preview() -> str:
-    provider = os.getenv("LLM_PROVIDER", "openai").lower()
-    variable = "AZURE_OPENAI_API_KEY" if provider == "azure" else "OPENAI_API_KEY"
-    key = os.getenv(variable, "")
+    key = os.getenv("OPENROUTER_API_KEY", "")
     return key[:10] if key else "<not set>"
 
 
@@ -225,7 +226,7 @@ def main() -> None:
         "--eval", action="store_true",
         help=(
             "Split into train/test, run the pipeline on the test set, generate "
-            "ground truth via vision LLM, and score the result."
+            "ground truth via DeepSeek, and score the result."
         ),
     )
     parser.add_argument(
@@ -257,26 +258,33 @@ def main() -> None:
         "--train-threshold", type=_probability, default=0.0, metavar="FLOAT",
         help=(
             "If set to a value > 0, the pipeline checks train accuracy after the "
-            "train eval phase. If accuracy is below this threshold it launches a "
-            "Codex repair session to fix the pipeline scripts, then re-evaluates. "
+            "train eval phase. If accuracy is below this threshold it launches "
+            "an OpenCode repair session to fix the pipeline scripts, then re-evaluates. "
             "0.0 (default) disables the repair loop entirely."
         ),
     )
     parser.add_argument(
         "--train-max-retries", type=_nonnegative_int, default=3, metavar="N",
-        help="Maximum number of Codex repair attempts before proceeding regardless (default: 3).",
+        help="Maximum number of OpenCode repair attempts before proceeding regardless (default: 3).",
     )
     parser.add_argument(
         "--gt-test-window", type=_positive_int, default=None, metavar="N",
         help="Pages per LLM call when generating test ground truth (default: 20).",
     )
     parser.add_argument(
+        "--no-routing", action="store_true",
+        help=(
+            "Skip block-difficulty classification and use OPENCODE_EASY_MODEL "
+            "for every extraction block."
+        ),
+    )
+    parser.add_argument(
         "--caveman", action="store_true",
-        help="Prepend /caveman to every Codex prompt to reduce output tokens (~65%%).",
+        help="Prepend /caveman to every OpenCode prompt to reduce output tokens (~65%%).",
     )
     parser.add_argument(
         "--save-log", action="store_true",
-        help="Save raw Codex session output to <doc>/debug/ (one file per session).",
+        help="Save raw OpenCode session output to <doc>/debug/ (one file per session).",
     )
     args = parser.parse_args()
 
@@ -310,19 +318,24 @@ def main() -> None:
     #   block_samples → block_extraction_scripting → collect_extraction_scripts →
     #   grouping [→ ground_truth → eval]  (last two only when eval_mode=True)
     print(f"[2/{total_steps}] Running graph ...", file=sys.stderr)
-    graph = build_graph(get_llm(), train_repair_max_retries=args.train_max_retries)
+    graph = build_graph(
+        get_llm(),
+        train_repair_max_retries=args.train_max_retries,
+        ground_truth_llm=get_ground_truth_llm() if args.eval else None,
+    )
     graph.invoke({
         "full_pdf_path":              str(pdf_path),
         "full_ocr_csv_path":          str(ocr_csv_path),
         "output_dir":                 str(output_dir),
         "source_sha256":              _sha256(pdf_path),
-        "codex_model":                DEFAULT_CODEX_MODEL,
+        "opencode_model":             DEFAULT_OPENCODE_MODEL,
         "doc_name":                   doc_name,
         "train_pages":                args.pages,
         "eval_mode":                  args.eval,
         "eval_pages":                 args.eval_pages,
         "train_accuracy_threshold":   args.train_threshold,
         "train_repair_max_retries":   args.train_max_retries,
+        "no_routing":                 args.no_routing,
         **({
             "detected_start_page": args.start_page,
             "beginning_confidence": "manual",

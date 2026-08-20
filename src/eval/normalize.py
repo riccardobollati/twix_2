@@ -100,7 +100,7 @@ def equal_normalized(na: str, nb: str) -> bool:
     fb = _maybe_number(nb)
     if fa is not None and fb is not None:
         return abs(fa - fb) <= 1e-6
-    # Space-insensitive fallback: vision-generated references sometimes split
+    # Space-insensitive fallback: model-generated references sometimes split
     # words mid-token ("Nati onal"); a candidate can never reproduce that, so
     # such diffs are measurement noise, not extraction errors.
     if na.replace(" ", "") == nb.replace(" ", ""):

@@ -39,11 +39,11 @@ sys.path.insert(0, os.path.dirname(__file__))
 from src.eval.convert import load_json_dedup
 from src.eval.render import render_to_file
 from src.eval.score import score as eval_score
-from src.ground_truth_gen.helpers import load_page_ocr, parse_json_response, render_page_b64
+from src.ground_truth_gen.helpers import load_ocr_pages, parse_json_response, render_page_b64
 from src.ground_truth_gen.prompt import build_prompt
 from src.agents.ground_truth import _node_order, _should_merge, _merge_records
 from src.agents.grouping import _maybe_merge_single_block
-from src.models import get_llm
+from src.models import get_ground_truth_llm
 
 
 def _find_base_folder(start: str) -> str:
@@ -94,10 +94,16 @@ def _generate_ground_truth(
     llm,
     window: int = 20,
 ) -> list[dict]:
-    system_prompt = build_prompt(template)
+    system_prompt = build_prompt(template, include_images=True)
     order  = _node_order(template)
     window = max(1, window)
     wins   = [indices[i:i + window] for i in range(0, len(indices), window)]
+    page_numbers = [index + 1 for index in indices]
+    ocr_pages = (
+        load_ocr_pages(ocr_path, page_numbers)
+        if ocr_path and os.path.isfile(ocr_path)
+        else {}
+    )
 
     all_windows: list[list[dict]] = []
     with pdfplumber.open(pdf_path) as pdf:
@@ -116,18 +122,23 @@ def _generate_ground_truth(
                     f"The images are provided in page order ({pages_str})."
                 )
 
-            content: list = [{"type": "text", "text": user_text}]
+            content: list[dict] = [{"type": "text", "text": user_text}]
             for idx in win_indices:
                 content.append({
                     "type": "image_url",
-                    "image_url": {"url": f"data:image/png;base64,{render_page_b64(pdf.pages[idx])}"},
+                    "image_url": {
+                        "url": f"data:image/png;base64,{render_page_b64(pdf.pages[idx])}"
+                    },
                 })
             if ocr_path and os.path.isfile(ocr_path):
                 for page_num in page_nums:
-                    ocr_text = load_page_ocr(ocr_path, page_num)
+                    ocr_text = ocr_pages[page_num]["text"]
                     content.append({
                         "type": "text",
-                        "text": f"OCR words on page {page_num} (exact character sequences, reading order):\n{ocr_text}",
+                        "text": (
+                            f"OCR words on page {page_num} (exact character "
+                            f"sequences, reading order):\n{ocr_text}"
+                        ),
                     })
 
             response = llm.invoke([
@@ -246,7 +257,14 @@ def main() -> None:
         indices = sorted(rng.sample(range(total), n_pages))
         print(f"Sampling pages: {[i + 1 for i in indices]} / {total}")
 
-        gt_results = _generate_ground_truth(pdf_path, template, ocr_path, indices, get_llm(), window=args.gt_window)
+        gt_results = _generate_ground_truth(
+            pdf_path,
+            template,
+            ocr_path,
+            indices,
+            get_ground_truth_llm(),
+            window=args.gt_window,
+        )
 
         with open(gt_path, "w", encoding="utf-8") as f:
             json.dump(gt_results, f, indent=2, ensure_ascii=False)

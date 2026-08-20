@@ -81,6 +81,7 @@ def save_metadata_node(state: dict[str, Any]) -> dict[str, Any]:
             "exact_match":            ev.get("exact_match"),
             "agentic_pipeline_cost":  _find("grouping"),
             "ground_truth_cost":      _find("ground_truth"),
+            "ground_truth_model":     state.get("ground_truth_model"),
         }
         # degenerate-output flag from pipeline.py (empty/partial extraction):
         # an accuracy produced by a degenerate run is a pipeline abort, not a
@@ -118,12 +119,14 @@ def save_metadata_node(state: dict[str, Any]) -> dict[str, Any]:
         "test_pages":       test_pages,
         "eval_mode":        state.get("eval_mode", False),
         "llm_model":        state.get("llm_model"),
-        "codex_model":      state.get("codex_model"),
-        "block_models":     state.get("block_codex_models"),
+        "ground_truth_model": state.get("ground_truth_model"),
+        "opencode_model":   state.get("opencode_model"),
+        "block_models":     state.get("block_opencode_models"),
         "run_config": {
             "requested_train_pages": state.get("train_pages"),
             "requested_eval_pages": state.get("eval_pages"),
             "holdout_pages": state.get("holdout_pages"),
+            "no_routing": state.get("no_routing", False),
             "train_accuracy_threshold": state.get("train_accuracy_threshold", 0.0),
             "train_repair_max_retries": state.get("train_repair_max_retries", 3),
             "ground_truth_test_window": state.get("gt_test_window", 20),

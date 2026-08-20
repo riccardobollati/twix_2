@@ -21,7 +21,7 @@ import os
 
 from src.agents.eval import eval_node
 from src.agents.ground_truth import ground_truth_node
-from src.models import get_llm
+from src.models import get_ground_truth_llm
 
 # ── config ────────────────────────────────────────────────────────────────────
 
@@ -73,8 +73,8 @@ state = {
 # ── ground truth ──────────────────────────────────────────────────────────────
 
 print("\n── ground_truth_node ────────────────────────────────────────")
-llm = get_llm()
-result = ground_truth_node(state, llm, window=window)
+llm = get_ground_truth_llm()
+result = ground_truth_node(state, llm, window=window, include_images=True)
 gt_cost = result["cost"][0]
 print(f"duration: {gt_cost['duration_s']}s  tokens: {gt_cost.get('tokens', 'n/a')}")
 

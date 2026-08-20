@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import base64
-import io
 import json
 import re
 import threading
@@ -15,18 +13,12 @@ from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage
 from src.agents._ui import spinner as _spinner
 from src.agents._usage import apply_usage, split_tokens
 from src.agents.template_inference import ExtractionState
+from src.ground_truth_gen.helpers import load_ocr_pages
 from src.prompts.detect_beginning_prompt import PROMPT_DETECT_BEGINNING
 
 
 _BATCH_PAGES = 6
-_RENDER_DPI = 120
 _MAX_PARSE_ATTEMPTS = 2
-
-
-def _render_page_b64(page: Any) -> str:
-    buf = io.BytesIO()
-    page.to_image(resolution=_RENDER_DPI).original.save(buf, format="PNG")
-    return base64.b64encode(buf.getvalue()).decode()
 
 
 def _parse_response(text: str, batch_start: int, batch_end: int) -> dict[str, Any]:
@@ -66,7 +58,7 @@ def detect_beginning_node(
 ) -> dict[str, Any]:
     """Find the first physical PDF page containing the structured template.
 
-    Pages are inspected chronologically in small vision batches. A batch with
+    Pages are inspected chronologically in small OCR-layout batches. A batch with
     no structured data advances the scan; the first reported candidate stops
     it. If the model cannot identify structured content anywhere, page 1 is a
     conservative fallback that preserves the pipeline's previous behavior.
@@ -90,34 +82,27 @@ def detect_beginning_node(
             total_pages_in_pdf = len(pdf.pages)
             if total_pages_in_pdf == 0:
                 raise RuntimeError("cannot detect a beginning in an empty PDF")
+            ocr_pages = load_ocr_pages(
+                state["full_ocr_csv_path"], range(1, total_pages_in_pdf + 1)
+            )
 
             for batch_start in range(1, total_pages_in_pdf + 1, _BATCH_PAGES):
                 batch_end = min(batch_start + _BATCH_PAGES - 1, total_pages_in_pdf)
-                content: list[dict[str, Any]] = [{
-                    "type": "text",
-                    "text": (
-                        f"Inspect physical PDF pages {batch_start} through {batch_end}. "
-                        "Choose the earliest actual structured-record page, if any."
-                    ),
-                }]
+                content = [
+                    f"Inspect physical PDF pages {batch_start} through {batch_end}. "
+                    "Choose the earliest actual structured-record page, if any."
+                ]
                 for page_number in range(batch_start, batch_end + 1):
-                    content.append({
-                        "type": "text",
-                        "text": f"Physical PDF page {page_number}:",
-                    })
-                    content.append({
-                        "type": "image_url",
-                        "image_url": {
-                            "url": (
-                                "data:image/png;base64,"
-                                + _render_page_b64(pdf.pages[page_number - 1])
-                            )
-                        },
-                    })
+                    layout = ocr_pages[page_number]["layout"]
+                    content.append(
+                        f"Physical PDF page {page_number} OCR layout "
+                        "(coordinates are PDF points):\n"
+                        f"{layout or '[no OCR words]'}"
+                    )
 
                 messages: list[BaseMessage] = [
                     SystemMessage(content=PROMPT_DETECT_BEGINNING),
-                    HumanMessage(content=content),
+                    HumanMessage(content="\n\n".join(content)),
                 ]
                 batch_result: dict[str, Any] | None = None
                 last_error = ""

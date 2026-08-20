@@ -26,10 +26,10 @@ import numpy as np
 
 
 # ── token pricing (USD per million tokens) ───────────────────────────────────
-PRICE_INPUT_PER_M       = 2.50   # hard model (gpt-5.4)
-PRICE_OUTPUT_PER_M      = 15.00  # hard model (gpt-5.4)
-PRICE_INPUT_EASY_PER_M  = 0.75   # easy model (gpt-5.4-mini)
-PRICE_OUTPUT_EASY_PER_M = 4.50   # easy model (gpt-5.4-mini)
+PRICE_INPUT_PER_M       = 0.0679  # OpenRouter DeepSeek V4 Flash, 2026-08-18
+PRICE_OUTPUT_PER_M      = 0.168   # OpenRouter DeepSeek V4 Flash, 2026-08-18
+PRICE_INPUT_HARD_PER_M  = 0.66    # OpenRouter DeepSeek V4 Pro, 2026-08-18
+PRICE_OUTPUT_HARD_PER_M = 1.98    # OpenRouter DeepSeek V4 Pro, 2026-08-18
 
 
 PHASE_COST_LABELS = {
@@ -88,7 +88,7 @@ def _pipeline_cost_usd(phases: list[dict], block_models: dict | None) -> float:
 
     For the block_extraction_scripting phase, per-block model pricing is applied
     when per-block token data and a block_models mapping are available; otherwise
-    falls back to hard-model pricing for the whole phase.
+    falls back to the default Flash-model pricing for the whole phase.
     """
     total = 0.0
     for p in phases:
@@ -97,8 +97,10 @@ def _pipeline_cost_usd(phases: list[dict], block_models: dict | None) -> float:
             if blocks:
                 for b in blocks:
                     model = block_models.get(str(b.get("id", "")), "")
-                    if "mini" in model:
-                        total += _cost_usd(b, PRICE_INPUT_EASY_PER_M, PRICE_OUTPUT_EASY_PER_M)
+                    if "pro" in model.lower():
+                        total += _cost_usd(
+                            b, PRICE_INPUT_HARD_PER_M, PRICE_OUTPUT_HARD_PER_M
+                        )
                     else:
                         total += _cost_usd(b)
                 continue  # per-block totals already accumulated; skip phase-level sum
@@ -218,8 +220,8 @@ def _phase_token_spend_breakdowns(d: dict) -> dict[str, dict[str, float]]:
                 for block in blocks:
                     model = block_models.get(str(block.get("id", "")), "")
                     prices = (
-                        (PRICE_INPUT_EASY_PER_M, PRICE_OUTPUT_EASY_PER_M)
-                        if "mini" in model
+                        (PRICE_INPUT_HARD_PER_M, PRICE_OUTPUT_HARD_PER_M)
+                        if "pro" in model.lower()
                         else (PRICE_INPUT_PER_M, PRICE_OUTPUT_PER_M)
                     )
                     _add_token_breakdown(
