@@ -7,8 +7,27 @@ from langchain_openai import ChatOpenAI
 
 
 DEFAULT_MODEL = "deepseek/deepseek-v4-flash"
+DEFAULT_GROUND_TRUTH_MODEL = "openai/gpt-5.4"
+DEFAULT_GROUND_TRUTH_MAX_TOKENS = 128_000
 DEFAULT_BASE_URL = "https://openrouter.ai/api/v1"
 _REASONING_EFFORTS = {"minimal", "low", "medium", "high", "xhigh"}
+
+
+def _connection_kwargs() -> dict:
+    """Shared OpenRouter transport settings for every direct model call."""
+    headers: dict[str, str] = {}
+    if app_url := os.getenv("OPENROUTER_APP_URL", "").strip():
+        headers["HTTP-Referer"] = app_url
+    if app_name := os.getenv("OPENROUTER_APP_NAME", "TWIX 2").strip():
+        headers["X-OpenRouter-Title"] = app_name
+
+    return {
+        "api_key": os.environ["OPENROUTER_API_KEY"],
+        "base_url": os.getenv("OPENROUTER_BASE_URL", DEFAULT_BASE_URL),
+        "default_headers": headers,
+        "temperature": 0,
+        "model_kwargs": {"response_format": {"type": "json_object"}},
+    }
 
 
 def get_model() -> BaseChatModel:
@@ -25,23 +44,39 @@ def get_model() -> BaseChatModel:
         allowed = ", ".join(sorted(_REASONING_EFFORTS))
         raise ValueError(f"OPENROUTER_REASONING_EFFORT must be one of: {allowed}")
 
-    headers: dict[str, str] = {}
-    if app_url := os.getenv("OPENROUTER_APP_URL", "").strip():
-        headers["HTTP-Referer"] = app_url
-    if app_name := os.getenv("OPENROUTER_APP_NAME", "TWIX 2").strip():
-        headers["X-OpenRouter-Title"] = app_name
-
     return ChatOpenAI(
         model=os.getenv("OPENROUTER_MODEL", DEFAULT_MODEL),
-        api_key=os.environ["OPENROUTER_API_KEY"],
-        base_url=os.getenv("OPENROUTER_BASE_URL", DEFAULT_BASE_URL),
-        default_headers=headers,
-        temperature=0,
-        model_kwargs={"response_format": {"type": "json_object"}},
+        **_connection_kwargs(),
         extra_body={
             "reasoning": {
                 "effort": reasoning_effort,
                 "exclude": True,
             }
         },
+    )
+
+
+def get_ground_truth_model() -> BaseChatModel:
+    """Return OpenAI GPT-5.4 through OpenRouter for held-out ground truth."""
+    raw_max_tokens = os.getenv(
+        "OPENROUTER_GROUND_TRUTH_MAX_TOKENS",
+        str(DEFAULT_GROUND_TRUTH_MAX_TOKENS),
+    )
+    try:
+        max_tokens = int(raw_max_tokens)
+    except ValueError as exc:
+        raise ValueError(
+            "OPENROUTER_GROUND_TRUTH_MAX_TOKENS must be a positive integer"
+        ) from exc
+    if max_tokens <= 0:
+        raise ValueError(
+            "OPENROUTER_GROUND_TRUTH_MAX_TOKENS must be a positive integer"
+        )
+
+    return ChatOpenAI(
+        model=os.getenv(
+            "OPENROUTER_GROUND_TRUTH_MODEL", DEFAULT_GROUND_TRUTH_MODEL
+        ),
+        max_tokens=max_tokens,
+        **_connection_kwargs(),
     )

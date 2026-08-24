@@ -89,7 +89,7 @@ def build_graph(
 
     Args:
         llm: The LangChain-compatible DeepSeek chat model.
-        ground_truth_llm: OpenAI vision model for final held-out ground truth.
+        ground_truth_llm: OpenRouter vision model for final held-out ground truth.
             When omitted, the primary model is used without page images for
             backward compatibility with direct ``build_graph`` callers.
         train_repair_max_retries: maximum repair rounds the run may use — the

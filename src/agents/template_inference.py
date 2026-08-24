@@ -50,7 +50,7 @@ class ExtractionState(TypedDict):
     gt_test_window:  NotRequired[int]        # pages per LLM call for test GT (default 20)
     block_opencode_models: NotRequired[dict] # template_id → OpenCode model string
     llm_model:          NotRequired[str]     # name of the DeepSeek model used for this run
-    ground_truth_model: NotRequired[str]     # OpenAI model used for held-out test GT
+    ground_truth_model: NotRequired[str]     # OpenRouter model used for held-out test GT
     no_routing:         NotRequired[bool]    # use the easy model for every block type
     use_caveman:        NotRequired[bool]    # prepend /caveman to every OpenCode prompt
     save_log:           NotRequired[bool]    # save raw OpenCode session output to debug/

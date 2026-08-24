@@ -36,8 +36,8 @@ def get_llm() -> BaseChatModel:
 
 
 def get_ground_truth_llm() -> BaseChatModel:
-    """Return the OpenAI model reserved for held-out/test ground truth."""
+    """Return the OpenRouter model reserved for held-out/test ground truth."""
     import importlib
 
-    module = importlib.import_module("src.models.openai")
-    return module.get_model()
+    module = importlib.import_module("src.models.openrouter")
+    return module.get_ground_truth_model()

@@ -3,7 +3,8 @@
 Both nodes generate ground truth the same way: the PDF is split into windows of
 consecutive pages and records that continue across a window boundary are merged
 in a final pass. Train evaluation sends layout-preserving OCR to DeepSeek. Final
-held-out evaluation sends page images plus exact OCR text to OpenAI.
+held-out evaluation sends page images plus exact OCR text to GPT-5.4 through
+OpenRouter.
 """
 
 from __future__ import annotations

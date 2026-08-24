@@ -10,7 +10,7 @@ extractor from a small sample of a template-based PDF family. It combines:
 - `pdfplumber` OCR and geometry extraction;
 - DeepSeek calls over layout-preserving OCR for front-matter detection, template
   inference, block difficulty routing, and train ground truth;
-- OpenAI vision calls over page images plus exact OCR for final held-out ground truth;
+- GPT-5.4 vision calls through OpenRouter over page images plus exact OCR for final held-out ground truth;
 - the OpenCode CLI for writing document-specific Python separation and extraction
   scripts; and
 - LangGraph for orchestration, train evaluation, optional repair, test
@@ -47,8 +47,12 @@ Environment selection:
 - `LLM_PROVIDER=openrouter` uses `src/models/openrouter.py` and requires
   `OPENROUTER_API_KEY`; `OPENROUTER_MODEL` overrides the direct-call model.
 - `OPENROUTER_REASONING_EFFORT` controls direct-call reasoning.
-- `OPENAI_API_KEY` and `OPENAI_MODEL` configure the OpenAI vision model used
-  only for final held-out/test ground truth (`gpt-5.4` by default).
+- `OPENROUTER_GROUND_TRUTH_MODEL` configures the vision model used only for
+  final held-out/test ground truth (`openai/gpt-5.4` by default); it uses the
+  same `OPENROUTER_API_KEY` as other direct calls.
+- `OPENROUTER_GROUND_TRUTH_MAX_TOKENS` caps held-out/test ground-truth output
+  (`128000` by default, GPT-5.4's full output allowance). OpenRouter requires
+  the API key's credit limit to cover this maximum during its credit check.
 - `OPENCODE_MODEL`, `OPENCODE_EASY_MODEL`, and `OPENCODE_HARD_MODEL` select
   OpenCode's `provider/model` code-generation and routing targets. OpenRouter
   targets use `openrouter/<publisher>/<model>`.
@@ -228,7 +232,8 @@ its semantics between `train_eval.py` and `ground_truth.py`.
   order.
 - Train ground truth sends layout-preserving OCR to DeepSeek through OpenRouter.
   Final held-out/test ground truth sends images and exact OCR text together to
-  OpenAI, keeping the evaluation reference independent of the training model.
+  GPT-5.4 through OpenRouter, keeping the evaluation model independent of the
+  training model.
 - A window with suspiciously low value-character coverage is retried once.
 - Records crossing a window boundary are merged using template order and
   repeated identity values.
