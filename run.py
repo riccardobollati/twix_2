@@ -28,6 +28,10 @@ Environment variables:
                        Held-out ground-truth model (default: openai/gpt-5.4).
     OPENROUTER_GROUND_TRUTH_MAX_TOKENS
                        Held-out ground-truth output cap (default: 128000).
+    OPENROUTER_TEMPLATE_INFERENCE_REASONING_EFFORT
+                       Template-inference reasoning effort (default: low).
+    OPENROUTER_TEMPLATE_INFERENCE_MODEL
+                       Template-inference model (default: OPENROUTER_MODEL).
     OPENCODE_MODEL     OpenCode provider/model used for code generation.
 """
 
@@ -51,7 +55,7 @@ else:
 import pdfplumber
 
 from src.agents.graph import build_graph
-from src.models import get_ground_truth_llm, get_llm
+from src.models import get_ground_truth_llm, get_llm, get_template_inference_llm
 from src.models.opencode import DEFAULT_OPENCODE_MODEL
 
 
@@ -324,6 +328,7 @@ def main() -> None:
         get_llm(),
         train_repair_max_retries=args.train_max_retries,
         ground_truth_llm=get_ground_truth_llm() if args.eval else None,
+        template_inference_llm=get_template_inference_llm(),
     )
     graph.invoke({
         "full_pdf_path":              str(pdf_path),

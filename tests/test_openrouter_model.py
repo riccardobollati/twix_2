@@ -4,6 +4,7 @@ import os
 import unittest
 from unittest.mock import patch
 
+from src.models import get_template_inference_llm
 from src.models.openrouter import get_ground_truth_model, get_model
 
 
@@ -53,6 +54,44 @@ class OpenRouterModelTests(unittest.TestCase):
         ):
             with self.assertRaisesRegex(ValueError, "OPENROUTER_REASONING_EFFORT"):
                 get_model()
+
+    @patch("src.models.openrouter.ChatOpenAI")
+    def test_reasoning_effort_override_takes_precedence(self, chat_mock) -> None:
+        with patch.dict(
+            os.environ,
+            {
+                "OPENROUTER_API_KEY": "test-key",
+                "OPENROUTER_REASONING_EFFORT": "high",
+            },
+            clear=True,
+        ):
+            get_model(reasoning_effort="low")
+
+        self.assertEqual(
+            chat_mock.call_args.kwargs["extra_body"]["reasoning"],
+            {"effort": "low", "exclude": True},
+        )
+
+    @patch("src.models.openrouter.ChatOpenAI")
+    def test_template_inference_uses_its_own_model_and_reasoning(self, chat_mock) -> None:
+        with patch.dict(
+            os.environ,
+            {
+                "OPENROUTER_API_KEY": "test-key",
+                "OPENROUTER_MODEL": "deepseek/deepseek-v4-flash",
+                "OPENROUTER_TEMPLATE_INFERENCE_MODEL": "openai/gpt-5.4",
+                "OPENROUTER_TEMPLATE_INFERENCE_REASONING_EFFORT": "medium",
+            },
+            clear=True,
+        ):
+            get_template_inference_llm()
+
+        kwargs = chat_mock.call_args.kwargs
+        self.assertEqual(kwargs["model"], "openai/gpt-5.4")
+        self.assertEqual(
+            kwargs["extra_body"]["reasoning"],
+            {"effort": "medium", "exclude": True},
+        )
 
     @patch("src.models.openrouter.ChatOpenAI")
     def test_ground_truth_model_uses_openrouter_and_gpt_5_4(self, chat_mock) -> None:

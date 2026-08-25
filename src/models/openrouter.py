@@ -30,22 +30,26 @@ def _connection_kwargs() -> dict:
     }
 
 
-def get_model() -> BaseChatModel:
+def get_model(
+    *, reasoning_effort: str | None = None, model: str | None = None
+) -> BaseChatModel:
     """Return the OpenRouter chat model used by non-code-generation phases.
 
     OpenRouter exposes an OpenAI-compatible Chat Completions API, so LangChain's
     OpenAI transport is used only as the protocol client. The default upstream
     model remains DeepSeek V4 Flash.
     """
-    reasoning_effort = os.getenv(
-        "OPENROUTER_REASONING_EFFORT", "high"
+    reasoning_effort = (
+        reasoning_effort
+        if reasoning_effort is not None
+        else os.getenv("OPENROUTER_REASONING_EFFORT", "high")
     ).strip().lower()
     if reasoning_effort not in _REASONING_EFFORTS:
         allowed = ", ".join(sorted(_REASONING_EFFORTS))
         raise ValueError(f"OPENROUTER_REASONING_EFFORT must be one of: {allowed}")
 
     return ChatOpenAI(
-        model=os.getenv("OPENROUTER_MODEL", DEFAULT_MODEL),
+        model=model or os.getenv("OPENROUTER_MODEL", DEFAULT_MODEL),
         **_connection_kwargs(),
         extra_body={
             "reasoning": {
