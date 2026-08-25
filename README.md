@@ -9,8 +9,8 @@ Given a PDF containing repeated records, it produces:
 2. generated Python code for record detection, block detection, and field
    extraction;
 3. structured JSON extracted by that code;
-4. optional train/test evaluation against DeepSeek train ground truth and an
-   OpenAI vision reference on held-out pages;
+4. optional train/test evaluation against DeepSeek train ground truth and a
+   GPT-5.4 vision reference through OpenRouter on held-out pages;
    and
 5. a standalone, model-free `pipeline/` bundle for unseen PDFs with the same
    layout.
@@ -42,7 +42,7 @@ There are two kinds of model-driven work:
 
 - OpenRouter calls to DeepSeek return structured JSON for front-matter
   detection, template inference, easy/hard block routing, and train ground truth.
-- OpenAI vision calls generate the final reference on never-seen test pages.
+- OpenRouter calls to GPT-5.4 generate the final reference on never-seen test pages.
 - OpenCode sessions use OpenRouter models to write executable Python files for
   record separation, block separation, per-block extraction, and optional
   repair.
@@ -60,7 +60,6 @@ their coordinate JSON.
   version 1.14.24 or newer for V4 integration)
 - an OpenRouter API key; the same `OPENROUTER_API_KEY` can authenticate direct
   calls and OpenCode's built-in OpenRouter provider
-- an OpenAI API key for final held-out/test ground truth
 
 Create the environment:
 
@@ -71,16 +70,16 @@ python -m pip install -r requirements.txt
 cp .env.example .env
 ```
 
-Configure `.env` for OpenRouter, OpenAI, and OpenCode:
+Configure `.env` for OpenRouter and OpenCode:
 
 ```dotenv
 LLM_PROVIDER=openrouter
 OPENROUTER_API_KEY=...
 OPENROUTER_MODEL=deepseek/deepseek-v4-flash
+OPENROUTER_GROUND_TRUTH_MODEL=openai/gpt-5.4
+OPENROUTER_GROUND_TRUTH_MAX_TOKENS=128000
 OPENROUTER_REASONING_EFFORT=high
-
-OPENAI_API_KEY=...
-OPENAI_MODEL=gpt-5.4
+OPENROUTER_TEMPLATE_INFERENCE_REASONING_EFFORT=low
 
 OPENCODE_MODEL=openrouter/deepseek/deepseek-v4-flash
 OPENCODE_EASY_MODEL=openrouter/deepseek/deepseek-v4-flash
@@ -90,8 +89,9 @@ OPENCODE_HARD_MODEL=openrouter/deepseek/deepseek-v4-pro
 Direct OpenRouter calls use catalog slugs such as
 `deepseek/deepseek-v4-flash`. OpenCode model references add OpenCode's provider
 prefix, producing `openrouter/deepseek/deepseek-v4-flash`. To benchmark one
-model everywhere, set all four model variables to the corresponding Flash or
-Pro ID. Never commit `.env`.
+model everywhere, set the direct-call and OpenCode model variables to the
+corresponding Flash or Pro ID. Held-out ground truth defaults separately to
+`openai/gpt-5.4`. Never commit `.env`.
 
 Authenticate OpenCode through `OPENROUTER_API_KEY`, or run `/connect` in the
 OpenCode TUI and choose OpenRouter. The repository's `opencode.json` explicitly
@@ -435,14 +435,17 @@ Final grouped records:
 Train and test use the shared generator in `src/agents/gt_common.py`. Train
 ground truth sends five-page layout-preserving OCR windows to DeepSeek through
 OpenRouter. Final held-out/test ground truth sends rendered page images plus
-exact OCR text to `OPENAI_MODEL` through the OpenAI API. Calls are parallel,
+exact OCR text to `OPENROUTER_GROUND_TRUTH_MODEL` through OpenRouter. Calls are parallel,
 results are restored to document order, and logical records cut by window
-boundaries are merged using template order and repeated identity values.
+boundaries are merged using template order and repeated identity values. The
+default 128,000-token output cap exposes GPT-5.4's full output allowance;
+OpenRouter requires the API key's credit limit to cover that maximum. Override
+it with `OPENROUTER_GROUND_TRUTH_MAX_TOKENS` when needed.
 
 ```mermaid
 flowchart TD
     P["PDF + OCR + template"] --> W["Split pages into windows"]
-    W --> C1["Train: DeepSeek<br/>Test: OpenAI vision"]
+    W --> C1["Train: DeepSeek<br/>Test: GPT-5.4 vision via OpenRouter"]
     W --> C2["Parallel window call"]
     W --> CN["Parallel window call N"]
     C1 --> ORDER["Restore window order"]

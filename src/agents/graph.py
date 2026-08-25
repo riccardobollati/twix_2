@@ -84,12 +84,15 @@ def build_graph(
     train_repair_max_retries: int = 3,
     *,
     ground_truth_llm: BaseChatModel | None = None,
+    template_inference_llm: BaseChatModel | None = None,
 ):
     """Build and compile the PDF template inference graph.
 
     Args:
         llm: The LangChain-compatible DeepSeek chat model.
-        ground_truth_llm: OpenAI vision model for final held-out ground truth.
+        template_inference_llm: Optional model reserved for template inference.
+            When omitted, the primary model is used for backward compatibility.
+        ground_truth_llm: OpenRouter vision model for final held-out ground truth.
             When omitted, the primary model is used without page images for
             backward compatibility with direct ``build_graph`` callers.
         train_repair_max_retries: maximum repair rounds the run may use — the
@@ -111,6 +114,7 @@ def build_graph(
     graph = StateGraph(ExtractionState)
 
     _llm_model = getattr(llm, "model_name", None) or getattr(llm, "model", None) or "unknown"
+    _template_inference_llm = template_inference_llm or llm
     _ground_truth_llm = ground_truth_llm or llm
     _ground_truth_model = (
         getattr(_ground_truth_llm, "model_name", None)
@@ -133,7 +137,7 @@ def build_graph(
     )
     graph.add_node(
         "template_inference",
-        lambda state: template_inference_node(state, llm),
+        lambda state: template_inference_node(state, _template_inference_llm),
     )
     graph.add_node("record_separation", record_separation_node)
     graph.add_node("run_record_separation", run_record_separation_node)

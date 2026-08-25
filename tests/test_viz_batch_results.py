@@ -3,6 +3,8 @@ import tempfile
 import unittest
 
 from viz_batch_results import (
+    _break_even_pages,
+    _ground_truth_cost_usd,
     _mean_token_type_percentages,
     _phase_token_breakdowns,
     _split_token_types,
@@ -12,6 +14,31 @@ from viz_batch_results import (
 
 
 class TokenBreakdownTests(unittest.TestCase):
+    def test_ground_truth_is_priced_as_gpt_5_4(self):
+        # GPT-5.4 list pricing is $2.50/M input and $15/M output tokens.
+        self.assertAlmostEqual(
+            _ground_truth_cost_usd({"input_tokens": 1_000_000, "output_tokens": 1_000_000}),
+            17.5,
+        )
+
+    def test_break_even_prices_train_ground_truth_as_gpt_5_4(self):
+        result = _break_even_pages(
+            {
+                "train_pages": 1,
+                "test_pages": 1,
+                "pipeline_phases": [],
+                "train_eval": {
+                    "ground_truth_cost": {"input_tokens": 1_000_000},
+                    "agentic_pipeline_cost": {},
+                },
+                "test_eval": {
+                    "ground_truth_cost": {"input_tokens": 1_000_000},
+                    "agentic_pipeline_cost": {},
+                },
+            }
+        )
+        self.assertAlmostEqual(result, 1.0)
+
     def test_input_and_output_are_split(self):
         self.assertEqual(
             _split_token_types(

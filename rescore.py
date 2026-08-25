@@ -106,7 +106,7 @@ def rescore_pair(gt_path: str, cand_path: str, write_reports: bool) -> dict | No
         return None
     result = eval_score(
         load_json_dedup(gt_path), load_json_dedup(cand_path),
-        reference="human", threshold=0.9,
+        reference="model_reference", threshold=0.9,
     )
     if write_reports:
         out_dir = os.path.dirname(cand_path)

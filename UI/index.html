@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#0c1220" />
+    <title>TWIX 2 · Pipeline Console</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand"><span class="brand-mark">T</span><span>TWIX <b>2</b></span></div>
+        <button class="new-run" id="show-upload" type="button">+ New extraction</button>
+        <div class="side-label">Runs</div>
+        <nav id="run-list" class="run-list" aria-label="Pipeline runs"></nav>
+        <div class="sidebar-note">Runs stay on this machine. The dashboard streams the local pipeline and reads its generated artifacts.</div>
+      </aside>
+
+      <main class="workspace">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">EXTRACTION WORKBENCH</p>
+            <h1 id="run-title">Start an extraction</h1>
+          </div>
+          <div id="run-status" class="status-pill idle">Ready</div>
+        </header>
+
+        <section id="upload-panel" class="upload-panel">
+          <div class="upload-copy">
+            <p class="eyebrow">NEW RUN</p>
+            <h2>Turn a template-family PDF into structured JSON.</h2>
+            <p>Upload one PDF, follow each model and code-generation stage, inspect all intermediate artifacts, and compare the final grouped result with the model reference.</p>
+          </div>
+          <form id="upload-form" class="run-form">
+            <label class="file-drop" for="pdf-file" id="file-drop">
+              <input id="pdf-file" name="pdf" type="file" accept="application/pdf,.pdf" required />
+              <span class="file-icon">↥</span>
+              <span id="file-name">Choose a PDF</span>
+              <small>PDF only · stays local</small>
+            </label>
+            <div class="form-grid">
+              <label>Training pages<input id="pages" type="number" min="1" max="50" value="5" /></label>
+              <label>Repair threshold<input id="threshold" type="number" min="0" max="1" step="0.05" value="0" /></label>
+            </div>
+            <label class="toggle"><input id="eval" type="checkbox" checked /><span></span>Generate ground truth and evaluate</label>
+            <button class="primary-button" type="submit">Run pipeline <span>→</span></button>
+          </form>
+        </section>
+
+        <section id="dashboard" class="dashboard hidden">
+          <div class="stage-heading"><div><p class="eyebrow">LIVE PIPELINE</p><h2>From PDF to inspected output</h2></div><button id="cancel-run" class="quiet-button" type="button">Cancel run</button></div>
+          <div id="stages" class="stages" aria-label="Pipeline stages"></div>
+
+          <div class="tabs" role="tablist">
+            <button class="tab active" data-tab="activity" type="button">Activity</button>
+            <button class="tab" data-tab="artifacts" type="button">Artifacts</button>
+            <button class="tab" data-tab="output" type="button">Output comparison</button>
+          </div>
+
+          <section id="activity-tab" class="tab-panel active">
+            <div class="panel log-panel"><div class="panel-title"><span>Run log</span><span id="log-count" class="muted"></span></div><pre id="run-log" class="run-log">Waiting for pipeline output…</pre></div>
+            <div class="panel summary-panel"><div class="panel-title">Run configuration</div><dl id="run-config" class="config-list"></dl><div id="metric-cards" class="metric-cards"></div></div>
+          </section>
+
+          <section id="artifacts-tab" class="tab-panel artifact-layout">
+            <div class="panel artifact-tree"><div class="panel-title">Generated artifacts <button id="refresh-artifacts" class="icon-button" title="Refresh artifacts" type="button">↻</button></div><div id="artifact-tree" class="tree-empty">Artifacts will appear as the pipeline runs.</div></div>
+            <div class="panel artifact-preview"><div class="panel-title"><span id="preview-name">Select an artifact</span><a id="download-artifact" class="download-link hidden" target="_blank">Open</a></div><pre id="artifact-content" class="code-preview">Choose JSON, generated Python, OCR, or a log from the tree.</pre></div>
+          </section>
+
+          <section id="output-tab" class="tab-panel">
+            <div id="evaluation-summary" class="evaluation-summary"><p>Output comparison is available once evaluation artifacts are produced.</p></div>
+            <div class="comparison-grid">
+              <div class="panel"><div class="panel-title">Grouped JSON <span class="muted">pipeline output</span></div><pre id="grouped-json" class="json-preview">Not available yet.</pre></div>
+              <div class="panel"><div class="panel-title">Ground truth <span class="muted">model reference</span></div><pre id="ground-truth-json" class="json-preview">Not available yet.</pre></div>
+            </div>
+          </section>
+        </section>
+      </main>
+    </div>
+    <div id="toast" class="toast hidden" role="status"></div>
+    <script src="/app.js"></script>
+  </body>
+</html>

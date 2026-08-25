@@ -33,7 +33,7 @@ def eval_node(state: dict[str, Any]) -> dict[str, Any]:
     candidate = load_json_dedup(grouped_path)
     gt = load_json_dedup(gt_path)
 
-    eval_result = eval_score(gt, candidate, reference="human", threshold=0.9)
+    eval_result = eval_score(gt, candidate, reference="model_reference", threshold=0.9)
 
     eval_json_path = os.path.join(pipeline_dir, "eval.json")
     eval_txt_path  = os.path.join(pipeline_dir, "eval.txt")

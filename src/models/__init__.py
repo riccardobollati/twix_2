@@ -14,7 +14,9 @@ _PROVIDERS: dict[str, str] = {
 }
 
 
-def get_llm() -> BaseChatModel:
+def get_llm(
+    *, reasoning_effort: str | None = None, model: str | None = None
+) -> BaseChatModel:
     """Instantiate the LLM for the provider in LLM_PROVIDER (default: openrouter).
 
     To add a new provider:
@@ -32,12 +34,22 @@ def get_llm() -> BaseChatModel:
     module_path = _PROVIDERS[provider]
     import importlib
     module = importlib.import_module(module_path)
-    return module.get_model()
+    return module.get_model(reasoning_effort=reasoning_effort, model=model)
+
+
+def get_template_inference_llm() -> BaseChatModel:
+    """Return the model and reasoning effort configured for template inference."""
+    return get_llm(
+        reasoning_effort=os.getenv(
+            "OPENROUTER_TEMPLATE_INFERENCE_REASONING_EFFORT", "low"
+        ),
+        model=os.getenv("OPENROUTER_TEMPLATE_INFERENCE_MODEL") or None,
+    )
 
 
 def get_ground_truth_llm() -> BaseChatModel:
-    """Return the OpenAI model reserved for held-out/test ground truth."""
+    """Return the OpenRouter model reserved for held-out/test ground truth."""
     import importlib
 
-    module = importlib.import_module("src.models.openai")
-    return module.get_model()
+    module = importlib.import_module("src.models.openrouter")
+    return module.get_ground_truth_model()

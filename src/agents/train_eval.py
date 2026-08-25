@@ -93,7 +93,7 @@ def train_eval_node(state: dict[str, Any], llm: BaseChatModel) -> dict[str, Any]
     gold = load_json_dedup(gt_path)
     candidate = load_json_dedup(grouped_path)
 
-    eval_result  = eval_score(gold, candidate, reference="human", threshold=0.9)
+    eval_result  = eval_score(gold, candidate, reference="model_reference", threshold=0.9)
     eval_duration = time.time() - t0
 
     eval_json_path = os.path.join(train_eval_dir, "eval.json")

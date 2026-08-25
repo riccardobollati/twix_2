@@ -286,7 +286,7 @@ def main() -> None:
         ]
 
     # --- score ---
-    eval_result = eval_score(gt_results, candidate, reference="human", threshold=0.9)
+    eval_result = eval_score(gt_results, candidate, reference="model_reference", threshold=0.9)
 
     eval_json_path = os.path.join(eval_dir, "eval.json")
     eval_txt_path  = os.path.join(eval_dir, "eval.txt")

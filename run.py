@@ -18,14 +18,20 @@ Usage:
     The graph detects and skips cover/index front matter before creating the
     train set. With --eval, the remaining pages are split into train and test;
     the graph builds the pipeline on train, runs it on test, generates ground
-    truth via DeepSeek, and scores the result.
+    truth via GPT-5.4 through OpenRouter, and scores the result.
 
 Environment variables:
     LLM_PROVIDER       Provider name (default and only active provider: openrouter).
-    OPENROUTER_API_KEY Required for direct calls and OpenCode's OpenRouter provider.
+    OPENROUTER_API_KEY Required for all model calls and OpenCode's OpenRouter provider.
     OPENROUTER_MODEL   Direct-call model (default: deepseek/deepseek-v4-flash).
-    OPENAI_API_KEY     Required with --eval for held-out ground truth.
-    OPENAI_MODEL       Held-out ground-truth model (default: gpt-5.4).
+    OPENROUTER_GROUND_TRUTH_MODEL
+                       Held-out ground-truth model (default: openai/gpt-5.4).
+    OPENROUTER_GROUND_TRUTH_MAX_TOKENS
+                       Held-out ground-truth output cap (default: 128000).
+    OPENROUTER_TEMPLATE_INFERENCE_REASONING_EFFORT
+                       Template-inference reasoning effort (default: low).
+    OPENROUTER_TEMPLATE_INFERENCE_MODEL
+                       Template-inference model (default: OPENROUTER_MODEL).
     OPENCODE_MODEL     OpenCode provider/model used for code generation.
 """
 
@@ -49,7 +55,7 @@ else:
 import pdfplumber
 
 from src.agents.graph import build_graph
-from src.models import get_ground_truth_llm, get_llm
+from src.models import get_ground_truth_llm, get_llm, get_template_inference_llm
 from src.models.opencode import DEFAULT_OPENCODE_MODEL
 
 
@@ -226,7 +232,7 @@ def main() -> None:
         "--eval", action="store_true",
         help=(
             "Split into train/test, run the pipeline on the test set, generate "
-            "ground truth via DeepSeek, and score the result."
+            "ground truth via GPT-5.4 through OpenRouter, and score the result."
         ),
     )
     parser.add_argument(
@@ -322,6 +328,7 @@ def main() -> None:
         get_llm(),
         train_repair_max_retries=args.train_max_retries,
         ground_truth_llm=get_ground_truth_llm() if args.eval else None,
+        template_inference_llm=get_template_inference_llm(),
     )
     graph.invoke({
         "full_pdf_path":              str(pdf_path),
