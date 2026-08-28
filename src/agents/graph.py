@@ -85,16 +85,21 @@ def build_graph(
     *,
     ground_truth_llm: BaseChatModel | None = None,
     template_inference_llm: BaseChatModel | None = None,
+    difficulty_routing_llm: BaseChatModel | None = None,
 ):
     """Build and compile the PDF template inference graph.
 
     Args:
-        llm: The LangChain-compatible DeepSeek chat model.
+        llm: The LangChain-compatible primary OpenRouter chat model.
         template_inference_llm: Optional model reserved for template inference.
             When omitted, the primary model is used for backward compatibility.
-        ground_truth_llm: OpenRouter vision model for final held-out ground truth.
-            When omitted, the primary model is used without page images for
-            backward compatibility with direct ``build_graph`` callers.
+        difficulty_routing_llm: Optional hard model reserved for block
+            difficulty classification. When omitted, the primary model is used
+            for backward compatibility with direct ``build_graph`` callers.
+        ground_truth_llm: OpenRouter reference model for train ground truth and
+            image-backed final test ground truth. When omitted, the primary
+            model is used without page images for backward compatibility with
+            direct ``build_graph`` callers.
         train_repair_max_retries: maximum repair rounds the run may use — the
             compiled graph's recursion_limit is derived from it, so pass the
             same value given as "train_repair_max_retries" in the invoke state.
@@ -115,7 +120,13 @@ def build_graph(
 
     _llm_model = getattr(llm, "model_name", None) or getattr(llm, "model", None) or "unknown"
     _template_inference_llm = template_inference_llm or llm
+    _difficulty_routing_llm = difficulty_routing_llm or llm
     _ground_truth_llm = ground_truth_llm or llm
+    _difficulty_model = (
+        getattr(_difficulty_routing_llm, "model_name", None)
+        or getattr(_difficulty_routing_llm, "model", None)
+        or "unknown"
+    )
     _ground_truth_model = (
         getattr(_ground_truth_llm, "model_name", None)
         or getattr(_ground_truth_llm, "model", None)
@@ -130,9 +141,8 @@ def build_graph(
         lambda state: {
             **environment_creation_node(state),
             "llm_model": _llm_model,
-            "ground_truth_model": (
-                _ground_truth_model if state.get("eval_mode") else None
-            ),
+            "difficulty_model": _difficulty_model,
+            "ground_truth_model": _ground_truth_model,
         },
     )
     graph.add_node(
@@ -143,10 +153,16 @@ def build_graph(
     graph.add_node("run_block_separation", run_block_separation_node)
     graph.add_node("block_artifacts", block_artifacts_node)
     graph.add_node("block_samples", block_samples_node)
-    graph.add_node("block_difficulty_router", lambda state: block_difficulty_router_node(state, llm))
+    graph.add_node(
+        "block_difficulty_router",
+        lambda state: block_difficulty_router_node(state, _difficulty_routing_llm),
+    )
     graph.add_node("block_extraction_scripting", block_extraction_scripting_node)
     graph.add_node("collect_extraction_scripts", collect_extraction_scripts_node)
-    graph.add_node("train_eval", lambda state: train_eval_node(state, llm))
+    graph.add_node(
+        "train_eval",
+        lambda state: train_eval_node(state, _ground_truth_llm),
+    )
     graph.add_node("opencode_fix", train_repair_node)
     graph.add_node("extraction", extraction_node)
     graph.add_node(

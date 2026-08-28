@@ -9,8 +9,8 @@ Given a template-based PDF, it produces:
 2. generated Python code for block detection and field
    extraction;
 3. structured JSON extracted by that code;
-4. optional train/test evaluation against DeepSeek train ground truth and a
-   GPT-5.4 vision reference through OpenRouter on held-out pages;
+4. train evaluation plus optional test evaluation against a configurable
+   OpenRouter reference model (GPT-5.4 by default);
    and
 5. a standalone, model-free `pipeline/` bundle for unseen PDFs with the same
    layout.
@@ -20,17 +20,17 @@ key-value regions in stable document families, not arbitrary one-off PDFs.
 
 ## How the system works
 
-TWIX separates reasoning from repeatable execution. DeepSeek models accessed
-through OpenRouter inspect layout-preserving OCR to identify the document's
-structure. OpenCode, also routed through OpenRouter, then writes ordinary Python
-programs specialized to that structure. Once those programs are built, the
-packaged pipeline extracts future documents using only `pdfplumber` and the
-Python standard library.
+TWIX separates reasoning from repeatable execution. Models accessed through
+OpenRouter inspect layout-preserving OCR to identify the document's structure.
+OpenCode, also routed through OpenRouter, then writes ordinary Python programs
+specialized to that structure. Once those programs are built, the packaged
+pipeline extracts future documents using only `pdfplumber` and the Python
+standard library.
 
 ```mermaid
 flowchart LR
     A["Template-family PDF"] --> B["OCR words + geometry"]
-    B --> C["OpenRouter / DeepSeek reasoning"]
+    B --> C["OpenRouter reasoning"]
     B --> D["OpenCode via OpenRouter"]
     C --> D
     D --> E["Standalone pipeline bundle"]
@@ -40,9 +40,10 @@ flowchart LR
 
 There are two kinds of model-driven work:
 
-- OpenRouter calls to DeepSeek return structured JSON for front-matter
-  detection, template inference, easy/hard block routing, and train ground truth.
-- OpenRouter calls to GPT-5.4 generate the final reference on never-seen test pages.
+- Direct OpenRouter calls return structured JSON for front-matter detection,
+  template inference, easy/hard block routing, and ground truth.
+- The reference model defaults to GPT-5.4 and can instead use GLM 5.3 Flash or
+  Qwen3.8 Flash for template inference and both train/test ground truth.
 - OpenCode sessions use OpenRouter models to write executable Python files for
   block separation, per-block extraction, and optional
   repair.
@@ -94,8 +95,9 @@ corresponding Flash or Pro ID. Held-out ground truth defaults separately to
 `openai/gpt-5.4`. Never commit `.env`.
 
 Authenticate OpenCode through `OPENROUTER_API_KEY`, or run `/connect` in the
-OpenCode TUI and choose OpenRouter. The repository's `opencode.json` explicitly
-registers both DeepSeek V4 targets; use `/models` to verify the available IDs.
+OpenCode TUI and choose OpenRouter. The repository's `opencode.json` registers
+the DeepSeek V4, GLM 5.3 Flash, and Qwen3.8 Flash targets; use `/models` to
+verify the available IDs.
 
 ## Quick start
 
@@ -134,10 +136,13 @@ Run `python run.py --help` for the complete interface. Important options are:
 | --- | --- |
 | `--pages N` | Requested number of structured pages in the train split; default `3` |
 | `--start-page N` | Use a fixed physical first record page and skip detection |
-| `--eval` | Reserve test pages, generate test ground truth, and score |
-| `--eval-pages N` | Limit test pages; default is all pages after train |
-| `--holdout-pages N` | Hide trailing train pages from script generation but include them in train eval |
-| `--no-routing` | Skip difficulty classification and use `OPENCODE_EASY_MODEL` for every block |
+| `--eval` / `--no-eval` | Final independent test evaluation is enabled by default; `--no-eval` disables it |
+| `--eval-pages N` | Limit independent test pages; default `20` |
+| `--holdout-pages N` | Hide trailing train pages from script generation but include them in train eval; default `0` (off) |
+| `--easy-model MODEL` | Override the `.env` easy OpenCode model for this run |
+| `--hard-model MODEL` | Override the `.env` model used for block separation, difficulty routing, hard extractors, and repair |
+| `--reference-model MODEL` | Use this direct OpenRouter model for template inference and all ground truth; default GPT-5.4 |
+| `--no-routing` | Skip difficulty classification and use the easy model throughout every non-reference phase |
 | `--train-threshold F` | Repair below this train accuracy; `0` disables repair |
 | `--train-max-retries N` | Maximum OpenCode repair rounds; default `3` |
 | `--gt-test-window N` | Pages per test-ground-truth call; default `20` |
@@ -150,6 +155,13 @@ Run `python run.py --help` for the complete interface. Important options are:
 is capped at half of the usable structured pages so at least one page remains
 for test.
 
+Model flags accept either the direct OpenRouter slug (for example
+`z-ai/glm-5.3-flash`) or the OpenCode-prefixed form
+(`openrouter/z-ai/glm-5.3-flash`); TWIX normalizes it for each client. With
+`--no-routing`, `--easy-model` is the single operational model for direct
+reasoning and all OpenCode generation/repair. `--reference-model` remains
+separate. Without per-run flags, the corresponding `.env` values are used.
+
 ## Complete orchestration pipeline
 
 The LangGraph state machine lives in `src/agents/graph.py`.
@@ -160,12 +172,12 @@ flowchart TD
     Q -- No --> DB["Detect first structured page<br/>OCR-layout batches"]
     Q -- Yes --> EC
     DB --> EC["Create cropped train/test environment<br/>remap split pages to 1..N"]
-    EC --> TI["Infer template + metadata<br/>DeepSeek JSON"]
+    EC --> TI["Infer template + metadata<br/>reference-model JSON"]
     TI --> BS["Generate block_separation.py<br/>OpenCode"]
     BS --> BSR["Run + validate block separation"]
     BSR --> ART["Render block overlays<br/>artifacts/blocks/"]
     ART --> SMP["Crop deterministic block samples"]
-    SMP --> ROUTE["Classify each block EASY/HARD<br/>parallel DeepSeek calls"]
+    SMP --> ROUTE["Classify each block EASY/HARD<br/>parallel hard-model calls"]
     ROUTE --> EXT["Generate one extractor per detected node<br/>parallel OpenCode sessions"]
     EXT --> PACK["Assemble portable pipeline/"]
     PACK --> TE["Run pipeline on all train pages<br/>generate/reuse train GT + score"]
@@ -193,7 +205,7 @@ Word IDs are unique across the source document. Physical page numbers start at
 1. OCR is regenerated by default for reproducibility.
 
 Unless `--start-page` is supplied, `detect_beginning.py` sends chronological
-batches of six OCR layouts to DeepSeek and asks for the first genuine
+batches of six OCR layouts to the primary direct model and asks for the first genuine
 structured-record page. Covers, tables of contents, indexes, and narrative
 introductions are excluded. If no candidate is found, the conservative fallback
 is physical page 1.
@@ -217,14 +229,14 @@ flowchart LR
     D --> I["Final extraction + test evaluation"]
 ```
 
-The automatic holdout is two pages when at least four train pages exist, one
-page with three train pages, and zero with one or two. At least two build pages
+The train holdout is disabled by default. Set `--holdout-pages N` to reserve
+trailing train pages for the train-evaluation gate; at least two build pages
 are always retained. Template inference sees all train-page OCR layouts; the holdout
 specifically limits the OCR used to generate and sample the executable scripts.
 
 ### 3. Template inference
 
-DeepSeek classifies structured regions as tables or key-value blocks,
+The selected reference model classifies structured regions as tables or key-value blocks,
 orders them top to bottom, identifies optional/nested patterns, describes block
 complexity, and emits regexes for fixed document/record metadata.
 
@@ -261,7 +273,9 @@ time out after 300 seconds.
 
 After block separation succeeds, the artifact node reapplies the generated
 separator to the complete train PDF and `viz_blocks.py` renders every train
-page under `<output>/artifacts/blocks/`. Re-running replaces the generated
+page under `<output>/artifacts/blocks/`. Eval runs also render the learned
+separator on held-out pages under `<output>/artifacts/test_blocks/` for UI
+inspection; those images do not feed back into training. Re-running replaces the generated
 `page_*_blocks.png` files in that folder.
 
 The key identity rules are:
@@ -281,7 +295,7 @@ Up to ten deterministic samples per detected node are cropped from the train
 PDF. Each sample has a PNG and a JSON file whose coordinates are relative to
 the crop.
 
-Independent DeepSeek calls over the samples' OCR geometry classify each node:
+Independent hard-model calls over the samples' OCR geometry classify each node:
 
 - `EASY` when layout is fixed and values are single-line;
 - `HARD` when samples show variable/repeating structure or multi-line values.
@@ -400,19 +414,19 @@ Final extracted blocks:
 ## Ground truth generation
 
 Train and test use the shared generator in `src/agents/gt_common.py`. Train
-ground truth sends five-page layout-preserving OCR windows to DeepSeek through
-OpenRouter. Final held-out/test ground truth sends rendered page images plus
-exact OCR text to `OPENROUTER_GROUND_TRUTH_MODEL` through OpenRouter. Calls are parallel,
-results are restored to document order. The model returns flat, page-local
-blocks; records and same-node table blocks are never merged. The
-default 128,000-token output cap exposes GPT-5.4's full output allowance;
+ground truth sends five-page layout-preserving OCR windows to the selected
+reference model through OpenRouter. Final held-out/test ground truth sends
+rendered page images plus exact OCR text to that same model. Calls are parallel,
+and results are restored to document order. The model returns flat, page-local
+blocks; records and same-node table blocks are never merged. The default
+128,000-token output cap matches GPT-5.4 and the bundled Flash alternatives;
 OpenRouter requires the API key's credit limit to cover that maximum. Override
 it with `OPENROUTER_GROUND_TRUTH_MAX_TOKENS` when needed.
 
 ```mermaid
 flowchart TD
     P["PDF + OCR + template"] --> W["Split pages into windows"]
-    W --> C1["Train: DeepSeek<br/>Test: GPT-5.4 vision via OpenRouter"]
+    W --> C1["Selected reference model<br/>test calls also include page images"]
     W --> C2["Parallel window call"]
     W --> CN["Parallel window call N"]
     C1 --> ORDER["Restore window order"]
@@ -599,7 +613,10 @@ python viz_batch_results.py data
 - `viz_agent_log.py` renders OpenCode JSONL events, commands, prompts, stderr, and
   token usage.
 - `viz_batch_results.py` creates accuracy, token/cost, phase, break-even, and
-  per-document charts under `data/results/`.
+  per-document charts under `data/results/`. Its reusable
+  `generate_document_results(document_dir, out_dir)` entry point renders the
+  same per-document report for a single completed run; the UI uses it to
+  populate `artifacts/stats/` and the final-results Stats tab.
 
 ## Reproducibility and provenance
 
@@ -610,7 +627,7 @@ python viz_batch_results.py data
   split sizes, requested page/holdout settings, repair threshold and retry
   limit, test-ground-truth window, selected models, phase costs, repair history,
   test health failures when degenerate, and train/test scores. It does not
-  currently record the resolved automatic holdout size or the `--group-rows`,
+  currently record the resolved/clamped holdout size or the `--group-rows`,
   `--reuse-ocr`, `--caveman`, and `--save-log` flags.
 - Generated scripts are retained, so extraction can be replayed without the
   original model calls.

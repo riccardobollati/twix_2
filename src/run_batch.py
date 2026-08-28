@@ -273,11 +273,18 @@ def parse_args(argv: Sequence[str]) -> tuple[argparse.Namespace, list[str]]:
         metavar="N",
         help="Forwarded to run.py: fixed physical record start page.",
     )
-    run_options.add_argument(
+    evaluation = run_options.add_mutually_exclusive_group()
+    evaluation.add_argument(
         "--eval",
         action="store_true",
         default=argparse.SUPPRESS,
-        help="Forwarded to run.py: run train/test evaluation.",
+        help="Forwarded to run.py: run train/test evaluation (run.py default).",
+    )
+    evaluation.add_argument(
+        "--no-eval",
+        action="store_true",
+        default=argparse.SUPPRESS,
+        help="Forwarded to run.py: disable the independent test evaluation.",
     )
     run_options.add_argument(
         "--eval-pages",
@@ -327,6 +334,27 @@ def parse_args(argv: Sequence[str]) -> tuple[argparse.Namespace, list[str]]:
         help="Forwarded to run.py: train pages hidden from script generation (0 disables).",
     )
     run_options.add_argument(
+        "--easy-model",
+        default=argparse.SUPPRESS,
+        metavar="MODEL",
+        help="Forwarded to run.py: OpenRouter model for easy extraction blocks.",
+    )
+    run_options.add_argument(
+        "--hard-model",
+        default=argparse.SUPPRESS,
+        metavar="MODEL",
+        help=(
+            "Forwarded to run.py: model for block separation, difficulty routing, "
+            "hard blocks, and repair."
+        ),
+    )
+    run_options.add_argument(
+        "--reference-model",
+        default=argparse.SUPPRESS,
+        metavar="MODEL",
+        help="Forwarded to run.py: model for template inference and ground truth.",
+    )
+    run_options.add_argument(
         "--caveman",
         action="store_true",
         default=argparse.SUPPRESS,
@@ -336,7 +364,7 @@ def parse_args(argv: Sequence[str]) -> tuple[argparse.Namespace, list[str]]:
         "--no-routing",
         action="store_true",
         default=argparse.SUPPRESS,
-        help="Forwarded to run.py: use the easy model for every extraction block.",
+        help="Forwarded to run.py: use the easy model for every non-reference phase.",
     )
     run_options.add_argument(
         "--save-log",
@@ -358,12 +386,16 @@ def build_forwarded_args(args: argparse.Namespace, unknown_args: Sequence[str]) 
         ("--train-max-retries", "train_max_retries"),
         ("--gt-test-window", "gt_test_window"),
         ("--holdout-pages", "holdout_pages"),
+        ("--easy-model", "easy_model"),
+        ("--hard-model", "hard_model"),
+        ("--reference-model", "reference_model"),
     ):
         if hasattr(args, attr):
             forwarded.extend([flag, str(getattr(args, attr))])
 
     for flag, attr in (
         ("--eval", "eval"),
+        ("--no-eval", "no_eval"),
         ("--group-rows", "group_rows"),
         ("--reuse-ocr", "reuse_ocr"),
         ("--no-routing", "no_routing"),

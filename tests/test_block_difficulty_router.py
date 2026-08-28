@@ -10,6 +10,31 @@ from src.agents.block_difficulty_router import block_difficulty_router_node
 
 
 class BlockDifficultyRouterTests(unittest.TestCase):
+    def test_no_routing_prefers_run_model_over_environment(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            train_dir = Path(tmp)
+            (train_dir / "block_samples" / "0").mkdir(parents=True)
+            llm = Mock()
+
+            with patch.dict(
+                os.environ,
+                {"OPENCODE_EASY_MODEL": "openrouter/example/env-model"},
+            ):
+                result = block_difficulty_router_node(
+                    {
+                        "pdf_path": str(train_dir / "document.pdf"),
+                        "no_routing": True,
+                        "easy_model": "openrouter/z-ai/glm-5.3-flash",
+                    },
+                    llm,
+                )
+
+        self.assertEqual(
+            result["block_opencode_models"],
+            {"0": "openrouter/z-ai/glm-5.3-flash"},
+        )
+        llm.invoke.assert_not_called()
+
     def test_no_routing_assigns_configured_easy_model_without_llm_calls(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             train_dir = Path(tmp)

@@ -94,6 +94,22 @@ class OpenRouterModelTests(unittest.TestCase):
         )
 
     @patch("src.models.openrouter.ChatOpenAI")
+    def test_template_inference_explicit_reference_overrides_environment(self, chat_mock) -> None:
+        with patch.dict(
+            os.environ,
+            {
+                "OPENROUTER_API_KEY": "test-key",
+                "OPENROUTER_TEMPLATE_INFERENCE_MODEL": "openai/gpt-5.4",
+            },
+            clear=True,
+        ):
+            get_template_inference_llm(model="z-ai/glm-5.3-flash")
+
+        self.assertEqual(
+            chat_mock.call_args.kwargs["model"], "z-ai/glm-5.3-flash"
+        )
+
+    @patch("src.models.openrouter.ChatOpenAI")
     def test_ground_truth_model_uses_openrouter_and_gpt_5_4(self, chat_mock) -> None:
         with patch.dict(
             os.environ,
@@ -132,6 +148,22 @@ class OpenRouterModelTests(unittest.TestCase):
 
         self.assertEqual(chat_mock.call_args.kwargs["model"], "openai/gpt-5.4")
         self.assertEqual(chat_mock.call_args.kwargs["max_tokens"], 128000)
+
+    @patch("src.models.openrouter.ChatOpenAI")
+    def test_ground_truth_explicit_reference_overrides_environment(self, chat_mock) -> None:
+        with patch.dict(
+            os.environ,
+            {
+                "OPENROUTER_API_KEY": "test-key",
+                "OPENROUTER_GROUND_TRUTH_MODEL": "openai/gpt-5.4",
+            },
+            clear=True,
+        ):
+            get_ground_truth_model(model="qwen/qwen3.8-flash")
+
+        self.assertEqual(
+            chat_mock.call_args.kwargs["model"], "qwen/qwen3.8-flash"
+        )
 
     def test_ground_truth_max_tokens_must_be_positive_integer(self) -> None:
         for value in ("0", "-1", "not-a-number"):

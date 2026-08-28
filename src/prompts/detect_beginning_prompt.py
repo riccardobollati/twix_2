@@ -18,10 +18,17 @@ short introduction appears above that content.
 If no page in this batch contains the actual structured records, use null.
 Never guess a page outside the supplied batch.
 
+IMPORTANT: the `confidence` value MUST be exactly one of the lowercase JSON
+strings `"high"`, `"medium"`, or `"low"`. Never return `"High"`, `"LOW"`, a
+number, a percentage, or any other confidence representation.
+
 Return ONLY this JSON object, with no markdown:
 {
   "start_page": <physical page number or null>,
-  "confidence": "high" | "medium" | "low",
+  "confidence": "high",
   "reason": "one short explanation"
 }
+
+The example uses `"high"`; replace it with `"medium"` or `"low"` when that is
+the appropriate confidence level. Do not return multiple alternatives.
 """.strip()

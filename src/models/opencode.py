@@ -4,9 +4,10 @@ import json
 import os
 import subprocess
 
+from src.models.catalog import DEFAULT_EASY_MODEL
 
 DEFAULT_OPENCODE_MODEL = os.getenv(
-    "OPENCODE_MODEL", "openrouter/deepseek/deepseek-v4-flash"
+    "OPENCODE_MODEL", DEFAULT_EASY_MODEL
 )
 OPENCODE_TIMEOUT_S = 1800
 _CAVEMAN_PREFIX = "/caveman full\n\n"

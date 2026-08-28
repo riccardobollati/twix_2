@@ -131,6 +131,11 @@ def block_extraction_scripting_node(state: dict[str, Any]) -> dict[str, Any]:
         print("block_extraction_scripting: no block sample folders found")
         return {}
 
+    print(
+        f"block_extraction_scripting_node: generating {len(template_ids)} "
+        "extractor script(s) with OpenCode...",
+        flush=True,
+    )
     display = _Display(template_ids)
     spinner_thread = display.start()
 

@@ -9,10 +9,37 @@ from unittest.mock import patch
 from PIL import Image
 
 from src.agents.block_artifacts import block_artifacts_node
+from src.agents.block_separation import block_separation_node
 from viz_blocks import _parse_targets, render_blocks, run_block_separator
 
 
 class BlockArtifactTests(unittest.TestCase):
+    @patch("src.agents.block_separation._spinner")
+    @patch("src.agents.block_separation._run_script", return_value=None)
+    @patch("src.agents.block_separation.opencode_silent", return_value=(0, 1, 2, 3))
+    def test_separator_prefers_hard_model_over_general_opencode_model(
+        self, opencode, _run_script, _spinner
+    ) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            train = root / "agent_space" / "train"
+            train.mkdir(parents=True)
+            (train / "block_separation.py").touch()
+            ocr = train / "ocr.csv"
+            ocr.touch()
+
+            block_separation_node({
+                "template": [],
+                "metadata": [],
+                "ocr_csv_path": str(ocr),
+                "pdf_path": str(train / "input.pdf"),
+                "agent_space": str(root / "agent_space"),
+                "opencode_model": "openrouter/vendor/general",
+                "hard_model": "openrouter/vendor/hard",
+            })
+
+        self.assertEqual(opencode.call_args.kwargs["model"], "openrouter/vendor/hard")
+
     def test_cli_targets_accept_pdf_then_pages_or_legacy_pages(self) -> None:
         self.assertEqual(
             _parse_targets(["/tmp/input.pdf", "2", "4"]),
@@ -111,6 +138,42 @@ with open(os.path.join(sys.argv[2], 'block_separation.json'), 'w') as target:
                 label="id_05",
             )
             self.assertEqual(result["cost"][0]["phase"], "block_artifacts")
+
+    @patch("src.agents.block_artifacts.render_blocks")
+    @patch("src.agents.block_artifacts.run_block_separator")
+    def test_graph_node_renders_held_out_test_pdf(self, separator, render) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            document = Path(tmp) / "id_05"
+            train = document / "agent_space" / "train"
+            test = document / "agent_space" / "test"
+            train.mkdir(parents=True)
+            test.mkdir(parents=True)
+            train_pdf = train / "id_05.pdf"
+            test_pdf = test / "id_05.pdf"
+            train_pdf.touch()
+            test_pdf.touch()
+            separator.side_effect = ["/tmp/train.json", "/tmp/test.json"]
+            render.side_effect = [["train.png"], ["test-1.png", "test-2.png"]]
+
+            block_artifacts_node({
+                "pdf_path": str(train_pdf),
+                "test_pdf_path": str(test_pdf),
+                "agent_space": str(document / "agent_space"),
+                "doc_name": "id_05",
+            })
+
+            self.assertEqual(separator.call_count, 2)
+            self.assertEqual(separator.call_args_list[1].args[:2], (
+                str(test_pdf), str(train / "block_separation.py")
+            ))
+            self.assertEqual(render.call_args_list[1].args, (
+                str(test_pdf), "/tmp/test.json",
+                str(document / "artifacts" / "test_blocks"),
+            ))
+            self.assertEqual(
+                render.call_args_list[1].kwargs["label"],
+                "id_05 · evaluation test",
+            )
 
 
 if __name__ == "__main__":

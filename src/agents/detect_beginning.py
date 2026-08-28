@@ -40,9 +40,17 @@ def _parse_response(text: str, batch_start: int, batch_end: int) -> dict[str, An
             f"start_page must be between {batch_start} and {batch_end}, or null"
         )
 
-    confidence = parsed.get("confidence")
+    raw_confidence = parsed.get("confidence")
+    confidence = (
+        raw_confidence.strip().lower()
+        if isinstance(raw_confidence, str)
+        else raw_confidence
+    )
     if confidence not in {"high", "medium", "low"}:
-        raise ValueError("confidence must be high, medium, or low")
+        raise ValueError(
+            "confidence must be high, medium, or low "
+            f"(received {raw_confidence!r})"
+        )
     reason = parsed.get("reason")
     if not isinstance(reason, str) or not reason.strip():
         raise ValueError("reason must be a non-empty string")

@@ -8,13 +8,14 @@ TWIX 2 is a thesis research system for learning a reusable structured-data
 extractor from a small sample of a template-based PDF family. It combines:
 
 - `pdfplumber` OCR and geometry extraction;
-- DeepSeek calls over layout-preserving OCR for front-matter detection, template
-  inference, block difficulty routing, and train ground truth;
-- GPT-5.4 vision calls through OpenRouter over page images plus exact OCR for final held-out ground truth;
+- configurable OpenRouter calls over layout-preserving OCR for front-matter
+  detection, template inference, block difficulty routing, and train ground truth;
+- configurable multimodal reference-model calls through OpenRouter over page
+  images plus exact OCR for final held-out ground truth (GPT-5.4 by default);
 - the OpenCode CLI for writing document-specific Python separation and extraction
   scripts; and
 - LangGraph for orchestration, train evaluation, optional repair, test
-  extraction, scoring, and metadata collection. Both direct DeepSeek calls and
+  extraction, scoring, and metadata collection. Both direct model calls and
   OpenCode model calls are routed through OpenRouter.
 
 The output is both the extracted JSON and a portable `pipeline/` directory that
@@ -29,7 +30,7 @@ source env/bin/activate
 python -m pip install -r requirements.txt
 cp .env.example .env
 
-python run.py path/to/document.pdf
+python run.py path/to/document.pdf --no-eval
 python run.py path/to/document.pdf --eval
 python run.py <dataset-name> --eval --pages 5 --train-threshold 0.9
 python src/run_batch.py --jobs 2 --eval
@@ -47,15 +48,20 @@ Environment selection:
 - `LLM_PROVIDER=openrouter` uses `src/models/openrouter.py` and requires
   `OPENROUTER_API_KEY`; `OPENROUTER_MODEL` overrides the direct-call model.
 - `OPENROUTER_REASONING_EFFORT` controls direct-call reasoning.
-- `OPENROUTER_GROUND_TRUTH_MODEL` configures the vision model used only for
-  final held-out/test ground truth (`openai/gpt-5.4` by default); it uses the
-  same `OPENROUTER_API_KEY` as other direct calls.
+- `OPENROUTER_GROUND_TRUTH_MODEL` configures the reference model used for train
+  and final held-out/test ground truth (`openai/gpt-5.4` by default); it uses
+  the same `OPENROUTER_API_KEY` as other direct calls.
 - `OPENROUTER_GROUND_TRUTH_MAX_TOKENS` caps held-out/test ground-truth output
   (`128000` by default, GPT-5.4's full output allowance). OpenRouter requires
   the API key's credit limit to cover this maximum during its credit check.
 - `OPENCODE_MODEL`, `OPENCODE_EASY_MODEL`, and `OPENCODE_HARD_MODEL` select
   OpenCode's `provider/model` code-generation and routing targets. OpenRouter
   targets use `openrouter/<publisher>/<model>`.
+- `--easy-model`, `--hard-model`, and `--reference-model` override those roles
+  for one run. The hard model always generates block separation and performs
+  direct difficulty classification; it also handles hard extractors and repair.
+  With `--no-routing`, the easy-model selection is used for every non-reference
+  phase; template inference and ground truth stay on the reference model.
 - Never print, commit, or replace `.env`. The CLI currently prints only the
   first ten key characters for batch-job identification.
 
@@ -98,19 +104,20 @@ detect_beginning (unless --start-page)
   -> train_eval
   -> [train_repair -> train_eval] repeated while the gate fails
   -> extraction
-  -> [ground_truth -> eval] only with --eval
+  -> [ground_truth -> eval] when evaluation is enabled (the default)
   -> save_metadata
 ```
 
 Important implications:
 
-- Train evaluation always runs, even without `--eval`. Setting
+- Train evaluation always runs, even with `--no-eval`. Setting
   `--train-threshold 0` disables only the repair loop.
-- With `--eval`, the generated pipeline is built on the train split and the
-  final `extraction` phase runs it on the test split. Without `--eval`, it runs
+- Test evaluation is enabled by default. The generated pipeline is built on the
+  train split and the final `extraction` phase runs it on up to 20 test pages.
+  With `--no-eval`, it runs
   on the cropped training PDF.
-- `--no-routing` skips difficulty-model calls and assigns
-  `OPENCODE_EASY_MODEL` to every extraction block.
+- `--no-routing` skips difficulty-model calls and uses the selected easy model
+  for every non-reference direct and OpenCode phase.
 - The graph recursion limit is derived from `--train-max-retries`; keep the
   compile-time and state values synchronized.
 
@@ -213,7 +220,9 @@ repair gate even if its numerical accuracy reaches the threshold.
 Immediately after the generated block separator passes validation,
 `block_artifacts` reapplies it to the complete train PDF, then calls the reusable
 renderer in `viz_blocks.py` and writes one annotated PNG per train page under
-`<output>/artifacts/blocks/`.
+`<output>/artifacts/blocks/`. In eval mode it also applies the learned separator
+to the independent test PDF and writes UI-only overlays under
+`<output>/artifacts/test_blocks/`; these do not feed back into training.
 
 ### Ground truth
 
@@ -223,10 +232,10 @@ its semantics between `train_eval.py` and `ground_truth.py`.
 - Train ground truth uses five-page windows; test defaults to twenty pages.
 - Independent windows are called concurrently, but results are consumed in page
   order.
-- Train ground truth sends layout-preserving OCR to DeepSeek through OpenRouter.
-  Final held-out/test ground truth sends images and exact OCR text together to
-  GPT-5.4 through OpenRouter, keeping the evaluation model independent of the
-  training model.
+- Train ground truth sends layout-preserving OCR to the selected reference model
+  through OpenRouter. Final held-out/test ground truth sends images and exact
+  OCR text to that same model, keeping evaluation independent of the
+  operational pipeline model.
 - A window with suspiciously low value-character coverage is retried once.
 - The model emits a flat `blocks` list with an explicit page per physical block.
 - Blocks from independent windows are concatenated in page order without record
@@ -278,6 +287,8 @@ For a document artifact directory `<output>/`:
 ├── metadata.json
 ├── metadata/cost.json
 ├── artifacts/blocks/               # block-separation overlay PNGs
+├── artifacts/stats/                # UI runs only: plots plus stats.json
+├── artifacts/test_blocks/          # held-out overlays in eval mode
 ├── debug/                         # only with --save-log
 ├── agent_space/
 │   ├── train/ and test/           # eval mode

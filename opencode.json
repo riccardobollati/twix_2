@@ -11,6 +11,12 @@
         },
         "deepseek/deepseek-v4-pro": {
           "name": "DeepSeek V4 Pro"
+        },
+        "z-ai/glm-5.3-flash": {
+          "name": "GLM 5.3 Flash"
+        },
+        "qwen/qwen3.8-flash": {
+          "name": "Qwen3.8 Flash"
         }
       }
     }

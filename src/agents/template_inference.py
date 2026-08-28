@@ -39,17 +39,21 @@ class ExtractionState(TypedDict):
     full_ocr_csv_path: str   # path to the full OCR CSV (all pages)
     output_dir:        NotRequired[str]  # artifact directory (defaults beside input PDF)
     source_sha256:     NotRequired[str]  # fingerprint of the original input PDF
-    opencode_model:    NotRequired[str]  # default code-generation/repair model
+    opencode_model:    NotRequired[str]  # block-separation/fallback OpenCode model
+    easy_model:        NotRequired[str]  # OpenCode target for easy blocks
+    hard_model:        NotRequired[str]  # OpenCode target for hard blocks/repair
+    reference_model:   NotRequired[str]  # direct OpenRouter template/GT model
     doc_name:          str   # document folder name, used to name split PDFs
     train_pages:       int   # number of pages requested for the train set
     eval_mode:         bool  # whether to create a test split
 
     eval_pages:      NotRequired[int]        # max test pages (None = all remaining)
     holdout_pages:   NotRequired[int]        # train pages hidden from script generation
-                                             # but included in train eval (None = auto)
+                                             # but included in train eval (default 0)
     gt_test_window:  NotRequired[int]        # pages per LLM call for test GT (default 20)
     block_opencode_models: NotRequired[dict] # template_id → OpenCode model string
-    llm_model:          NotRequired[str]     # name of the DeepSeek model used for this run
+    llm_model:          NotRequired[str]     # primary direct model used for this run
+    difficulty_model:   NotRequired[str]     # direct hard model used for routing
     ground_truth_model: NotRequired[str]     # OpenRouter model used for held-out test GT
     no_routing:         NotRequired[bool]    # use the easy model for every block type
     use_caveman:        NotRequired[bool]    # prepend /caveman to every OpenCode prompt
@@ -180,7 +184,7 @@ def _flag_signature_duplicates(template: list[dict]) -> list[str]:
 # ---------------------------------------------------------------------------
 
 def template_inference_node(state: ExtractionState, llm: BaseChatModel) -> dict[str, Any]:
-    """Send page OCR layouts to DeepSeek to infer the document template.
+    """Send page OCR layouts to the reference model to infer the template.
 
     The LLM call is retried up to 3 times: JSON parse errors and structural
     validation errors are fed back into the conversation. Duplicate field

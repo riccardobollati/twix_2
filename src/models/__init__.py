@@ -37,19 +37,19 @@ def get_llm(
     return module.get_model(reasoning_effort=reasoning_effort, model=model)
 
 
-def get_template_inference_llm() -> BaseChatModel:
+def get_template_inference_llm(*, model: str | None = None) -> BaseChatModel:
     """Return the model and reasoning effort configured for template inference."""
     return get_llm(
         reasoning_effort=os.getenv(
             "OPENROUTER_TEMPLATE_INFERENCE_REASONING_EFFORT", "low"
         ),
-        model=os.getenv("OPENROUTER_TEMPLATE_INFERENCE_MODEL") or None,
+        model=model or os.getenv("OPENROUTER_TEMPLATE_INFERENCE_MODEL") or None,
     )
 
 
-def get_ground_truth_llm() -> BaseChatModel:
-    """Return the OpenRouter model reserved for held-out/test ground truth."""
+def get_ground_truth_llm(*, model: str | None = None) -> BaseChatModel:
+    """Return the OpenRouter model reserved for train/test ground truth."""
     import importlib
 
     module = importlib.import_module("src.models.openrouter")
-    return module.get_ground_truth_model()
+    return module.get_ground_truth_model(model=model)

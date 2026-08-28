@@ -146,6 +146,11 @@ def block_separation_node(state: dict[str, Any]) -> dict[str, Any]:
     input_t, output_t, total_t = None, None, None
     duration, last_error = 0.0, ""
 
+    print(
+        "block_separation_node: generating the block separator with OpenCode...",
+        flush=True,
+    )
+
     for attempt in range(1, MAX_ATTEMPTS + 1):
         label = "block_separation" if attempt == 1 else f"block_separation (retry {attempt - 1})"
         stop_event = threading.Event()
@@ -161,7 +166,11 @@ def block_separation_node(state: dict[str, Any]) -> dict[str, Any]:
         log_path = os.path.join(debug_dir, f"block_separation_{attempt}.log") if state.get("save_log") else None
         returncode, input_t, output_t, total_t = opencode_silent(
             prompt, train_dir, task="block_separation",
-            model=state.get("opencode_model", DEFAULT_OPENCODE_MODEL),
+            model=(
+                state.get("hard_model")
+                or state.get("opencode_model")
+                or DEFAULT_OPENCODE_MODEL
+            ),
             caveman=state.get("use_caveman", False), log_path=log_path,
         )
         duration = time.time() - t0

@@ -151,11 +151,8 @@ def environment_creation_node(state: ExtractionState) -> dict[str, Any]:
     # (train − holdout) pages only; train_eval still runs on ALL train pages.
     # Scripts that overfit the pages they were built on then fail at train
     # time — where the repair loop can see and fix it — instead of on test.
-    holdout_req = state.get("holdout_pages")
-    if holdout_req is None:
-        holdout = min(2, max(0, actual_train_pages - 2))  # auto: 5→2, 4→2, 3→1, ≤2→0
-    else:
-        holdout = max(0, min(holdout_req, actual_train_pages - 2))
+    holdout_req = state.get("holdout_pages", 0)
+    holdout = max(0, min(holdout_req, actual_train_pages - 2))
     build_pages = actual_train_pages - holdout
 
     if holdout > 0:

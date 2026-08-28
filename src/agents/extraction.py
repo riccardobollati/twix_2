@@ -22,6 +22,8 @@ def extraction_node(state: dict[str, Any]) -> dict[str, Any]:
     pipeline_py = os.path.join(pipeline_dir, "pipeline.py")
     pdf_path = state.get("test_pdf_path") or state["pdf_path"]
 
+    phase = "evaluation test PDF" if state.get("test_pdf_path") else "train PDF"
+    print(f"extraction_node: running the finished pipeline on the {phase}...", flush=True)
     t0 = time.time()
     try:
         result = subprocess.run(

@@ -12,9 +12,7 @@ from langchain_core.messages import HumanMessage, SystemMessage
 
 from src.agents._usage import apply_usage, split_tokens
 from src.ground_truth_gen.helpers import format_words_layout
-
-DEFAULT_EASY_MODEL = "openrouter/deepseek/deepseek-v4-flash"
-DEFAULT_HARD_MODEL = "openrouter/deepseek/deepseek-v4-pro"
+from src.models.catalog import resolve_easy_model, resolve_hard_model
 
 _MAX_SAMPLES = 5
 _MAX_WORKERS = 4  # parallel classification calls
@@ -83,11 +81,8 @@ def block_difficulty_router_node(state: dict[str, Any], llm: BaseChatModel) -> d
         d for d in os.listdir(block_samples_dir)
         if os.path.isdir(os.path.join(block_samples_dir, d))
     )
-    model_easy = os.getenv("OPENCODE_EASY_MODEL", DEFAULT_EASY_MODEL)
-    model_hard = os.getenv(
-        "OPENCODE_HARD_MODEL",
-        os.getenv("OPENCODE_MODEL", DEFAULT_HARD_MODEL),
-    )
+    model_easy = resolve_easy_model(state.get("easy_model"))
+    model_hard = resolve_hard_model(state.get("hard_model"))
 
     if state.get("no_routing"):
         model_assignments = {template_id: model_easy for template_id in template_ids}

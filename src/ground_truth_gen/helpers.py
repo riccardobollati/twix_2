@@ -35,7 +35,7 @@ def load_page_ocr(csv_path: str, page_num: int) -> str:
 def format_words_layout(words: list[dict[str, Any]]) -> str:
     """Render OCR words as compact text lines while preserving page geometry.
 
-    DeepSeek V4 is text-only. Grouping words by their vertical centers and
+    Text-only model phases need explicit geometry. Grouping words by their vertical centers and
     retaining each word's x-span gives it the layout evidence previously
     carried by page images without changing the OCR character sequences.
     """

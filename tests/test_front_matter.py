@@ -10,9 +10,17 @@ from PIL import Image
 
 from src.agents.detect_beginning import _parse_response
 from src.agents.environment_creation import environment_creation_node
+from src.prompts.detect_beginning_prompt import PROMPT_DETECT_BEGINNING
 
 
 class FrontMatterTests(unittest.TestCase):
+    def test_detection_prompt_requires_lowercase_confidence(self) -> None:
+        self.assertIn(
+            'exactly one of the lowercase JSON\nstrings `"high"`, `"medium"`, or `"low"`',
+            PROMPT_DETECT_BEGINNING,
+        )
+        self.assertIn('Never return `"High"`, `"LOW"`', PROMPT_DETECT_BEGINNING)
+
     def test_detection_response_is_range_checked(self) -> None:
         parsed = _parse_response(
             '{"start_page": 3, "confidence": "high", "reason": "records begin"}',
@@ -24,6 +32,21 @@ class FrontMatterTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "between 1 and 6"):
             _parse_response(
                 '{"start_page": 7, "confidence": "high", "reason": "bad"}',
+                1,
+                6,
+            )
+
+    def test_detection_normalizes_confidence_case_and_whitespace(self) -> None:
+        parsed = _parse_response(
+            '{"start_page": 1, "confidence": " High ", "reason": "records"}',
+            1,
+            6,
+        )
+        self.assertEqual(parsed["confidence"], "high")
+
+        with self.assertRaisesRegex(ValueError, "received 'very high'"):
+            _parse_response(
+                '{"start_page": 1, "confidence": "very high", "reason": "records"}',
                 1,
                 6,
             )
@@ -73,6 +96,7 @@ class FrontMatterTests(unittest.TestCase):
                 rows = list(csv.DictReader(source))
             self.assertEqual([row["page"] for row in rows], ["1", "2"])
             self.assertEqual([row["text"] for row in rows], ["page-2", "page-3"])
+            self.assertEqual(result["build_ocr_csv_path"], result["ocr_csv_path"])
 
 
 if __name__ == "__main__":

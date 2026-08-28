@@ -1,7 +1,8 @@
 """Entry point for PDF template inference and evaluation.
 
 Usage:
-    python run.py path/to/document.pdf
+    python run.py path/to/document.pdf              # evaluation enabled
+    python run.py path/to/document.pdf --no-eval
     python run.py path/to/document.pdf --out-dir outputs/example
     python run.py <benchmark-name> --eval
 
@@ -12,20 +13,21 @@ Usage:
         ocr_extraction_full.csv        – full word-level OCR dump (step 1)
         template.json                  – inferred template
         pipeline/extracted.json        – flat page-local blocks from the pipeline
-        pipeline/ground_truth.json     – LLM ground truth (only with --eval)
-        pipeline/eval.json / eval.txt  – evaluation results (only with --eval)
+        pipeline/ground_truth.json     – LLM ground truth (when evaluation is enabled)
+        pipeline/eval.json / eval.txt  – evaluation results (when enabled)
 
     The graph detects and skips cover/index front matter before creating the
-    train set. With --eval, the remaining pages are split into train and test;
+    train set. By default, the remaining pages are split into train and test;
     the graph builds the pipeline on train, runs it on test, generates ground
-    truth via GPT-5.4 through OpenRouter, and scores the result.
+    truth via the selected reference model through OpenRouter, and scores the
+    result.
 
 Environment variables:
     LLM_PROVIDER       Provider name (default and only active provider: openrouter).
     OPENROUTER_API_KEY Required for all model calls and OpenCode's OpenRouter provider.
     OPENROUTER_MODEL   Direct-call model (default: deepseek/deepseek-v4-flash).
     OPENROUTER_GROUND_TRUTH_MODEL
-                       Held-out ground-truth model (default: openai/gpt-5.4).
+                       Train/test reference model (default: openai/gpt-5.4).
     OPENROUTER_GROUND_TRUTH_MAX_TOKENS
                        Held-out ground-truth output cap (default: 128000).
     OPENROUTER_TEMPLATE_INFERENCE_REASONING_EFFORT
@@ -33,6 +35,11 @@ Environment variables:
     OPENROUTER_TEMPLATE_INFERENCE_MODEL
                        Template-inference model (default: OPENROUTER_MODEL).
     OPENCODE_MODEL     OpenCode provider/model used for code generation.
+    OPENCODE_EASY_MODEL
+                       Default easy extraction model.
+    OPENCODE_HARD_MODEL
+                       Default block-separation, difficulty-routing, hard
+                       extraction, and repair model.
 """
 
 from __future__ import annotations
@@ -56,7 +63,10 @@ import pdfplumber
 
 from src.agents.graph import build_graph
 from src.models import get_ground_truth_llm, get_llm, get_template_inference_llm
-from src.models.opencode import DEFAULT_OPENCODE_MODEL
+from src.models.catalog import (
+    direct_model_id, resolve_easy_model, resolve_hard_model,
+    resolve_reference_model,
+)
 
 
 # ---------------------------------------------------------------------------
@@ -228,24 +238,55 @@ def main() -> None:
         "--start-page", type=_positive_int, default=None, metavar="N",
         help="Physical page where records begin; skips automatic front-matter detection.",
     )
-    parser.add_argument(
-        "--eval", action="store_true",
+    evaluation = parser.add_mutually_exclusive_group()
+    evaluation.add_argument(
+        "--eval", dest="eval", action="store_true",
         help=(
             "Split into train/test, run the pipeline on the test set, generate "
-            "ground truth via GPT-5.4 through OpenRouter, and score the result."
+            "ground truth via the reference model through OpenRouter, and "
+            "score the result (default)."
         ),
     )
+    evaluation.add_argument(
+        "--no-eval", dest="eval", action="store_false",
+        help="Disable the independent test split and final evaluation.",
+    )
+    parser.set_defaults(eval=True)
     parser.add_argument(
-        "--eval-pages", type=_positive_int, default=None, metavar="N",
-        help="Number of pages to use as the test set (default: all remaining pages after train).",
+        "--eval-pages", type=_positive_int, default=20, metavar="N",
+        help="Maximum independent test pages used for final evaluation (default: 20).",
     )
     parser.add_argument(
-        "--holdout-pages", type=_nonnegative_int, default=None, metavar="N",
+        "--holdout-pages", type=_nonnegative_int, default=0, metavar="N",
         help=(
             "Number of train pages hidden from script generation but included in "
             "the train eval, so overfitted scripts fail where the repair loop can "
-            "fix them. Default: auto (2 when train has ≥4 pages, 1 at 3, else 0). "
-            "Pass 0 to disable."
+            "fix them. Default: 0 (disabled)."
+        ),
+    )
+    parser.add_argument(
+        "--easy-model", default=None, metavar="MODEL",
+        help=(
+            "OpenRouter model used for easy extraction blocks. Accepts either "
+            "publisher/model or openrouter/publisher/model; empty uses "
+            "OPENCODE_EASY_MODEL from .env. With --no-routing, this becomes the "
+            "single non-reference model for the whole pipeline."
+        ),
+    )
+    parser.add_argument(
+        "--hard-model", default=None, metavar="MODEL",
+        help=(
+            "OpenRouter model used for block-separation generation, difficulty "
+            "routing, hard extraction blocks, and repair. Empty uses "
+            "OPENCODE_HARD_MODEL from .env."
+        ),
+    )
+    parser.add_argument(
+        "--reference-model", default=None, metavar="MODEL",
+        help=(
+            "OpenRouter model used for both template inference and train/test "
+            "ground-truth generation. Default: OPENROUTER_GROUND_TRUTH_MODEL, "
+            "then GPT-5.4."
         ),
     )
     parser.add_argument(
@@ -280,8 +321,8 @@ def main() -> None:
     parser.add_argument(
         "--no-routing", action="store_true",
         help=(
-            "Skip block-difficulty classification and use OPENCODE_EASY_MODEL "
-            "for every extraction block."
+            "Use one model throughout all non-reference phases. The model is "
+            "selected with --easy-model or OPENCODE_EASY_MODEL."
         ),
     )
     parser.add_argument(
@@ -323,18 +364,37 @@ def main() -> None:
     #   block_samples → block_extraction_scripting → collect_extraction_scripts →
     #   extraction [→ ground_truth → eval]  (last two only when eval_mode=True)
     print(f"[2/{total_steps}] Running graph ...", file=sys.stderr)
+    easy_model = resolve_easy_model(args.easy_model)
+    hard_model = resolve_hard_model(args.hard_model)
+    reference_model = resolve_reference_model(args.reference_model)
+    if args.no_routing:
+        hard_model = easy_model
+        primary_llm = get_llm(model=direct_model_id(easy_model))
+        difficulty_routing_llm = primary_llm
+    else:
+        primary_llm = get_llm()
+        difficulty_routing_llm = get_llm(model=direct_model_id(hard_model))
+
+    # Block-separation code is a hard task. Keep this state alias for existing
+    # consumers, but make the selected hard model authoritative.
+    opencode_model = hard_model
+
     graph = build_graph(
-        get_llm(),
+        primary_llm,
         train_repair_max_retries=args.train_max_retries,
-        ground_truth_llm=get_ground_truth_llm() if args.eval else None,
-        template_inference_llm=get_template_inference_llm(),
+        ground_truth_llm=get_ground_truth_llm(model=reference_model),
+        template_inference_llm=get_template_inference_llm(model=reference_model),
+        difficulty_routing_llm=difficulty_routing_llm,
     )
     graph.invoke({
         "full_pdf_path":              str(pdf_path),
         "full_ocr_csv_path":          str(ocr_csv_path),
         "output_dir":                 str(output_dir),
         "source_sha256":              _sha256(pdf_path),
-        "opencode_model":             DEFAULT_OPENCODE_MODEL,
+        "opencode_model":             opencode_model,
+        "easy_model":                 easy_model,
+        "hard_model":                 hard_model,
+        "reference_model":            reference_model,
         "doc_name":                   doc_name,
         "train_pages":                args.pages,
         "eval_mode":                  args.eval,
@@ -348,7 +408,7 @@ def main() -> None:
             "beginning_reason": "Start page supplied with --start-page.",
         } if args.start_page is not None else {}),
         **({"gt_test_window": args.gt_test_window} if args.gt_test_window is not None else {}),
-        **({"holdout_pages": args.holdout_pages} if args.holdout_pages is not None else {}),
+        "holdout_pages":             args.holdout_pages,
         **({"use_caveman": True} if args.caveman else {}),
         **({"save_log": True} if args.save_log else {}),
     })

@@ -3,8 +3,8 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#0c1220" />
-    <title>TWIX 2 · Pipeline Console</title>
+    <meta name="theme-color" content="#17211d" />
+    <title>TWIX 2 · Extraction Workbench</title>
     <link rel="stylesheet" href="/styles.css" />
   </head>
   <body>
@@ -12,71 +12,127 @@
       <aside class="sidebar">
         <div class="brand"><span class="brand-mark">T</span><span>TWIX <b>2</b></span></div>
         <button class="new-run" id="show-upload" type="button">+ New extraction</button>
-        <div class="side-label">Runs</div>
+        <p class="side-label">Recent runs</p>
         <nav id="run-list" class="run-list" aria-label="Pipeline runs"></nav>
-        <div class="sidebar-note">Runs stay on this machine. The dashboard streams the local pipeline and reads its generated artifacts.</div>
+        <p class="sidebar-note">Everything stays on this machine. PDFs and generated artifacts are served only by this local dashboard.</p>
       </aside>
 
       <main class="workspace">
         <header class="topbar">
-          <div>
-            <p class="eyebrow">EXTRACTION WORKBENCH</p>
-            <h1 id="run-title">Start an extraction</h1>
-          </div>
-          <div id="run-status" class="status-pill idle">Ready</div>
+          <div><p class="eyebrow">DOCUMENT EXTRACTION WORKBENCH</p><h1 id="run-title">Start an extraction</h1></div>
+          <div class="topbar-actions"><button id="show-logs" class="logs-button hidden" type="button"><span>›_</span> Logs</button><div id="run-status" class="status-pill idle">Ready</div></div>
         </header>
 
         <section id="upload-panel" class="upload-panel">
           <div class="upload-copy">
-            <p class="eyebrow">NEW RUN</p>
-            <h2>Turn a template-family PDF into structured JSON.</h2>
-            <p>Upload one PDF, follow each model and code-generation stage, inspect all intermediate artifacts, and compare the final grouped result with the model reference.</p>
+            <p class="eyebrow">NEW PIPELINE RUN</p>
+            <h2>Watch a reusable extractor learn from one PDF family.</h2>
+            <p>Follow the inferred structure, inspect block boundaries on unseen test pages, and verify the final JSON against an independent evaluation set.</p>
           </div>
           <form id="upload-form" class="run-form">
-            <label class="file-drop" for="pdf-file" id="file-drop">
-              <input id="pdf-file" name="pdf" type="file" accept="application/pdf,.pdf" required />
-              <span class="file-icon">↥</span>
-              <span id="file-name">Choose a PDF</span>
-              <small>PDF only · stays local</small>
+            <label class="file-drop" for="pdf-file">
+              <input id="pdf-file" type="file" accept="application/pdf,.pdf" required />
+              <span class="file-icon">PDF</span><strong id="file-name">Choose a PDF</strong><small>PDF only · processed locally</small>
             </label>
             <div class="form-grid">
               <label>Training pages<input id="pages" type="number" min="1" max="50" value="5" /></label>
+              <label>Train holdout pages<input id="holdout-pages" type="number" min="0" max="48" value="0" /></label>
+              <label>Evaluation pages<input id="eval-pages" type="number" min="1" max="1000" value="20" /></label>
               <label>Repair threshold<input id="threshold" type="number" min="0" max="1" step="0.05" value="0" /></label>
             </div>
-            <label class="toggle"><input id="eval" type="checkbox" checked /><span></span>Generate ground truth and evaluate</label>
-            <button class="primary-button" type="submit">Run pipeline <span>→</span></button>
+            <fieldset class="model-settings">
+              <legend>Model routing</legend>
+              <label class="toggle"><input id="no-routing" type="checkbox" /> Use one model for every non-reference phase</label>
+              <div id="routed-models" class="form-grid model-grid">
+                <label>Easy model<select id="easy-model"></select></label>
+                <label>Hard model<select id="hard-model"></select></label>
+              </div>
+              <div id="single-model-wrap" class="form-grid model-grid hidden">
+                <label>Pipeline model<select id="single-model"></select></label>
+              </div>
+              <div class="form-grid model-grid reference-grid">
+                <label>Reference model<select id="reference-model"></select><small>Template inference and train/test ground truth</small></label>
+              </div>
+            </fieldset>
+            <label class="toggle"><input id="eval" type="checkbox" checked /> Run independent test evaluation</label>
+            <button class="primary-button" type="submit">Start pipeline <span>→</span></button>
           </form>
         </section>
 
         <section id="dashboard" class="dashboard hidden">
-          <div class="stage-heading"><div><p class="eyebrow">LIVE PIPELINE</p><h2>From PDF to inspected output</h2></div><button id="cancel-run" class="quiet-button" type="button">Cancel run</button></div>
-          <div id="stages" class="stages" aria-label="Pipeline stages"></div>
-
-          <div class="tabs" role="tablist">
-            <button class="tab active" data-tab="activity" type="button">Activity</button>
-            <button class="tab" data-tab="artifacts" type="button">Artifacts</button>
-            <button class="tab" data-tab="output" type="button">Output comparison</button>
+          <div class="stage-heading">
+            <div><p class="eyebrow">LIVE PIPELINE</p><h2>Four-stage extraction</h2></div>
+            <div class="run-actions"><button id="follow-live" class="quiet-button hidden" type="button">Return to live stage</button><button id="cancel-run" class="quiet-button" type="button">Cancel run</button></div>
           </div>
-
-          <section id="activity-tab" class="tab-panel active">
-            <div class="panel log-panel"><div class="panel-title"><span>Run log</span><span id="log-count" class="muted"></span></div><pre id="run-log" class="run-log">Waiting for pipeline output…</pre></div>
-            <div class="panel summary-panel"><div class="panel-title">Run configuration</div><dl id="run-config" class="config-list"></dl><div id="metric-cards" class="metric-cards"></div></div>
-          </section>
-
-          <section id="artifacts-tab" class="tab-panel artifact-layout">
-            <div class="panel artifact-tree"><div class="panel-title">Generated artifacts <button id="refresh-artifacts" class="icon-button" title="Refresh artifacts" type="button">↻</button></div><div id="artifact-tree" class="tree-empty">Artifacts will appear as the pipeline runs.</div></div>
-            <div class="panel artifact-preview"><div class="panel-title"><span id="preview-name">Select an artifact</span><a id="download-artifact" class="download-link hidden" target="_blank">Open</a></div><pre id="artifact-content" class="code-preview">Choose JSON, generated Python, OCR, or a log from the tree.</pre></div>
-          </section>
-
-          <section id="output-tab" class="tab-panel">
-            <div id="evaluation-summary" class="evaluation-summary"><p>Output comparison is available once evaluation artifacts are produced.</p></div>
-            <div class="comparison-grid">
-              <div class="panel"><div class="panel-title">Grouped JSON <span class="muted">pipeline output</span></div><pre id="grouped-json" class="json-preview">Not available yet.</pre></div>
-              <div class="panel"><div class="panel-title">Ground truth <span class="muted">model reference</span></div><pre id="ground-truth-json" class="json-preview">Not available yet.</pre></div>
+          <nav id="stages" class="stages" aria-label="Pipeline stages"></nav>
+          <section class="model-routing-panel" aria-labelledby="model-routing-title">
+            <div class="model-routing-heading">
+              <div><p class="eyebrow">LIVE MODEL ROUTING</p><h3 id="model-routing-title">What is running what</h3></div>
+              <span id="model-routing-status">Effective assignments for this run</span>
             </div>
+            <div id="model-assignments" class="model-assignment-grid"></div>
           </section>
+
+          <section class="stage-workbench">
+            <article class="workflow-panel" data-stage-panel="template">
+              <div class="panel-heading"><div><span class="step-kicker">STEP 01</span><h3>Template inference</h3><p>The system learns the document schema from the training pages.</p></div><span id="template-state" class="artifact-state waiting">Waiting</span></div>
+              <div class="split-view">
+                <div class="viewer-card"><div class="viewer-title">Training PDF</div><div id="template-pdf-empty" class="empty-state">Preparing the training document…</div><iframe id="template-pdf" class="pdf-viewer hidden" title="Training PDF"></iframe></div>
+                <div class="viewer-card"><div class="viewer-title">Inferred template <span>template.json</span></div><pre id="template-json" class="json-viewer">Waiting for template inference…</pre></div>
+              </div>
+            </article>
+
+            <article class="workflow-panel hidden" data-stage-panel="blocks">
+              <div class="panel-heading"><div><span class="step-kicker">STEP 02</span><h3>Block separation</h3><p>The generated separator is applied to independent test pages that were never used to build the pipeline.</p></div><span id="block-source" class="artifact-state waiting">Waiting</span></div>
+              <div class="block-browser">
+                <div class="viewer-card block-main"><div class="viewer-title"><span id="block-page-title">Block overlay</span><span id="block-counter"></span></div><div id="block-empty" class="empty-state">Block previews appear here as soon as separation finishes.</div><img id="block-image" class="block-image hidden" alt="Detected blocks overlaid on a PDF page" /></div>
+                <div id="block-thumbnails" class="thumbnail-rail"></div>
+              </div>
+            </article>
+
+            <article class="workflow-panel hidden" data-stage-panel="extraction">
+              <div class="panel-heading"><div><span class="step-kicker">STEP 03</span><h3>Data extraction & train evaluation</h3><p>OpenCode builds the node extractors, evaluates them on train pages, and repairs them when required.</p></div><span id="train-score" class="artifact-state waiting">In progress</span></div>
+              <div class="console-card"><div class="viewer-title">Live pipeline output <span id="log-count"></span></div><pre id="run-log" class="run-log">Waiting for pipeline output…</pre></div>
+            </article>
+
+            <article class="workflow-panel hidden" data-stage-panel="results">
+              <div class="panel-heading results-heading"><div><span class="step-kicker">STEP 04</span><h3>Test evaluation & final results</h3><p>The finished pipeline runs on the independent test PDF. Compare the source with its extracted JSON.</p></div><div id="result-score" class="result-score"><small>Accuracy</small><strong>—</strong></div></div>
+              <div class="result-tabs" role="tablist" aria-label="Final result views">
+                <button class="result-tab active" data-result-tab="output" type="button" role="tab" aria-selected="true">Output</button>
+                <button class="result-tab" data-result-tab="stats" type="button" role="tab" aria-selected="false">Stats</button>
+              </div>
+              <div data-result-panel="output">
+                <div id="score-breakdown" class="score-breakdown"><span>Evaluation is waiting for the test extraction.</span></div>
+                <div class="split-view result-split">
+                  <div class="viewer-card"><div class="viewer-title">Independent test PDF</div><div id="result-pdf-empty" class="empty-state">Preparing the test document…</div><iframe id="result-pdf" class="pdf-viewer hidden" title="Independent test PDF"></iframe></div>
+                  <div class="viewer-card"><div class="viewer-title">Extracted data <span>pipeline/extracted.json</span></div><pre id="extracted-json" class="json-viewer">Waiting for test extraction…</pre></div>
+                </div>
+              </div>
+              <div class="stats-panel hidden" data-result-panel="stats">
+                <div id="stats-summary" class="stats-summary"></div>
+                <div id="stats-empty" class="stats-empty">Plots and statistics are generated after the pipeline finishes.</div>
+                <div id="stats-gallery" class="stats-gallery"></div>
+              </div>
+            </article>
+          </section>
+
+          <details class="artifact-drawer">
+            <summary>Browse all generated artifacts</summary>
+            <div class="artifact-layout">
+              <div class="artifact-tree-card"><div class="viewer-title">Run files <button id="refresh-artifacts" class="icon-button" type="button">↻</button></div><div id="artifact-tree" class="tree-empty">Artifacts will appear as the pipeline runs.</div></div>
+              <div class="artifact-preview-card"><div class="viewer-title"><span id="preview-name">Select an artifact</span><a id="download-artifact" class="hidden" target="_blank">Open</a></div><pre id="artifact-content" class="code-preview">Choose a JSON, Python, OCR, or log file.</pre></div>
+            </div>
+          </details>
         </section>
       </main>
+    </div>
+    <div id="logs-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="logs-title">
+      <div class="modal-backdrop" data-close-logs></div>
+      <section class="terminal-modal">
+        <header class="terminal-header"><strong id="logs-title">Pipeline logs</strong><button id="close-logs" type="button" aria-label="Close logs">×</button></header>
+        <div class="terminal-command"><span>$</span><code id="terminal-command">Waiting for command…</code></div>
+        <pre id="terminal-output" class="terminal-output">Waiting for pipeline output…</pre>
+      </section>
     </div>
     <div id="toast" class="toast hidden" role="status"></div>
     <script src="/app.js"></script>

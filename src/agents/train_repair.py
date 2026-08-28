@@ -7,7 +7,19 @@ import time
 from typing import Any
 
 from src.agents._ui import spinner as _spinner
-from src.models.opencode import DEFAULT_OPENCODE_MODEL, opencode_silent
+from src.models.catalog import resolve_hard_model
+from src.models.opencode import opencode_silent
+
+
+def _repair_model(state: dict[str, Any] | None = None) -> str:
+    """Return the configured hard-model target for every repair session.
+
+    Extraction generation can be routed per block, but repairs operate on the
+    whole pipeline and therefore always need the hard target.  Keep the
+    fallback chain aligned with ``block_difficulty_router`` for installations
+    that configure only ``OPENCODE_MODEL``.
+    """
+    return resolve_hard_model((state or {}).get("hard_model"))
 
 
 def _build_prompt(eval_txt: str, extraction_script_ids: list[str], health_problems: list[str]) -> str:
@@ -164,7 +176,7 @@ def train_repair_node(state: dict[str, Any]) -> dict[str, Any]:
         prompt,
         pipeline_dir,
         task=f"train_repair_{attempts}",
-        model=state.get("opencode_model", DEFAULT_OPENCODE_MODEL),
+        model=_repair_model(state),
         caveman=state.get("use_caveman", False),
         log_path=log_path,
     )

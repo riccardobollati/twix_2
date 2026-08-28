@@ -9,7 +9,7 @@ from viz_blocks import render_blocks, run_block_separator
 
 
 def block_artifacts_node(state: dict[str, Any]) -> dict[str, Any]:
-    """Run separation on the full train PDF and render its block overlays.
+    """Render train and, in eval mode, held-out test block overlays.
 
     Initial script generation may use a reduced build OCR that excludes held-out
     train pages. Reapplying the completed script here ensures the artifacts cover
@@ -31,7 +31,25 @@ def block_artifacts_node(state: dict[str, Any]) -> dict[str, Any]:
             output_dir,
             label=state.get("doc_name", "document"),
         )
-    print(f"block_artifacts_node: {len(written)} image(s) → {output_dir}")
+    print(f"block_artifacts_node: {len(written)} train image(s) → {output_dir}")
+
+    test_pdf_path = state.get("test_pdf_path")
+    if test_pdf_path:
+        test_output_dir = os.path.join(document_dir, "artifacts", "test_blocks")
+        with tempfile.TemporaryDirectory(prefix="test_block_artifacts_") as work_dir:
+            test_blocks_json_path = run_block_separator(
+                test_pdf_path, script_path, work_dir
+            )
+            test_written = render_blocks(
+                test_pdf_path,
+                test_blocks_json_path,
+                test_output_dir,
+                label=f"{state.get('doc_name', 'document')} · evaluation test",
+            )
+        print(
+            f"block_artifacts_node: {len(test_written)} evaluation test image(s) "
+            f"→ {test_output_dir}"
+        )
 
     return {
         "cost": [{

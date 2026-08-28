@@ -5,9 +5,10 @@ import os
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_openai import ChatOpenAI
 
+from src.models.catalog import DEFAULT_DIRECT_MODEL, DEFAULT_REFERENCE_MODEL
 
-DEFAULT_MODEL = "deepseek/deepseek-v4-flash"
-DEFAULT_GROUND_TRUTH_MODEL = "openai/gpt-5.4"
+DEFAULT_MODEL = DEFAULT_DIRECT_MODEL
+DEFAULT_GROUND_TRUTH_MODEL = DEFAULT_REFERENCE_MODEL
 DEFAULT_GROUND_TRUTH_MAX_TOKENS = 128_000
 DEFAULT_BASE_URL = "https://openrouter.ai/api/v1"
 _REASONING_EFFORTS = {"minimal", "low", "medium", "high", "xhigh"}
@@ -60,8 +61,8 @@ def get_model(
     )
 
 
-def get_ground_truth_model() -> BaseChatModel:
-    """Return OpenAI GPT-5.4 through OpenRouter for held-out ground truth."""
+def get_ground_truth_model(*, model: str | None = None) -> BaseChatModel:
+    """Return the configured OpenRouter reference model for ground truth."""
     raw_max_tokens = os.getenv(
         "OPENROUTER_GROUND_TRUTH_MAX_TOKENS",
         str(DEFAULT_GROUND_TRUTH_MAX_TOKENS),
@@ -78,7 +79,7 @@ def get_ground_truth_model() -> BaseChatModel:
         )
 
     return ChatOpenAI(
-        model=os.getenv(
+        model=model or os.getenv(
             "OPENROUTER_GROUND_TRUTH_MODEL", DEFAULT_GROUND_TRUTH_MODEL
         ),
         max_tokens=max_tokens,
