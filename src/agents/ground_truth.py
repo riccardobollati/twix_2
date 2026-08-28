@@ -9,9 +9,6 @@ from langchain_core.language_models.chat_models import BaseChatModel
 
 from src.agents._usage import apply_usage
 from src.agents.gt_common import generate_ground_truth
-# re-exported for external consumers (single_eval.py)
-from src.agents.gt_common import _merge_records, _node_order, _should_merge  # noqa: F401
-from src.agents.grouping import _maybe_merge_single_block
 
 
 def ground_truth_node(
@@ -35,7 +32,6 @@ def ground_truth_node(
         state["template"]       – inferred template (from template_inference_node)
 
     Writes:
-        document_dir/pipeline/not_merged_gt.json  (raw per-window records, pre-merge)
         document_dir/pipeline/ground_truth.json
     """
     t0 = time.time()
@@ -48,7 +44,7 @@ def ground_truth_node(
     template     = state["template"]
 
     print(f"ground_truth_node: window={window}")
-    records, raw_records, usage = generate_ground_truth(
+    blocks, usage = generate_ground_truth(
         pdf_path,
         ocr_path,
         template,
@@ -57,14 +53,8 @@ def ground_truth_node(
         include_images=include_images,
     )
 
-    not_merged_path = os.path.join(pipeline_dir, "not_merged_gt.json")
-    with open(not_merged_path, "w", encoding="utf-8") as f:
-        json.dump(raw_records, f, indent=2, ensure_ascii=False)
-    print(f"ground_truth_node: not_merged_gt.json → {not_merged_path}")
-
     with open(gt_path, "w", encoding="utf-8") as f:
-        json.dump(records, f, indent=2, ensure_ascii=False)
-    _maybe_merge_single_block(gt_path, template)
+        json.dump(blocks, f, indent=2, ensure_ascii=False)
     print(f"ground_truth_node: ground_truth.json → {gt_path}")
 
     duration = time.time() - t0

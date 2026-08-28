@@ -90,16 +90,14 @@ grep, copy, or format it unless a specific document is in scope.
 detect_beginning (unless --start-page)
   -> environment_creation
   -> template_inference
-  -> record_separation -> run_record_separation
-  -> block_separation  -> run_block_separation
+  -> block_separation -> run_block_separation -> block_artifacts
   -> block_samples
   -> block_difficulty_router
   -> block_extraction_scripting
   -> collect_extraction_scripts
   -> train_eval
   -> [train_repair -> train_eval] repeated while the gate fails
-  -> grouping
-  -> merge_records
+  -> extraction
   -> [ground_truth -> eval] only with --eval
   -> save_metadata
 ```
@@ -109,8 +107,8 @@ Important implications:
 - Train evaluation always runs, even without `--eval`. Setting
   `--train-threshold 0` disables only the repair loop.
 - With `--eval`, the generated pipeline is built on the train split and the
-  final `grouping` phase runs it on the test split. Without `--eval`, grouping
-  runs on the cropped training PDF.
+  final `extraction` phase runs it on the test split. Without `--eval`, it runs
+  on the cropped training PDF.
 - `--no-routing` skips difficulty-model calls and assigns
   `OPENCODE_EASY_MODEL` to every extraction block.
 - The graph recursion limit is derived from `--train-max-retries`; keep the
@@ -170,13 +168,11 @@ within a record; it is not the lookup key.
 
 ### Generated-script contracts
 
-OpenCode writes three script layers:
+OpenCode writes two script layers:
 
-1. `record_separation.py <ocr.csv> <out_dir>` writes
-   `record_separation.json` with record IDs and per-page word/y ranges.
-2. `block_separation.py <ocr.csv> <out_dir>` writes
+1. `block_separation.py <ocr.csv> <out_dir>` writes
    `block_separation.json` with page-local blocks.
-3. `extraction_scripts/<node_id>.py` exposes
+2. `extraction_scripts/<node_id>.py` exposes
    `extract(block: dict) -> dict` for one relatively positioned block.
 
 Separation generation is retried at most three times. Each attempt is executed
@@ -189,38 +185,35 @@ Never weaken these invariants:
 - `block_id = "<node_id>_<page-local-instance>"`; recover the node with
   `block_id.rsplit("_", 1)[0]`.
 - `uid` uniquely identifies a physical block across the full runtime input and
-  links separation, extraction, and record grouping.
+  links block separation to extraction.
 - Blocks are page-local. A block emitted under page P may contain only page-P
-  words. Multi-page tables use continuation blocks, later merged logically.
+  words. Multi-page tables use separate continuation blocks that remain separate.
 - Do not discard unmatched bottom rows; they are commonly real table data.
   Page-frame removal requires both an edge position and a matching
   `document_level` metadata regex.
 - Generated logic must derive geometry from the current input. Do not hard-code
-  sample values, absolute coordinates, page numbers, record counts, or block
+  sample values, absolute coordinates, page numbers, or block
   counts.
 - Extractors receive word coordinates translated so the block's top-left is
   `(0, 0)`.
 - Generated scripts are expected to use the standard library only. The portable
   runner requires only `pdfplumber`.
 
-### Standalone runtime and grouping
+### Standalone runtime
 
-`src/pipeline.py` performs OCR, executes both separation scripts, imports every
-extractor, relativizes block coordinates, writes `extracted.json`, and spatially
-assigns block `uid`s to records. Strict record containment is preferred; the
-greatest y-overlap is a fallback for boundary-touching blocks.
-
-After grouping, `_maybe_merge_single_block`:
-
-- collapses a one-node table template to one record and one concatenated table;
-- collapses records for a one-node non-table template while retaining its
-  blocks; and
-- concatenates all same-node table continuation blocks within each record.
+`src/pipeline.py` performs OCR, executes block separation, imports every
+extractor, relativizes block coordinates, and writes a flat, page-local
+`extracted.json` list. It does not create records. Repeated blocks and table
+continuations remain separate even when they share a node ID or are adjacent.
 
 `pipeline_health.json` marks output degenerate when extraction is empty, blocks
-cover fewer than half the pages, blocks cross page boundaries, or more than 20%
-of detected records receive no blocks. A degenerate train result fails the
+cover fewer than half the pages, or blocks cross page boundaries. A degenerate train result fails the
 repair gate even if its numerical accuracy reaches the threshold.
+
+Immediately after the generated block separator passes validation,
+`block_artifacts` reapplies it to the complete train PDF, then calls the reusable
+renderer in `viz_blocks.py` and writes one annotated PNG per train page under
+`<output>/artifacts/blocks/`.
 
 ### Ground truth
 
@@ -235,12 +228,11 @@ its semantics between `train_eval.py` and `ground_truth.py`.
   GPT-5.4 through OpenRouter, keeping the evaluation model independent of the
   training model.
 - A window with suspiciously low value-character coverage is retried once.
-- Records crossing a window boundary are merged using template order and
-  repeated identity values.
+- The model emits a flat `blocks` list with an explicit page per physical block.
+- Blocks from independent windows are concatenated in page order without record
+  grouping or same-node table merging.
 - An entirely empty result from a window size greater than five retries the
   whole document with five-page windows; a second empty result is a hard error.
-- Raw pre-merge records are saved as `not_merged_gt.json` for later auditing or
-  `rescore.py --remerge`.
 
 All JSON used for scoring must be loaded through
 `src.eval.convert.load_json_dedup`, which preserves repeated object keys as
@@ -285,6 +277,7 @@ For a document artifact directory `<output>/`:
 ├── template.json
 ├── metadata.json
 ├── metadata/cost.json
+├── artifacts/blocks/               # block-separation overlay PNGs
 ├── debug/                         # only with --save-log
 ├── agent_space/
 │   ├── train/ and test/           # eval mode
@@ -292,18 +285,14 @@ For a document artifact directory `<output>/`:
 └── pipeline/
     ├── pipeline.py
     ├── requirements.txt
-    ├── record_separation.py
     ├── block_separation.py
     ├── extraction_scripts/<node_id>.py
     ├── ocr.csv
-    ├── record_separation.json
     ├── block_separation.json
     ├── extracted.json
-    ├── grouped.json
     ├── pipeline_health.json
     ├── train_eval/
     ├── ground_truth.json          # eval mode
-    ├── not_merged_gt.json         # eval mode
     ├── eval.json                  # eval mode
     └── eval.txt                   # eval mode
 ```
@@ -317,7 +306,7 @@ Before editing:
 
 1. Read the graph node, its prompt, its artifact consumers, and relevant tests.
    Many contracts are duplicated intentionally across generation prompts,
-   runtime validation, grouping, ground truth, repair, and evaluation.
+   runtime validation, ground truth, repair, and evaluation.
 2. Check `git status`; the worktree commonly contains research changes and
    generated artifacts. Preserve unrelated edits and never reset the tree.
 3. Avoid external model calls unless the task explicitly requires an online
@@ -325,8 +314,8 @@ Before editing:
 
 When changing a contract:
 
-- Template changes: inspect `template_inference.py`, its prompt, record/block
-  prompts, extractor prompt, ground-truth prompt, grouping, and conversion.
+- Template changes: inspect `template_inference.py`, its prompt, block/extractor
+  prompts, the ground-truth prompt, runtime extraction, and conversion.
 - Block ID changes: update every `rsplit("_", 1)` consumer and visualization.
 - Ground-truth changes: keep train/test behavior shared in `gt_common.py` and
   check `single_eval.py` plus `rescore.py` for mirrored legacy logic.

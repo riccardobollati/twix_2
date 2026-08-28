@@ -8,7 +8,7 @@ Outputs saved to <folder>/results/:
     train_cost.png  – train-phase tokens and duration: ground truth vs code gen
     test_cost.png   – test-phase latency (pipeline vs GT) and GT token usage
     phase_cost_overall.png – mean phase spend share and variance across documents
-    phase_token_distributions.png – token-cost histograms for the five phases
+    phase_token_distributions.png – token-cost histograms for the four phases
     <name>/phase_cost.png   – USD spend by generation/fixing phase for one document
     token_type_spend_average.png – mean input/output spend mix by phase
     <name>/token_breakdown.png – input/output tokens by phase and overall
@@ -40,7 +40,6 @@ PRICE_GROUND_TRUTH_OUTPUT_PER_M = 15.00 # OpenRouter GPT-5.4, 2026-08-25
 
 PHASE_COST_LABELS = {
     "template_inference": "Infer template",
-    "record_separation": "Record separation",
     "block_separation": "Block separation",
     "data_extraction": "Data extraction",
     "fixing_loops": "Fixing loops",
@@ -48,7 +47,6 @@ PHASE_COST_LABELS = {
 
 PHASE_COST_COLORS = {
     "template_inference": "#4C72B0",
-    "record_separation": "#55A868",
     "block_separation": "#C44E52",
     "data_extraction": "#8172B2",
     "fixing_loops": "#CCB974",
@@ -139,7 +137,7 @@ def _phase_costs_usd(d: dict) -> dict[str, float]:
     pipeline_costs: dict[str, float] = {}
     for phase in d.get("pipeline_phases", []):
         phase_name = phase.get("phase")
-        if phase_name in {"template_inference", "record_separation", "block_separation"}:
+        if phase_name in {"template_inference", "block_separation"}:
             pipeline_costs[phase_name] = (
                 pipeline_costs.get(phase_name, 0.0) + _cost_usd(phase)
             )
@@ -147,7 +145,6 @@ def _phase_costs_usd(d: dict) -> dict[str, float]:
     repairs = d.get("train_eval", {}).get("repairs") or []
     return {
         "template_inference": pipeline_costs.get("template_inference", 0.0),
-        "record_separation": pipeline_costs.get("record_separation", 0.0),
         "block_separation": pipeline_costs.get("block_separation", 0.0),
         "data_extraction": _extraction_cost_usd(d),
         "fixing_loops": sum(_cost_usd(repair) for repair in repairs),
@@ -186,11 +183,11 @@ def _add_token_breakdown(target: dict[str, float], source: dict[str, float]) -> 
 
 
 def _phase_token_breakdowns(d: dict) -> dict[str, dict[str, float]]:
-    """Return input/output token counts for the five phase buckets."""
+    """Return input/output token counts for the four phase buckets."""
     totals = {key: _empty_token_breakdown() for key in PHASE_COST_LABELS}
     for phase in d.get("pipeline_phases", []):
         phase_name = phase.get("phase")
-        if phase_name in {"template_inference", "record_separation", "block_separation"}:
+        if phase_name in {"template_inference", "block_separation"}:
             bucket = phase_name
         elif phase_name in {"block_difficulty_router", "block_extraction_scripting"}:
             bucket = "data_extraction"
@@ -223,7 +220,7 @@ def _phase_token_spend_breakdowns(d: dict) -> dict[str, dict[str, float]]:
 
     for phase in d.get("pipeline_phases", []):
         phase_name = phase.get("phase")
-        if phase_name in {"template_inference", "record_separation", "block_separation"}:
+        if phase_name in {"template_inference", "block_separation"}:
             _add_token_breakdown(totals[phase_name], _token_spend_breakdown(phase))
         elif phase_name == "block_difficulty_router":
             _add_token_breakdown(totals["data_extraction"], _token_spend_breakdown(phase))
@@ -262,7 +259,7 @@ def _phase_tokens(d: dict) -> dict[str, float]:
     totals = {key: 0.0 for key in PHASE_COST_LABELS}
     for phase in d.get("pipeline_phases", []):
         phase_name = phase.get("phase")
-        if phase_name in {"template_inference", "record_separation", "block_separation"}:
+        if phase_name in {"template_inference", "block_separation"}:
             totals[phase_name] += _total_tokens(phase)
         elif phase_name in {"block_difficulty_router", "block_extraction_scripting"}:
             # The scripting entry already aggregates every extraction block.
@@ -872,10 +869,10 @@ def plot_phase_token_distributions(docs: list[dict], out_path: str) -> None:
 
     per_doc = [_phase_tokens(d) for d in docs]
     layout = [
-        ["template_inference", "record_separation", "block_separation"],
-        ["data_extraction", "fixing_loops", "."],
+        ["template_inference", "block_separation"],
+        ["data_extraction", "fixing_loops"],
     ]
-    fig, axes = plt.subplot_mosaic(layout, figsize=(15, 9))
+    fig, axes = plt.subplot_mosaic(layout, figsize=(12, 9))
 
     for phase_key, ax in axes.items():
         values = np.asarray([row[phase_key] for row in per_doc], dtype=float)

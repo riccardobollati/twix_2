@@ -11,7 +11,7 @@ Usage:
     Outputs written to the selected output directory:
         ocr_extraction_full.csv        – full word-level OCR dump (step 1)
         template.json                  – inferred template
-        pipeline/grouped.json          – records extracted by the pipeline
+        pipeline/extracted.json        – flat page-local blocks from the pipeline
         pipeline/ground_truth.json     – LLM ground truth (only with --eval)
         pipeline/eval.json / eval.txt  – evaluation results (only with --eval)
 
@@ -319,10 +319,9 @@ def main() -> None:
     # --- step 2: run graph ---
     # The graph handles everything:
     #   detect_beginning → environment_creation → template_inference →
-    #   record_separation → run_record_separation → block_separation →
-    #   run_block_separation →
+    #   block_separation → run_block_separation → block_artifacts →
     #   block_samples → block_extraction_scripting → collect_extraction_scripts →
-    #   grouping [→ ground_truth → eval]  (last two only when eval_mode=True)
+    #   extraction [→ ground_truth → eval]  (last two only when eval_mode=True)
     print(f"[2/{total_steps}] Running graph ...", file=sys.stderr)
     graph = build_graph(
         get_llm(),
@@ -357,7 +356,8 @@ def main() -> None:
 
     pipeline_dir = os.path.join(output_dir, "pipeline")
     print(f"  template    → {os.path.join(output_dir, 'template.json')}", file=sys.stderr)
-    print(f"  grouped     → {os.path.join(pipeline_dir, 'grouped.json')}", file=sys.stderr)
+    print(f"  block viz   → {os.path.join(output_dir, 'artifacts', 'blocks')}", file=sys.stderr)
+    print(f"  extracted   → {os.path.join(pipeline_dir, 'extracted.json')}", file=sys.stderr)
     if args.eval:
         print(f"  ground truth → {os.path.join(pipeline_dir, 'ground_truth.json')}", file=sys.stderr)
 

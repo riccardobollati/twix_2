@@ -6,10 +6,9 @@ Usage:
 
 Steps:
   1. OCR extraction with pdfplumber
-  2. Record separation (agent-generated record_separation.py)
-  3. Block separation (agent-generated block_separation.py)
-  4. Coordinate relativisation + per-block extraction
-  5. Save block_separation.json, record_separation.json and extracted.json in out_dir
+  2. Block separation (agent-generated block_separation.py)
+  3. Coordinate relativisation + per-block extraction
+  4. Save block_separation.json and extracted.json in out_dir
 """
 
 import argparse
@@ -19,7 +18,6 @@ import json
 import os
 import subprocess
 import sys
-from collections import defaultdict
 import pdfplumber
 
 
@@ -84,26 +82,6 @@ def _relativize(words: list[dict]) -> list[dict]:
     ]
 
 
-# ── record separation ─────────────────────────────────────────────────────────
-
-def _run_record_separation(pipeline_dir: str, ocr_csv_path: str, out_dir: str) -> dict:
-    script_path = os.path.join(pipeline_dir, "record_separation.py")
-    try:
-        result = subprocess.run(
-            [sys.executable, script_path, ocr_csv_path, out_dir],
-            cwd=pipeline_dir,
-            timeout=SCRIPT_TIMEOUT_S,
-        )
-    except subprocess.TimeoutExpired:
-        print(f"record_separation timed out after {SCRIPT_TIMEOUT_S}s", file=sys.stderr)
-        sys.exit(1)
-    if result.returncode != 0:
-        print("record_separation failed", file=sys.stderr)
-        sys.exit(1)
-    with open(os.path.join(out_dir, "record_separation.json"), encoding="utf-8") as f:
-        return json.load(f)
-
-
 # ── block separation ──────────────────────────────────────────────────────────
 
 def _run_block_separation(pipeline_dir: str, ocr_csv_path: str, out_dir: str) -> dict:
@@ -150,82 +128,18 @@ def _load_extractors(pipeline_dir: str) -> dict:
     return extractors
 
 
-# ── grouping ──────────────────────────────────────────────────────────────────
-
-def _group_records(record_separation: dict, block_separation: dict, extracted: list[dict]) -> list[dict]:
-    # Build spatial index: uid → (page, y_start, y_end)
-    block_info = {}
-    for page_entry in block_separation.get("pages", []):
-        page = page_entry["page"]
-        for block in page_entry.get("blocks", []):
-            uid = block["uid"]
-            words = block.get("words", [])
-            y_start = min(w["top"]    for w in words) if words else 0
-            y_end   = max(w["bottom"] for w in words) if words else 0
-            block_info[uid] = (page, y_start, y_end)
-
-    # Map each block uid to its record (strict containment)
-    uid_to_record = {}
-    # Also track best-overlap candidate for blocks that don't fit strictly
-    uid_best_overlap: dict = {}  # uid → (overlap_length, record_id)
-
-    for record in record_separation.get("records", []):
-        record_id  = record["record_id"]
-        pages      = record["pages"]
-        page_start = pages[0]["page"]
-        page_end   = pages[-1]["page"]
-        # y-bounds are per page: always compare against the record's entry for
-        # the block's own page, never mix pages[0]/pages[-1] coordinates.
-        page_entries = {p["page"]: p for p in pages}
-        for uid, (page, y_start, y_end) in block_info.items():
-            entry = page_entries.get(page)
-            if entry is None:
-                continue
-            y_start_r = entry["y_start"]
-            y_end_r   = entry["y_end"]
-            if page == page_start and y_start < y_start_r:
-                # Compute overlap for fallback
-                overlap = max(0.0, min(y_end, y_end_r) - max(y_start, y_start_r))
-                if overlap > uid_best_overlap.get(uid, (0.0, None))[0]:
-                    uid_best_overlap[uid] = (overlap, record_id)
-                continue
-            if page == page_end and y_end > y_end_r:
-                overlap = max(0.0, min(y_end, y_end_r) - max(y_start, y_start_r))
-                if overlap > uid_best_overlap.get(uid, (0.0, None))[0]:
-                    uid_best_overlap[uid] = (overlap, record_id)
-                continue
-            uid_to_record[uid] = record_id
-
-    # Group extracted blocks by record
-    grouped: dict = defaultdict(list)
-    for block in extracted:
-        uid = block.get("uid")
-        if uid in uid_to_record:
-            grouped[uid_to_record[uid]].append(block)
-        elif uid in uid_best_overlap:
-            fallback_record = uid_best_overlap[uid][1]
-            grouped[fallback_record].append(block)
-            print(f"  info: block uid={uid} assigned to record {fallback_record} via best-overlap fallback")
-        else:
-            print(f"  warning: block uid={uid} not assigned to any record, skipping")
-
-    return [{"record_id": record_id, "data": blocks} for record_id, blocks in grouped.items()]
-
-
 # ── health check ──────────────────────────────────────────────────────────────
 
 def _health_check(
     words: list[dict],
-    record_sep: dict,
     separation: dict,
     extracted: list[dict],
-    grouped: list[dict],
 ) -> dict:
     """Detect degenerate pipeline output (silent total failures).
 
     A separation/extraction stack that fits the train pages can still produce
-    nothing on new pages (unmatched header tokens, dropped records). Scoring an
-    empty grouped.json against a real ground truth reads as a model failure
+    nothing on new pages (unmatched header tokens or dropped blocks). Scoring an
+    empty extracted.json against a real ground truth reads as a model failure
     when it is actually a detectable pipeline abort — flag it instead.
     """
     total_pages = len({w["page"] for w in words})
@@ -234,8 +148,7 @@ def _health_check(
     })
     # page-locality: a block on page P holding other pages' words means the
     # separation script globbed the document into a mega-block — downstream
-    # extraction then mixes coordinate spaces and grouping attributes the whole
-    # document to one record
+    # extraction then mixes coordinate spaces across pages
     word_page = {w["id"]: w["page"] for w in words}
     cross_page_blocks = []
     for page_entry in separation.get("pages", []):
@@ -249,10 +162,6 @@ def _health_check(
                 cross_page_blocks.append(
                     f"{block.get('block_id')}@p{page_num} ({n_foreign} foreign words)"
                 )
-    detected_records = [str(r.get("record_id")) for r in record_sep.get("records", [])]
-    grouped_records  = {str(r.get("record_id")) for r in grouped}
-    records_without_blocks = [r for r in detected_records if r not in grouped_records]
-
     problems = []
     if not extracted:
         problems.append("no blocks extracted on any page")
@@ -265,22 +174,11 @@ def _health_check(
             f"{len(cross_page_blocks)} block(s) contain words from other pages "
             f"(blocks must be page-local): {cross_page_blocks[:5]}"
         )
-    # one stray record out of many is a boundary artifact; a large fraction
-    # means block separation dropped whole records (degenerate)
-    if detected_records and len(records_without_blocks) / len(detected_records) > 0.2:
-        problems.append(
-            f"{len(records_without_blocks)}/{len(detected_records)} detected record(s) "
-            f"received no blocks: {records_without_blocks}"
-        )
-
     health = {
         "degenerate":             bool(problems),
         "problems":               problems,
         "total_pages":            total_pages,
         "pages_with_blocks":      pages_with_blocks,
-        "records_detected":       len(detected_records),
-        "records_with_blocks":    len(grouped_records),
-        "records_without_blocks": records_without_blocks,
         "blocks_extracted":       len(extracted),
         "cross_page_blocks":      cross_page_blocks,
     }
@@ -305,7 +203,6 @@ def main() -> None:
     if not os.path.isfile(pdf_path):
         parser.error(f"PDF not found: {pdf_path}")
     required_paths = [
-        os.path.join(pipeline_dir, "record_separation.py"),
         os.path.join(pipeline_dir, "block_separation.py"),
         os.path.join(pipeline_dir, "extraction_scripts"),
     ]
@@ -321,18 +218,14 @@ def main() -> None:
     _save_ocr_csv(words, ocr_csv_path)
     print(f"  {len(words)} words extracted → ocr.csv")
 
-    # 2. Record separation → record_separation.json written to out_dir
-    print("Running record separation...")
-    record_sep = _run_record_separation(pipeline_dir, ocr_csv_path, out_dir)
-
-    # 3. Block separation → block_separation.json written to out_dir
+    # 2. Block separation → block_separation.json written to out_dir
     print("Running block separation...")
     separation = _run_block_separation(pipeline_dir, ocr_csv_path, out_dir)
 
-    # 4. Load extractors
+    # 3. Load extractors
     extractors = _load_extractors(pipeline_dir)
 
-    # 5. Extract each block
+    # 4. Extract each block
     print("Extracting data from blocks...")
     results = []
     for page_entry in separation.get("pages", []):
@@ -354,22 +247,15 @@ def main() -> None:
             except Exception as exc:
                 print(f"  warning: extraction failed for {block_id}: {exc}")
 
-    # 6. Save extracted.json
+    # 5. Save extracted.json. This flat, page-local block list is the final
+    # pipeline output; repeated node ids remain separate physical blocks.
     output_path = os.path.join(out_dir, "extracted.json")
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump(results, f, indent=2, ensure_ascii=False)
     print(f"  {len(results)} block(s) extracted → {output_path}")
 
-    # 7. Group extracted blocks into records → grouped.json
-    print("Grouping blocks into records...")
-    grouped = _group_records(record_sep, separation, results)
-    grouped_path = os.path.join(out_dir, "grouped.json")
-    with open(grouped_path, "w", encoding="utf-8") as f:
-        json.dump(grouped, f, indent=2, ensure_ascii=False)
-    print(f"Done. {len(grouped)} record(s) → {grouped_path}")
-
-    # 8. Health check → pipeline_health.json
-    health = _health_check(words, record_sep, separation, results, grouped)
+    # 6. Health check → pipeline_health.json
+    health = _health_check(words, separation, results)
     health_path = os.path.join(out_dir, "pipeline_health.json")
     with open(health_path, "w", encoding="utf-8") as f:
         json.dump(health, f, indent=2, ensure_ascii=False)

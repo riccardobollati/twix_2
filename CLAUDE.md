@@ -29,10 +29,10 @@ Requires `OPENROUTER_API_KEY` in `.env` (never commit it; it is gitignored) and 
 The LangGraph state machine is defined in `src/agents/graph.py`:
 
 ```
-detect_beginning → environment_creation → template_inference → record_separation → run_record_separation
-→ block_separation → run_block_separation → block_samples → block_difficulty_router
-→ block_extraction_scripting → collect_extraction_scripts → train_grouping
-→ train_ground_truth → train_eval → [train_repair loop] → grouping
+detect_beginning → environment_creation → template_inference
+→ block_separation → run_block_separation → block_artifacts → block_samples → block_difficulty_router
+→ block_extraction_scripting → collect_extraction_scripts → train_eval
+→ [train_repair loop] → extraction
 → [eval_mode: ground_truth → eval] → save_metadata
 ```
 
@@ -43,18 +43,18 @@ Key ideas that span multiple files:
   `environment_creation.py` starts both PDF and OCR splits there and renumbers
   split-local pages from 1, so covers and tables of contents never reach template
   inference or the generated pipeline.
-- **Two kinds of model output.** DeepSeek calls return JSON directly (beginning detection, template inference, ground truth, difficulty routing). Separation and extraction are instead **generated Python scripts**: prompts in `src/prompts/` instruct OpenCode (wrapped by `src/models/opencode.py`) to write `record_separation.py`, `block_separation.py`, and per-block `extraction_scripts/<node_id>.py`; the agents then run those scripts via subprocess (300s timeout) and validate their JSON output, feeding failures back into a retry loop (max 3 attempts).
+- **Two kinds of model output.** DeepSeek calls return JSON directly (beginning detection, template inference, ground truth, difficulty routing). Separation and extraction are instead **generated Python scripts**: prompts in `src/prompts/` instruct OpenCode (wrapped by `src/models/opencode.py`) to write `block_separation.py` and per-block `extraction_scripts/<node_id>.py`; the agents then run those scripts via subprocess (300s timeout) and validate their JSON output, feeding failures back into a retry loop (max 3 attempts).
 - **Template contract.** `template.json` nodes have `node_id`, `type` (table/kv), `fields`, `bid`, `complexity`. Field names within a node MUST be unique — grouped column headers are prefixed (`"Balance - Total"`); `template_inference.py` validates and dedups this because duplicate dict keys silently collapse everywhere downstream. Template `metadata` regex patterns are consumed by the block-separation prompt to strip page headers/footers (never strip unmatched bottom rows — they are usually data).
 - **ID scheme.** `block_id = "<node_id>_<instance>"`; consumers recover the node with `block_id.rsplit("_", 1)[0]`. Template lookups key on `node_id`, not `bid`.
-- **Train/test.** `environment_creation` splits the PDF under `<output>/agent_space/{train,test}/`. The pipeline scripts are built on train pages only, then applied to test pages by `src/pipeline.py` (the standalone runtime that runs separation + extractors + grouping without the graph).
-- **Ground truth** is itself LLM-generated: `src/agents/gt_common.py` is the single shared generator (windowed OCR-layout calls, parallel via ThreadPoolExecutor, boundary-merge pass) used by both `train_eval.py` (window 5) and `ground_truth.py` (window 20). Train and test GT must keep identical semantics — they diverged once and it broke the repair loop.
+- **Train/test.** `environment_creation` splits the PDF under `<output>/agent_space/{train,test}/`. The pipeline scripts are built on train pages only, then applied to test pages by `src/pipeline.py`, which emits a flat page-local `extracted.json` list without record grouping.
+- **Ground truth** is itself LLM-generated: `src/agents/gt_common.py` is the single shared generator (parallel windowed calls returning flat page-local blocks) used by both `train_eval.py` (window 5) and `ground_truth.py` (window 20). Train GT uses OCR layouts; final test GT uses page images plus exact OCR.
 - **Eval** (`src/eval/`): converts records to a node tree (`convert.py`), aligns records/nodes (`align.py`), scores content with order-preserving row alignment (`content.py`, banded Needleman–Wunsch; rows below `MIN_ROW_SIM` become missing/extra unless they share an exact anchor cell), renders `eval.txt` (`render.py`). Accuracy = weighted record-F1 + node-F1 + content; structure weight is redistributed when trees are flat (always, currently). All gold/candidate JSON must be loaded through `convert.load_json_dedup` so duplicate keys survive as `key`, `key#2`, ….
 - **Repair loop.** With `--train-threshold`, low train accuracy triggers `train_repair.py`: an OpenCode session edits the generated scripts, then train eval re-runs (bounded by `--train-max-retries`; graph recursion limit is derived from it in `build_graph`).
 - **Costs.** Every node returns `cost` entries (phase, duration, tokens via `src/agents/_usage.py`); `save_metadata.py` writes them to `<output>/metadata.json`.
 
 ## Per-document output layout
 
-`<output>/`: `template.json`, `metadata.json` (source hash, configuration, accuracy, and per-phase costs), `agent_space/{train,test}/` (splits + generated scripts run there), `pipeline/` (`pipeline.py`, generated scripts, `block_separation.json`, `extracted.json`, `grouped.json`, `ground_truth.json`, `eval.json`, `eval.txt`, `train_eval/`), `debug/` (OpenCode session logs with `--save-log`).
+`<output>/`: `template.json`, `metadata.json` (source hash, configuration, accuracy, and per-phase costs), `artifacts/blocks/` (annotated train-page block overlays), `agent_space/{train,test}/` (splits + generated scripts run there), `pipeline/` (`pipeline.py`, generated scripts, `block_separation.json`, `extracted.json`, `ground_truth.json`, `eval.json`, `eval.txt`, `train_eval/`), `debug/` (OpenCode session logs with `--save-log`).
 
 ## Gotchas
 

@@ -15,7 +15,7 @@ Expects (found by walking up from pdf_path):
 
 Outputs in <base_folder>/evals/eval_<name>/:
     ocr.csv
-    grouped.json
+    extracted.json
     ground_truth.json
     eval.json
     eval.txt
@@ -41,8 +41,6 @@ from src.eval.render import render_to_file
 from src.eval.score import score as eval_score
 from src.ground_truth_gen.helpers import load_ocr_pages, parse_json_response, render_page_b64
 from src.ground_truth_gen.prompt import build_prompt
-from src.agents.ground_truth import _node_order, _should_merge, _merge_records
-from src.agents.grouping import _maybe_merge_single_block
 from src.models import get_ground_truth_llm
 
 
@@ -95,7 +93,6 @@ def _generate_ground_truth(
     window: int = 20,
 ) -> list[dict]:
     system_prompt = build_prompt(template, include_images=True)
-    order  = _node_order(template)
     window = max(1, window)
     wins   = [indices[i:i + window] for i in range(0, len(indices), window)]
     page_numbers = [index + 1 for index in indices]
@@ -105,7 +102,7 @@ def _generate_ground_truth(
         else {}
     )
 
-    all_windows: list[list[dict]] = []
+    blocks: list[dict] = []
     with pdfplumber.open(pdf_path) as pdf:
         print(f"  {len(indices)} page(s), {len(wins)} window(s) of up to {window}")
         for win_indices in wins:
@@ -115,11 +112,11 @@ def _generate_ground_truth(
             print(f"  {label}...", end=" ", flush=True)
 
             if len(page_nums) == 1:
-                user_text = f"Extract all records from page {page_nums[0]} of the document."
+                user_text = f"Extract every physical block from page {page_nums[0]} of the document."
             else:
                 user_text = (
-                    f"Extract all records from pages {pages_str} of the document. "
-                    f"The images are provided in page order ({pages_str})."
+                    f"Extract every physical block from pages {pages_str}. "
+                    f"The images are in page order ({pages_str}); keep blocks page-local."
                 )
 
             content: list[dict] = [{"type": "text", "text": user_text}]
@@ -147,39 +144,28 @@ def _generate_ground_truth(
             ])
             try:
                 parsed     = parse_json_response(response.content)
-                page_recs  = parsed.get("records", [])
+                window_blocks = parsed.get("blocks", [])
             except (json.JSONDecodeError, AttributeError) as exc:
                 print(f"WARN: {exc}")
                 print(f"  [RAW RESPONSE]\n{response.content}\n  [END RAW]")
-                page_recs = []
+                window_blocks = []
 
-            n_blocks = 0
-            for rec in page_recs:
-                for block in rec.get("data", []):
-                    # `page` stays the first window page for backward-compat;
-                    # `window_pages` carries the full range the block may come from.
-                    block["page"] = page_nums[0]
-                    block["window_pages"] = list(page_nums)
-                n_blocks += len(rec.get("data", []))
-            print(f"{len(page_recs)} record(s), {n_blocks} block(s)")
-            if not page_recs:
+            normalized = []
+            for block in window_blocks if isinstance(window_blocks, list) else []:
+                if not isinstance(block, dict):
+                    continue
+                try:
+                    page = int(block.get("page"))
+                except (TypeError, ValueError):
+                    page = page_nums[0] if len(page_nums) == 1 else None
+                if page in page_nums:
+                    normalized.append({**block, "page": page})
+            print(f"{len(normalized)} block(s)")
+            if not normalized:
                 print(f"  [RAW RESPONSE]\n{response.content}\n  [END RAW]")
-            all_windows.append(page_recs)
+            blocks.extend(normalized)
 
-    # ── boundary-aware merge pass (mirrors ground_truth_node) ─────────────────
-    records: list[dict] = []
-    for page_recs in all_windows:
-        if not page_recs:
-            continue
-        if records and _should_merge(records[-1], page_recs[0], order):
-            records[-1] = _merge_records(records[-1], page_recs[0])
-            rest = page_recs[1:]
-        else:
-            rest = page_recs
-        for rec in rest:
-            records.append({"record_id": str(len(records)), "data": rec.get("data", [])})
-
-    return records
+    return blocks
 
 
 def main() -> None:
@@ -199,7 +185,7 @@ def main() -> None:
     )
     parser.add_argument(
         "--reuse", action="store_true",
-        help="Skip pipeline and ground-truth generation if grouped.json and ground_truth.json already exist.",
+        help="Skip pipeline and ground-truth generation if extracted.json and ground_truth.json already exist.",
     )
     args = parser.parse_args()
 
@@ -209,7 +195,7 @@ def main() -> None:
     pipeline_py   = os.path.join(base_folder, "pipeline", "pipeline.py")
     template_path = os.path.join(base_folder, "template.json")
     ocr_path      = os.path.join(eval_dir, "ocr.csv")
-    grouped_path  = os.path.join(eval_dir, "grouped.json")
+    extracted_path = os.path.join(eval_dir, "extracted.json")
     gt_path       = os.path.join(eval_dir, "ground_truth.json")
 
     os.makedirs(eval_dir, exist_ok=True)
@@ -226,15 +212,15 @@ def main() -> None:
     with open(template_path, encoding="utf-8") as f:
         template = json.load(f).get("template", [])
 
-    can_reuse = args.reuse and os.path.isfile(grouped_path) and os.path.isfile(gt_path)
+    can_reuse = args.reuse and os.path.isfile(extracted_path) and os.path.isfile(gt_path)
 
     if can_reuse:
-        print(f"--reuse: loading existing grouped.json and ground_truth.json from {eval_dir}")
-        candidate = load_json_dedup(grouped_path)
+        print(f"--reuse: loading existing extracted.json and ground_truth.json from {eval_dir}")
+        candidate = load_json_dedup(extracted_path)
         gt_results = load_json_dedup(gt_path)
     else:
         if args.reuse:
-            missing = [p for p in (grouped_path, gt_path) if not os.path.isfile(p)]
+            missing = [p for p in (extracted_path, gt_path) if not os.path.isfile(p)]
             print(f"--reuse: missing {missing}, recomputing.")
 
         # --- OCR ---
@@ -246,7 +232,7 @@ def main() -> None:
         print("Running pipeline...")
         _run_pipeline(pipeline_py, pdf_path, eval_dir)
 
-        candidate = load_json_dedup(grouped_path)
+        candidate = load_json_dedup(extracted_path)
 
         # --- ground truth ---
         print("Generating ground truth...")
@@ -268,22 +254,17 @@ def main() -> None:
 
         with open(gt_path, "w", encoding="utf-8") as f:
             json.dump(gt_results, f, indent=2, ensure_ascii=False)
-        _maybe_merge_single_block(gt_path, template)
         gt_results = load_json_dedup(gt_path)
         print(f"Ground truth saved → {gt_path}")
 
     # Filter candidate to pages covered by ground truth. Use the union of all
     # window pages so multi-page GT windows don't decimate the candidate.
     gt_pages: set = set()
-    for rec in gt_results:
-        for block in rec.get("data", []):
-            pages = block.get("window_pages") or [block.get("page")]
-            gt_pages.update(p for p in pages if p is not None)
+    for block in gt_results:
+        if block.get("page") is not None:
+            gt_pages.add(block["page"])
     if gt_pages:
-        candidate = [
-            r for r in candidate
-            if any(block.get("page") in gt_pages for block in r.get("data", []))
-        ]
+        candidate = [block for block in candidate if block.get("page") in gt_pages]
 
     # --- score ---
     eval_result = eval_score(gt_results, candidate, reference="model_reference", threshold=0.9)

@@ -22,8 +22,7 @@ def collect_extraction_scripts_node(state: dict[str, Any]) -> dict[str, Any]:
     2. Create train_dir/pipeline/.
     3. Move extraction_scripts/ into pipeline/.
     4. Move block_separation.py from train_dir into pipeline/.
-    5. Move record_separation.py from train_dir into pipeline/.
-    6. Copy src/pipeline.py into pipeline/.
+    5. Copy src/pipeline.py into pipeline/.
 
     Reads:
         state["agent_space"]  – working directory for this document
@@ -89,15 +88,7 @@ def collect_extraction_scripts_node(state: dict[str, Any]) -> dict[str, Any]:
     else:
         print("  warning: block_separation.py not found in train_dir, skipping")
 
-    # ── 5. move record_separation.py into pipeline/ ───────────────────────────
-    record_sep_src = os.path.join(train_dir, "record_separation.py")
-    if os.path.exists(record_sep_src):
-        shutil.move(record_sep_src, os.path.join(pipeline_dir, "record_separation.py"))
-        print(f"  record_separation.py → pipeline/record_separation.py")
-    else:
-        print("  warning: record_separation.py not found in train_dir, skipping")
-
-    # ── 6. copy the standalone runner and its minimal dependencies ───────────
+    # ── 5. copy the standalone runner and its minimal dependencies ───────────
     shutil.copy2(_PIPELINE_SRC, os.path.join(pipeline_dir, "pipeline.py"))
     print(f"  pipeline.py          → pipeline/pipeline.py")
     shutil.copy2(_PIPELINE_REQUIREMENTS, os.path.join(pipeline_dir, "requirements.txt"))

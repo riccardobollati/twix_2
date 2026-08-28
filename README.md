@@ -3,10 +3,10 @@
 TWIX 2 learns a reusable structured-data extraction pipeline from a small set
 of pages belonging to one PDF template family.
 
-Given a PDF containing repeated records, it produces:
+Given a template-based PDF, it produces:
 
 1. an inferred schema for the document;
-2. generated Python code for record detection, block detection, and field
+2. generated Python code for block detection and field
    extraction;
 3. structured JSON extracted by that code;
 4. optional train/test evaluation against DeepSeek train ground truth and a
@@ -34,7 +34,7 @@ flowchart LR
     B --> D["OpenCode via OpenRouter"]
     C --> D
     D --> E["Standalone pipeline bundle"]
-    E --> F["Structured records JSON"]
+    E --> F["Flat page-local blocks JSON"]
     G["New PDF, same layout"] --> E
 ```
 
@@ -44,7 +44,7 @@ There are two kinds of model-driven work:
   detection, template inference, easy/hard block routing, and train ground truth.
 - OpenRouter calls to GPT-5.4 generate the final reference on never-seen test pages.
 - OpenCode sessions use OpenRouter models to write executable Python files for
-  record separation, block separation, per-block extraction, and optional
+  block separation, per-block extraction, and optional
   repair.
 
 DeepSeek V4 does not accept image inputs. TWIX therefore serializes each OCR
@@ -144,7 +144,7 @@ Run `python run.py --help` for the complete interface. Important options are:
 | `--reuse-ocr` | Reuse the existing full OCR CSV instead of regenerating it |
 | `--group-rows` | Experimental row-level OCR instead of word-level OCR |
 | `--caveman` | Prefix OpenCode prompts with `/caveman full` |
-| `--save-log` | Save OpenCode JSONL output and exact prompts for block separation, extraction, and repair under `debug/`; record separation is currently not logged |
+| `--save-log` | Save OpenCode JSONL output and exact prompts for block separation, extraction, and repair under `debug/` |
 
 `--pages` is a request, not an unconditional count. In eval mode the train split
 is capped at half of the usable structured pages so at least one page remains
@@ -161,11 +161,10 @@ flowchart TD
     Q -- Yes --> EC
     DB --> EC["Create cropped train/test environment<br/>remap split pages to 1..N"]
     EC --> TI["Infer template + metadata<br/>DeepSeek JSON"]
-    TI --> RS["Generate record_separation.py<br/>OpenCode"]
-    RS --> RSR["Run + validate record separation"]
-    RSR --> BS["Generate block_separation.py<br/>OpenCode"]
+    TI --> BS["Generate block_separation.py<br/>OpenCode"]
     BS --> BSR["Run + validate block separation"]
-    BSR --> SMP["Crop deterministic block samples"]
+    BSR --> ART["Render block overlays<br/>artifacts/blocks/"]
+    ART --> SMP["Crop deterministic block samples"]
     SMP --> ROUTE["Classify each block EASY/HARD<br/>parallel DeepSeek calls"]
     ROUTE --> EXT["Generate one extractor per detected node<br/>parallel OpenCode sessions"]
     EXT --> PACK["Assemble portable pipeline/"]
@@ -174,8 +173,7 @@ flowchart TD
     GATE -- "No, retries remain" --> REPAIR["OpenCode repairs generated scripts"]
     REPAIR --> TE
     GATE -- "Yes / disabled / exhausted" --> RUN["Run pipeline on test PDF<br/>or train PDF without --eval"]
-    RUN --> MERGE["Merge logical table continuations"]
-    MERGE --> EVALQ{"--eval?"}
+    RUN --> EVALQ{"--eval?"}
     EVALQ -- No --> META["Write metadata.json"]
     EVALQ -- Yes --> GT["Generate test ground truth"]
     GT --> SCORE["Align and score"]
@@ -253,17 +251,18 @@ separation code cannot reliably distinguish them by labels alone.
 
 ### 4. Generated separation code
 
-The first OpenCode session creates `record_separation.py`. It groups OCR words into
-rows and finds the smallest vertical spans that complete one pass through the
-template, with anchor-value guards for multi-page header repetition.
-
-The second creates `block_separation.py`. It detects each node's header band,
+OpenCode creates `block_separation.py`. It detects each node's header band,
 removes only regex-confirmed page-frame metadata, assigns following content, and
 emits page-local continuation blocks when a table flows onto another page.
 
 Each generation phase runs its script immediately and validates its JSON. A
 failure is returned to OpenCode for up to three attempts. Generated-script runs
 time out after 300 seconds.
+
+After block separation succeeds, the artifact node reapplies the generated
+separator to the complete train PDF and `viz_blocks.py` renders every train
+page under `<output>/artifacts/blocks/`. Re-running replaces the generated
+`page_*_blocks.png` files in that folder.
 
 The key identity rules are:
 
@@ -274,7 +273,7 @@ uid = globally unique physical-block identifier
 ```
 
 A block may contain words only from its own page. Multi-page tables are emitted
-as separate physical continuation blocks, then joined after record grouping.
+as separate physical continuation blocks and are not joined afterward.
 
 ### 5. Block samples, routing, and extractors
 
@@ -312,7 +311,6 @@ When repair is enabled, the gate fails if accuracy is below the threshold or
 the health report is degenerate. OpenCode receives `train_eval/eval.txt` plus
 health violations and may edit only:
 
-- `record_separation.py`;
 - `block_separation.py`; and
 - `extraction_scripts/*.py`.
 
@@ -334,53 +332,27 @@ The new PDF must belong to the same template family.
 ```mermaid
 flowchart LR
     PDF["New PDF"] --> OCR["pdfplumber OCR"]
-    OCR --> REC["record_separation.py"]
     OCR --> BLK["block_separation.py"]
     BLK --> REL["Translate each block to local coordinates"]
     REL --> EX["extraction_scripts/<node_id>.py"]
-    REC --> GROUP["Assign block uid to record spans"]
-    EX --> GROUP
-    GROUP --> JSON["grouped.json"]
-    GROUP --> HEALTH["pipeline_health.json"]
+    EX --> JSON["extracted.json"]
+    EX --> HEALTH["pipeline_health.json"]
 ```
 
 The runtime writes:
 
 - `ocr.csv` — runtime OCR words;
-- `record_separation.json` — logical record spans;
 - `block_separation.json` — physical page-local blocks;
-- `extracted.json` — extracted block payloads before record grouping;
-- `grouped.json` — final record-oriented output; and
+- `extracted.json` — final flat page-local block output; and
 - `pipeline_health.json` — silent-failure and invariants report.
 
-Grouping first uses strict page/y containment. A greatest-overlap fallback
-handles blocks that straddle a computed record boundary. The copied standalone
-runner leaves page-local continuation blocks as separate entries in each record.
-During a repository-managed graph run, the subsequent `merge_records` node uses
-`template.json` to concatenate same-node table continuations in physical order;
-that post-processing step is not included in the portable bundle. The health
-report is produced by the standalone runner before graph-level merging.
+Repeated blocks and same-node table continuations remain separate physical
+entries, including when they occur consecutively.
 
 Health is marked degenerate if there are no extracted blocks, blocks appear on
-fewer than half of input pages, any block contains foreign-page words, or more
-than 20% of detected records receive no blocks.
+fewer than half of input pages, or any block contains foreign-page words.
 
 ## Output data contracts
-
-Record separation:
-
-```json
-{
-  "records": [
-    {
-      "record_id": "0",
-      "pages": [
-        {"page": 1, "y_start": 42.1, "y_end": 701.8, "words": []}
-      ]
-    }
-  ]
-}
-```
 
 Block separation:
 
@@ -402,30 +374,25 @@ Block separation:
 }
 ```
 
-Final grouped records:
+Final extracted blocks:
 
 ```json
 [
   {
-    "record_id": "0",
+    "type": "kv",
+    "block_id": "0_0",
+    "data": {"Invoice #": "A-104", "Date": "2026-08-13"},
+    "page": 1,
+    "uid": 0
+  },
+  {
+    "type": "table",
+    "block_id": "1_0",
     "data": [
-      {
-        "type": "kv",
-        "block_id": "0_0",
-        "data": {"Invoice #": "A-104", "Date": "2026-08-13"},
-        "page": 1,
-        "uid": 0
-      },
-      {
-        "type": "table",
-        "block_id": "1_0",
-        "data": [
-          {"Item": "Service", "Amount": "100.00"}
-        ],
-        "page": 1,
-        "uid": 1
-      }
-    ]
+      {"Item": "Service", "Amount": "100.00"}
+    ],
+    "page": 1,
+    "uid": 1
   }
 ]
 ```
@@ -436,8 +403,8 @@ Train and test use the shared generator in `src/agents/gt_common.py`. Train
 ground truth sends five-page layout-preserving OCR windows to DeepSeek through
 OpenRouter. Final held-out/test ground truth sends rendered page images plus
 exact OCR text to `OPENROUTER_GROUND_TRUTH_MODEL` through OpenRouter. Calls are parallel,
-results are restored to document order, and logical records cut by window
-boundaries are merged using template order and repeated identity values. The
+results are restored to document order. The model returns flat, page-local
+blocks; records and same-node table blocks are never merged. The
 default 128,000-token output cap exposes GPT-5.4's full output allowance;
 OpenRouter requires the API key's credit limit to cover that maximum. Override
 it with `OPENROUTER_GROUND_TRUTH_MAX_TOKENS` when needed.
@@ -453,16 +420,13 @@ flowchart TD
     CN --> ORDER
     ORDER --> COVER{"Enough extracted text?"}
     COVER -- No --> RETRY["Retry deficient window once"]
-    COVER -- Yes --> BOUND["Merge records across window cuts"]
-    RETRY --> BOUND
-    BOUND --> EMPTY{"All records empty and<br/>window > 5?"}
+    COVER -- Yes --> EMPTY{"All blocks empty and<br/>window > 5?"}
+    RETRY --> EMPTY
     EMPTY -- Yes --> SMALL["Retry whole document with window 5"]
     EMPTY -- No --> GT["ground_truth.json"]
     SMALL --> GT
 ```
 
-For test evaluation, the raw pre-merge response is retained as
-`not_merged_gt.json`; train evaluation does not persist its raw response.
 Suspiciously low content coverage causes one window retry. A completely empty
 large-window result retries the entire input with five-page windows; if that is
 also empty, the run fails instead of producing a misleading perfect/zero
@@ -512,7 +476,8 @@ accuracy = 0.40 * typed_node_F1
          + 0.20 * parent_edge_accuracy
 ```
 
-The grouped artifacts currently convert to flat nodes with no parent edges.
+The current flat artifacts are partitioned into page-level evaluation records;
+their nodes have no parent edges.
 For these normal pipeline runs, structure is not applicable and its weight is
 renormalized away:
 
@@ -541,6 +506,8 @@ mapping, and parent mismatches; this report is also the input to repair.
 ├── metadata.json                    # provenance, config, models, costs, scores
 ├── metadata/
 │   └── cost.json                    # generation-time phase report
+├── artifacts/
+│   └── blocks/                      # annotated block-separation page PNGs
 ├── debug/                           # optional partial OpenCode JSONL logs + prompts
 ├── agent_space/
 │   ├── train/                       # eval mode: cropped train PDF/OCR/work files
@@ -548,23 +515,19 @@ mapping, and parent mismatches; this report is also the input to repair.
 └── pipeline/
     ├── pipeline.py                  # standalone runtime
     ├── requirements.txt             # only pdfplumber
-    ├── record_separation.py         # generated
     ├── block_separation.py          # generated
     ├── extraction_scripts/          # generated, one file per detected node
     ├── ocr.csv
-    ├── record_separation.json
     ├── block_separation.json
     ├── extracted.json
-    ├── grouped.json
     ├── pipeline_health.json
     ├── train_eval/
-    │   ├── grouped.json
+    │   ├── extracted.json
     │   ├── ground_truth.json
     │   ├── eval.json
     │   ├── eval.txt
     │   ├── eval_history.json
     │   └── pipeline_health.json
-    ├── not_merged_gt.json           # test eval only
     ├── ground_truth.json            # test eval only
     ├── eval.json                    # test eval only
     └── eval.txt                     # test eval only
@@ -594,7 +557,7 @@ Re-score saved artifacts after evaluator changes, without model calls:
 ```bash
 python rescore.py data --dry-run
 python rescore.py data
-python rescore.py data --doc id_04 --remerge
+python rescore.py data --doc id_04
 ```
 
 `rescore.py` hashes `src/eval/*.py` into `eval_version`, rewrites reports, and
@@ -622,13 +585,15 @@ This overwrites test ground truth/eval and patches `metadata.json` in place.
 ```bash
 python viz_bb.py id_04 1 2
 python viz_blocks.py id_04 1 2
-python viz_blocks.py id_04 --pdf-path path/to.pdf --blocks-json path/to/block_separation.json
+python viz_blocks.py id_04 path/to.pdf
+python viz_blocks.py id_04 --pdf-path path/to.pdf
 python viz_agent_log.py data/id_04/debug/
 python viz_batch_results.py data
 ```
 
 - `viz_bb.py` draws OCR word boxes.
-- `viz_blocks.py` draws colored detected-block bounds and lists detected block
+- `viz_blocks.py` runs `data/<name>/pipeline/block_separation.py` on the chosen
+  PDF, then draws colored detected-block bounds and lists detected block
   IDs and types. Its current metadata lookup does not reliably display routing
   models because routing is keyed by node ID while blocks use instance IDs.
 - `viz_agent_log.py` renders OpenCode JSONL events, commands, prompts, stderr, and
@@ -650,7 +615,7 @@ python viz_batch_results.py data
 - Generated scripts are retained, so extraction can be replayed without the
   original model calls.
 - `--save-log` retains exact OpenCode streams and prompts for block separation,
-  extraction, and repair. The record-separation session is not currently logged.
+  extraction, and repair.
 
 Remote DeepSeek and OpenCode outputs are not guaranteed to be byte-identical over
 time. Preserve the complete artifact directory when an experiment must be
@@ -671,7 +636,7 @@ python -m compileall -q run.py fix.py rescore.py single_eval.py src
 
 The test suite covers input resolution, page-remapped front-matter cropping,
 template validation, duplicate-key-safe JSON parsing, ground-truth empty-output
-fallback, record grouping, page-locality health checks, batch command
+fallback, page-locality health checks, batch command
 construction, and execution of a generated pipeline from a fresh directory.
 
 There is no configured linter. Keep new tests offline: they should not require

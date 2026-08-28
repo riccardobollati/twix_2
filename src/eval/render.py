@@ -39,8 +39,8 @@ REASON_EXPLANATIONS = {
 }
 
 SUGGESTED_FIXES = {
-    "R-RECORD-MISSING":       "the candidate failed to emit this record; check record-boundary detection.",
-    "R-RECORD-EXTRA":         "the candidate invented a record that is not in the gold; tighten boundary logic.",
+    "R-RECORD-MISSING":       "the candidate emitted no matching blocks for this page; check block detection.",
+    "R-RECORD-EXTRA":         "the candidate emitted blocks on an unmatched page; check false-positive block detection.",
     "R-NODE-UNALIGNED":       "emit a node for this content; check the parser is not collapsing this block.",
     "R-NODE-EXTRA":           "the extractor is producing a spurious node; gate the rule that fires here.",
     "R-TYPE-MISMATCH":        "re-classify this block (table vs key_value vs metadata).",

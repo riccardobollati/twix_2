@@ -31,15 +31,11 @@ in the current directory so the pipeline output better matches the ground truth.
 PIPELINE OVERVIEW
 =================
 The pipeline runs in this order:
-1. record_separation.py <ocr.csv> <out_dir>
-   Groups OCR words into logical records (one record = one invoice / form entry).
-   Writes: out_dir/record_separation.json
-
-2. block_separation.py <ocr.csv> <out_dir>
+1. block_separation.py <ocr.csv> <out_dir>
    Detects typed blocks (kv, table) within the OCR data.
    Writes: out_dir/block_separation.json
 
-3. extraction_scripts/<id>.py  — each defines  extract(block: dict) -> dict
+2. extraction_scripts/<id>.py  — each defines  extract(block: dict) -> dict
    Extracts field values from one physical block.
    Called by pipeline.py on every block produced by block_separation.
 
@@ -49,7 +45,6 @@ EVALUATION ERRORS  (from train_eval/eval.txt)
 
 FILES YOU MAY MODIFY
 ====================
-  - record_separation.py
   - block_separation.py
 {scripts_list}
 
@@ -58,13 +53,12 @@ DO NOT modify pipeline.py, template.json, or any other file.
 PRIORITY FIXES BY ERROR CODE
 =============================
 [R-RECORD-MISSING]
-  Records are being collapsed together — the pipeline output has too few records.
-  Fix record_separation.py: the boundary condition is too strict.
-  Read the ALGORITHM comments already in the file and follow them carefully.
+  No candidate blocks were emitted for a ground-truth page. Fix
+  block_separation.py so it detects page-local blocks on that page.
 
 [R-RECORD-EXTRA]
-  Phantom records are being created — the pipeline has too many records.
-  Fix record_separation.py: the boundary condition fires too easily.
+  Candidate blocks were emitted on a page with no ground-truth counterpart.
+  Check block_separation.py for false-positive block detection.
 
 [R-NODE-MISSING]
   A block type was not detected on some pages.
@@ -74,9 +68,8 @@ PRIORITY FIXES BY ERROR CODE
   Spurious extra blocks are being emitted.
   Fix block_separation.py or the relevant extraction script — add a guard so the
   rule only fires when the block clearly exists on the page.
-  NOTE: per-page CONTINUATION blocks of the same node are NOT spurious — the
-  pipeline merges same-node table blocks within a record downstream. NEVER "fix"
-  extra-node errors by absorbing several pages' words into one block.
+  NOTE: per-page continuation blocks and consecutive occurrences of the same
+  node remain separate by design. NEVER absorb several physical blocks into one.
 
 [R-CELL-DIFFERS] / [R-KV-VALUE-DIFFERS]
   Field values are extracted incorrectly.
@@ -89,16 +82,16 @@ ANTI-OVERFITTING RULES  (MANDATORY — violations cause test-set failures)
    the training pages. All logic must be based on positions and field label patterns.
 2. NEVER hard-code absolute pixel/coordinate thresholds. Derive all spatial thresholds
    dynamically from the data being processed (medians, percentages, inter-word gaps).
-3. NEVER force output counts (records, blocks, rows) to match the training-data counts.
+3. NEVER force output counts (blocks or rows) to match the training-data counts.
    Counts must emerge from the algorithm — never be hard-coded.
 4. NEVER branch on the document name, page-number values, or any fixed metadata.
 5. Every modified script must work correctly on pages it has never seen.
 6. Blocks are PAGE-LOCAL (validated after every run; a violation rejects the run):
    a block emitted under page P in block_separation.json may contain ONLY page-P
    words. Table rows continuing onto later pages must be emitted as separate
-   continuation blocks of the same node on each of those pages — the pipeline
-   merges them into one logical node downstream. Never absorb later pages' words
-   into one block and never synthesize a global cross-page y-axis.
+   continuation blocks of the same node on each page. They remain separate in
+   extracted.json. Never absorb later pages' words into one block and never
+   synthesize a global cross-page y-axis.
 7. NEVER suppress or drop kv blocks based on page position/index or on how many
    blocks of a type were detected on a page.
 
@@ -115,8 +108,8 @@ def train_repair_node(state: dict[str, Any]) -> dict[str, Any]:
         state["train_repair_attempts"] – number of repairs already completed
 
     Side-effect:
-        Modifies record_separation.py, block_separation.py, and/or
-        extraction_scripts/*.py inside pipeline_dir.
+        Modifies block_separation.py and/or extraction_scripts/*.py inside
+        pipeline_dir.
     """
     document_dir   = os.path.dirname(state["agent_space"])
     pipeline_dir   = os.path.join(document_dir, "pipeline")

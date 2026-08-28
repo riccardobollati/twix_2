@@ -7,8 +7,8 @@ import time
 from typing import Any
 
 _PIPELINE_PHASES = {
-    "template_inference", "record_separation", "run_record_separation",
-    "block_separation", "run_block_separation", "block_samples",
+    "template_inference", "block_separation", "run_block_separation",
+    "block_artifacts", "block_samples",
     "block_difficulty_router", "block_extraction_scripting", "collect_extraction_scripts",
 }
 
@@ -66,7 +66,7 @@ def save_metadata_node(state: dict[str, Any]) -> dict[str, Any]:
             "exact_match":           ev.get("exact_match"),
             "iterations":            iterations,
             "repairs":               repairs if repairs else None,
-            "agentic_pipeline_cost": _find_last("train_grouping"),
+            "agentic_pipeline_cost": _find_last("train_extraction"),
             "ground_truth_cost":     _find("train_ground_truth"),
         }
 
@@ -79,7 +79,7 @@ def save_metadata_node(state: dict[str, Any]) -> dict[str, Any]:
         test_eval = {
             "accuracy":               ev.get("accuracy"),
             "exact_match":            ev.get("exact_match"),
-            "agentic_pipeline_cost":  _find("grouping"),
+            "agentic_pipeline_cost":  _find("extraction"),
             "ground_truth_cost":      _find("ground_truth"),
             "ground_truth_model":     state.get("ground_truth_model"),
         }

@@ -21,16 +21,6 @@ class StandalonePipelineTests(unittest.TestCase):
             extractors.mkdir(parents=True)
             shutil.copy2(Path(__file__).parents[1] / "src/pipeline.py", bundle / "pipeline.py")
 
-            (bundle / "record_separation.py").write_text(
-                """import json, os, sys
-os.makedirs(sys.argv[2], exist_ok=True)
-with open(os.path.join(sys.argv[2], 'record_separation.json'), 'w') as f:
-    json.dump({'records': [{'record_id': '0', 'pages': [
-        {'page': 1, 'y_start': 0, 'y_end': 1000}
-    ]}]}, f)
-""",
-                encoding="utf-8",
-            )
             (bundle / "block_separation.py").write_text(
                 """import json, os, sys
 os.makedirs(sys.argv[2], exist_ok=True)
@@ -65,10 +55,12 @@ with open(os.path.join(sys.argv[2], 'block_separation.json'), 'w') as f:
             )
 
             self.assertEqual(result.returncode, 0, result.stderr)
-            grouped = json.loads((output / "grouped.json").read_text(encoding="utf-8"))
+            extracted = json.loads((output / "extracted.json").read_text(encoding="utf-8"))
             health = json.loads((output / "pipeline_health.json").read_text(encoding="utf-8"))
-            self.assertEqual(grouped[0]["data"][0]["data"], {"value": "ok"})
+            self.assertEqual(extracted[0]["data"], {"value": "ok"})
             self.assertFalse(health["degenerate"])
+            self.assertFalse((output / "grouped.json").exists())
+            self.assertFalse((output / "record_separation.json").exists())
 
 
 if __name__ == "__main__":
