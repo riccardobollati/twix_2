@@ -51,6 +51,10 @@ The pipeline runs in this order:
    Extracts field values from one physical block.
    Called by pipeline.py on every block produced by block_separation.
 
+3. record_grouping.py
+   Deterministically traverses extracted template node ids and writes grouped.json.
+   It is fixed pipeline code and is not generated or repairable.
+
 EVALUATION ERRORS  (from train_eval/eval.txt)
 =============================================
 {eval_txt}
@@ -65,12 +69,13 @@ DO NOT modify pipeline.py, template.json, or any other file.
 PRIORITY FIXES BY ERROR CODE
 =============================
 [R-RECORD-MISSING]
-  No candidate blocks were emitted for a ground-truth page. Fix
-  block_separation.py so it detects page-local blocks on that page.
+  A logical record has no candidate counterpart. Usually a required boundary
+  block was missed; fix block_separation.py so the template-node sequence is
+  complete and ordered.
 
 [R-RECORD-EXTRA]
-  Candidate blocks were emitted on a page with no ground-truth counterpart.
-  Check block_separation.py for false-positive block detection.
+  A spurious logical record was formed. Check block_separation.py for a
+  false-positive or misordered block that creates an artificial restart.
 
 [R-NODE-MISSING]
   A block type was not detected on some pages.

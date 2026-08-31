@@ -6,8 +6,9 @@ Assumes a prior full run has already produced:
     data/<doc_id>/metadata.json               (will be patched in-place)
 
 Re-runs:
-    ground_truth_node  → pipeline/ground_truth.json
-    eval_node          → pipeline/eval.json + eval.txt
+    ground_truth_node  → pipeline/{ground_truth,ground_truth_grouped}.json
+    eval_node          → rebuilds grouped.json if needed, then writes
+                         pipeline/eval.json + eval.txt
 
 Then patches metadata.json:
     test_eval.ground_truth_cost  ← new cost entry (with tokens)

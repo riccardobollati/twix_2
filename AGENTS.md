@@ -210,8 +210,11 @@ Never weaken these invariants:
 
 `src/pipeline.py` performs OCR, executes block separation, imports every
 extractor, relativizes block coordinates, and writes a flat, page-local
-`extracted.json` list. It does not create records. Repeated blocks and table
-continuations remain separate even when they share a node ID or are adjacent.
+`extracted.json` list. `src/record_grouping.py` then deterministically traverses
+the template node IDs and writes logical records to `grouped.json`. A completed
+template restart or a duplicate non-repeatable node starts a record;
+`complexity.repeated`, multi-`bid` nodes, and adjacent cross-page table
+continuations remain in the current record. Physical blocks remain separate.
 
 `pipeline_health.json` marks output degenerate when extraction is empty, blocks
 cover fewer than half the pages, or blocks cross page boundaries. A degenerate train result fails the
@@ -219,10 +222,13 @@ repair gate even if its numerical accuracy reaches the threshold.
 
 Immediately after the generated block separator passes validation,
 `block_artifacts` reapplies it to the complete train PDF, then calls the reusable
-renderer in `viz_blocks.py` and writes one annotated PNG per train page under
-`<output>/artifacts/blocks/`. In eval mode it also applies the learned separator
-to the independent test PDF and writes UI-only overlays under
-`<output>/artifacts/test_blocks/`; these do not feed back into training.
+renderers in `viz_blocks.py` and `viz_record_separation.py`. It writes block
+overlays under `<output>/artifacts/blocks/` and deterministic record overlays
+under `<output>/artifacts/record_separation/`. In eval mode it also applies the
+learned separator to the independent test PDF and writes UI-only overlays under
+`<output>/artifacts/test_blocks/` and
+`<output>/artifacts/test_record_separation/`; these do not feed back into
+training.
 
 ### Ground truth
 
@@ -239,7 +245,8 @@ its semantics between `train_eval.py` and `ground_truth.py`.
 - A window with suspiciously low value-character coverage is retried once.
 - The model emits a flat `blocks` list with an explicit page per physical block.
 - Blocks from independent windows are concatenated in page order without record
-  grouping or same-node table merging.
+  grouping or same-node table merging. The shared deterministic grouper writes
+  `ground_truth_grouped.json` afterward for evaluation.
 - An entirely empty result from a window size greater than five retries the
   whole document with five-page windows; a second empty result is a hard error.
 
@@ -287,23 +294,29 @@ For a document artifact directory `<output>/`:
 ├── metadata.json
 ├── metadata/cost.json
 ├── artifacts/blocks/               # block-separation overlay PNGs
+├── artifacts/record_separation/    # deterministic train record overlays
 ├── artifacts/stats/                # UI runs only: plots plus stats.json
 ├── artifacts/test_blocks/          # held-out overlays in eval mode
+├── artifacts/test_record_separation/ # held-out record overlays in eval mode
 ├── debug/                         # only with --save-log
 ├── agent_space/
 │   ├── train/ and test/           # eval mode
 │   └── ...                        # unsplit workspace otherwise
 └── pipeline/
     ├── pipeline.py
+    ├── record_grouping.py
     ├── requirements.txt
+    ├── template.json
     ├── block_separation.py
     ├── extraction_scripts/<node_id>.py
     ├── ocr.csv
     ├── block_separation.json
     ├── extracted.json
+    ├── grouped.json
     ├── pipeline_health.json
     ├── train_eval/
     ├── ground_truth.json          # eval mode
+    ├── ground_truth_grouped.json  # eval mode
     ├── eval.json                  # eval mode
     └── eval.txt                   # eval mode
 ```

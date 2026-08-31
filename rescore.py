@@ -1,6 +1,6 @@
 """Re-score existing eval artifacts with the current src/eval code (no LLM calls).
 
-For every data/<doc>/ that has pipeline/{ground_truth,extracted}.json and
+For every data/<doc>/ that has pipeline ground-truth/candidate artifacts and
 metadata.json, recompute the score, rewrite eval.json / eval.txt, and patch
 metadata.json in place:
 
@@ -82,9 +82,15 @@ def main() -> None:
         updates: list[str] = []
         for split, sub in [("test_eval", ""), ("train_eval", "train_eval")]:
             base = os.path.join(pipeline_dir, sub)
+            grouped_gt = os.path.join(base, "ground_truth_grouped.json")
+            grouped_candidate = os.path.join(base, "grouped.json")
             result = rescore_pair(
-                os.path.join(base, "ground_truth.json"),
-                os.path.join(base, "extracted.json"),
+                grouped_gt
+                if os.path.isfile(grouped_gt)
+                else os.path.join(base, "ground_truth.json"),
+                grouped_candidate
+                if os.path.isfile(grouped_candidate)
+                else os.path.join(base, "extracted.json"),
                 write_reports=not args.dry_run,
             )
             if result is None:

@@ -8,7 +8,8 @@ Steps:
   1. OCR extraction with pdfplumber
   2. Block separation (agent-generated block_separation.py)
   3. Coordinate relativisation + per-block extraction
-  4. Save block_separation.json and extracted.json in out_dir
+  4. Deterministic record grouping from the template-node sequence
+  5. Save block_separation.json, extracted.json and grouped.json in out_dir
 """
 
 import argparse
@@ -19,6 +20,11 @@ import os
 import subprocess
 import sys
 import pdfplumber
+
+try:  # package import in the repository
+    from .record_grouping import group_blocks_into_records
+except ImportError:  # direct execution inside a portable pipeline bundle
+    from record_grouping import group_blocks_into_records
 
 
 SCRIPT_TIMEOUT_S = 300  # hard cap for one generated-script execution
@@ -128,6 +134,15 @@ def _load_extractors(pipeline_dir: str) -> dict:
     return extractors
 
 
+def _load_template(pipeline_dir: str) -> list[dict]:
+    with open(os.path.join(pipeline_dir, "template.json"), encoding="utf-8") as f:
+        payload = json.load(f)
+    template = payload.get("template") if isinstance(payload, dict) else None
+    if not isinstance(template, list) or not template:
+        raise RuntimeError("template.json must contain a non-empty 'template' list")
+    return template
+
+
 # ── health check ──────────────────────────────────────────────────────────────
 
 def _health_check(
@@ -205,6 +220,8 @@ def main() -> None:
     required_paths = [
         os.path.join(pipeline_dir, "block_separation.py"),
         os.path.join(pipeline_dir, "extraction_scripts"),
+        os.path.join(pipeline_dir, "record_grouping.py"),
+        os.path.join(pipeline_dir, "template.json"),
     ]
     missing = [path for path in required_paths if not os.path.exists(path)]
     if missing:
@@ -224,6 +241,7 @@ def main() -> None:
 
     # 3. Load extractors
     extractors = _load_extractors(pipeline_dir)
+    template = _load_template(pipeline_dir)
 
     # 4. Extract each block
     print("Extracting data from blocks...")
@@ -254,7 +272,16 @@ def main() -> None:
         json.dump(results, f, indent=2, ensure_ascii=False)
     print(f"  {len(results)} block(s) extracted → {output_path}")
 
-    # 6. Health check → pipeline_health.json
+    # 6. Deterministic record grouping. extracted.json intentionally remains a
+    # lossless physical-block artifact; grouped.json is the logical output used
+    # for record-aware evaluation and downstream consumption.
+    grouped = group_blocks_into_records(results, template)
+    grouped_path = os.path.join(out_dir, "grouped.json")
+    with open(grouped_path, "w", encoding="utf-8") as f:
+        json.dump(grouped, f, indent=2, ensure_ascii=False)
+    print(f"  {len(grouped)} record(s) grouped → {grouped_path}")
+
+    # 7. Health check → pipeline_health.json
     health = _health_check(words, separation, results)
     health_path = os.path.join(out_dir, "pipeline_health.json")
     with open(health_path, "w", encoding="utf-8") as f:

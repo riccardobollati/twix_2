@@ -9,6 +9,7 @@ from langchain_core.language_models.chat_models import BaseChatModel
 
 from src.agents._usage import apply_usage
 from src.agents.gt_common import generate_ground_truth
+from src.record_grouping import group_blocks_into_records
 
 
 def ground_truth_node(
@@ -33,6 +34,7 @@ def ground_truth_node(
 
     Writes:
         document_dir/pipeline/ground_truth.json
+        document_dir/pipeline/ground_truth_grouped.json
     """
     t0 = time.time()
 
@@ -55,7 +57,16 @@ def ground_truth_node(
 
     with open(gt_path, "w", encoding="utf-8") as f:
         json.dump(blocks, f, indent=2, ensure_ascii=False)
+    grouped_path = os.path.join(pipeline_dir, "ground_truth_grouped.json")
+    with open(grouped_path, "w", encoding="utf-8") as f:
+        json.dump(
+            group_blocks_into_records(blocks, template),
+            f,
+            indent=2,
+            ensure_ascii=False,
+        )
     print(f"ground_truth_node: ground_truth.json → {gt_path}")
+    print(f"ground_truth_node: ground_truth_grouped.json → {grouped_path}")
 
     duration = time.time() - t0
     cost: dict = {"phase": "ground_truth", "duration_s": round(duration, 3)}

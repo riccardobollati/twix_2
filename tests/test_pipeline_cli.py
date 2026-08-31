@@ -20,6 +20,19 @@ class StandalonePipelineTests(unittest.TestCase):
             extractors = bundle / "extraction_scripts"
             extractors.mkdir(parents=True)
             shutil.copy2(Path(__file__).parents[1] / "src/pipeline.py", bundle / "pipeline.py")
+            shutil.copy2(
+                Path(__file__).parents[1] / "src/record_grouping.py",
+                bundle / "record_grouping.py",
+            )
+            (bundle / "template.json").write_text(
+                json.dumps({"template": [{
+                    "node_id": 0,
+                    "type": "kv",
+                    "bid": [0],
+                    "complexity": {"repeated": False},
+                }]}),
+                encoding="utf-8",
+            )
 
             (bundle / "block_separation.py").write_text(
                 """import json, os, sys
@@ -56,10 +69,11 @@ with open(os.path.join(sys.argv[2], 'block_separation.json'), 'w') as f:
 
             self.assertEqual(result.returncode, 0, result.stderr)
             extracted = json.loads((output / "extracted.json").read_text(encoding="utf-8"))
+            grouped = json.loads((output / "grouped.json").read_text(encoding="utf-8"))
             health = json.loads((output / "pipeline_health.json").read_text(encoding="utf-8"))
             self.assertEqual(extracted[0]["data"], {"value": "ok"})
+            self.assertEqual(grouped[0]["data"][0]["data"], {"value": "ok"})
             self.assertFalse(health["degenerate"])
-            self.assertFalse((output / "grouped.json").exists())
             self.assertFalse((output / "record_separation.json").exists())
 
 

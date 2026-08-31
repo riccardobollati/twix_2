@@ -1,6 +1,7 @@
 const stages = [
   {id: "template", label: "Template inference", detail: "Learn the schema"},
   {id: "blocks", label: "Block separation", detail: "Inspect unseen pages"},
+  {id: "record_separation", label: "Record separation", detail: "Inspect logical records"},
   {id: "extraction", label: "Data extraction", detail: "Build & train-evaluate"},
   {id: "results", label: "Final results", detail: "Test & compare"},
 ];
@@ -11,6 +12,7 @@ let workflow = {};
 let selectedStage = null;
 let followLive = true;
 let selectedBlock = 0;
+let selectedRecord = 0;
 let selectedResultTab = "output";
 const $ = (selector) => document.querySelector(selector);
 
@@ -201,6 +203,7 @@ function renderWorkflow() {
   templateState.className = `artifact-state ${workflow.template ? "ready" : "waiting"}`;
 
   renderBlocks();
+  renderRecordSeparation();
   renderLog();
   const trainAccuracy = percent(workflow.trainEvaluation?.accuracy);
   const trainScore = $("#train-score");
@@ -238,6 +241,22 @@ function renderBlocks() {
   document.querySelectorAll("[data-block-index]").forEach((button) => button.addEventListener("click", () => { selectedBlock = Number(button.dataset.blockIndex); renderBlocks(); }));
 }
 
+function renderRecordSeparation() {
+  const images = workflow.recordImages || [];
+  selectedRecord = Math.min(selectedRecord, Math.max(images.length - 1, 0));
+  const source = $("#record-source");
+  source.textContent = images.length ? `${workflow.recordSource === "test" ? "Evaluation test" : "Train"} · ${images.length} pages` : "Waiting";
+  source.className = `artifact-state ${images.length ? (workflow.recordSource === "test" ? "ready" : "warning") : "waiting"}`;
+  $("#record-empty").classList.toggle("hidden", images.length > 0);
+  $("#record-image").classList.toggle("hidden", images.length === 0);
+  if (!images.length) { $("#record-thumbnails").innerHTML = ""; $("#record-counter").textContent = ""; return; }
+  $("#record-image").src = artifactUrl(images[selectedRecord]);
+  $("#record-page-title").textContent = `Record overlay · page ${selectedRecord + 1}`;
+  $("#record-counter").textContent = `${selectedRecord + 1} / ${images.length}`;
+  $("#record-thumbnails").innerHTML = images.map((path, index) => `<button class="block-thumb ${index === selectedRecord ? "selected" : ""}" data-record-index="${index}" type="button"><img src="${artifactUrl(path)}" alt="Record overlay page ${index + 1}" loading="lazy" />Page ${index + 1}</button>`).join("");
+  document.querySelectorAll("[data-record-index]").forEach((button) => button.addEventListener("click", () => { selectedRecord = Number(button.dataset.recordIndex); renderRecordSeparation(); }));
+}
+
 function activateRun(run) {
   const previousStage = activeRun?.stage;
   activeRun = {...activeRun, ...run};
@@ -273,7 +292,7 @@ async function loadWorkflow() {
 
 async function selectRun(runId) {
   if (activeEventSource) activeEventSource.close();
-  activeEventSource = null; workflow = {}; selectedBlock = 0; followLive = true; selectedResultTab = "output";
+  activeEventSource = null; workflow = {}; selectedBlock = 0; selectedRecord = 0; followLive = true; selectedResultTab = "output";
   const response = await fetch(`/api/runs/${encodeURIComponent(runId)}`);
   if (!response.ok) return showToast("That run is no longer available.", true);
   const run = await response.json();

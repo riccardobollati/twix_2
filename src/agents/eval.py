@@ -8,10 +8,11 @@ from typing import Any
 from src.eval.convert import load_json_dedup
 from src.eval.render import render_to_file
 from src.eval.score import score as eval_score
+from src.record_grouping import group_blocks_into_records
 
 
 def eval_node(state: dict[str, Any]) -> dict[str, Any]:
-    """Score pipeline/extracted.json against pipeline/ground_truth.json.
+    """Score deterministic candidate records against deterministic GT records.
 
     Reads:
         state["agent_space"] – used to derive document_dir/pipeline/
@@ -25,12 +26,25 @@ def eval_node(state: dict[str, Any]) -> dict[str, Any]:
     document_dir = os.path.dirname(state["agent_space"])
     pipeline_dir = os.path.join(document_dir, "pipeline")
 
-    extracted_path = os.path.join(pipeline_dir, "extracted.json")
-    gt_path      = os.path.join(pipeline_dir, "ground_truth.json")
+    grouped_path = os.path.join(pipeline_dir, "grouped.json")
+    gt_path = os.path.join(pipeline_dir, "ground_truth_grouped.json")
+
+    # Legacy artifacts may predate deterministic grouping. Rebuild the derived
+    # files from their lossless flat inputs rather than requiring another
+    # extraction or ground-truth model call.
+    template = state.get("template") or []
+    for grouped, flat in [
+        (grouped_path, os.path.join(pipeline_dir, "extracted.json")),
+        (gt_path, os.path.join(pipeline_dir, "ground_truth.json")),
+    ]:
+        if not os.path.isfile(grouped) and os.path.isfile(flat):
+            records = group_blocks_into_records(load_json_dedup(flat), template)
+            with open(grouped, "w", encoding="utf-8") as f:
+                json.dump(records, f, indent=2, ensure_ascii=False)
 
     # load with duplicate-key disambiguation so legacy templates with repeated
     # field names don't silently collapse to a single column
-    candidate = load_json_dedup(extracted_path)
+    candidate = load_json_dedup(grouped_path)
     gt = load_json_dedup(gt_path)
 
     eval_result = eval_score(gt, candidate, reference="model_reference", threshold=0.9)

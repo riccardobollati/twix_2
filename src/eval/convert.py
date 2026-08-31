@@ -2,7 +2,7 @@
 
 Four input shapes are recognised automatically:
 
-  Legacy grouped records:
+  Grouped records (grouped.json / ground_truth_grouped.json and legacy data):
     [{"record_id": "0", "data": [{"type": ..., "block_id": ..., "data": ..., "page": 1}, ...]}, ...]
 
   Ground-truth generator dict (legacy):

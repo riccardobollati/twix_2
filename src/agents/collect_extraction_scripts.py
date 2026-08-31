@@ -12,6 +12,10 @@ _PIPELINE_REQUIREMENTS = os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
     "pipeline_requirements.txt",
 )
+_RECORD_GROUPING_SRC = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+    "record_grouping.py",
+)
 
 
 def collect_extraction_scripts_node(state: dict[str, Any]) -> dict[str, Any]:
@@ -22,7 +26,7 @@ def collect_extraction_scripts_node(state: dict[str, Any]) -> dict[str, Any]:
     2. Create train_dir/pipeline/.
     3. Move extraction_scripts/ into pipeline/.
     4. Move block_separation.py from train_dir into pipeline/.
-    5. Copy src/pipeline.py into pipeline/.
+    5. Copy the deterministic runner, record grouper, template, and dependencies.
 
     Reads:
         state["agent_space"]  – working directory for this document
@@ -91,6 +95,18 @@ def collect_extraction_scripts_node(state: dict[str, Any]) -> dict[str, Any]:
     # ── 5. copy the standalone runner and its minimal dependencies ───────────
     shutil.copy2(_PIPELINE_SRC, os.path.join(pipeline_dir, "pipeline.py"))
     print(f"  pipeline.py          → pipeline/pipeline.py")
+    shutil.copy2(
+        _RECORD_GROUPING_SRC,
+        os.path.join(pipeline_dir, "record_grouping.py"),
+    )
+    print(f"  record_grouping.py   → pipeline/record_grouping.py")
+    template_src = os.path.join(os.path.dirname(agent_space), "template.json")
+    if not os.path.isfile(template_src):
+        raise RuntimeError(
+            f"collect_extraction_scripts: template.json not found at {template_src}"
+        )
+    shutil.copy2(template_src, os.path.join(pipeline_dir, "template.json"))
+    print(f"  template.json        → pipeline/template.json")
     shutil.copy2(_PIPELINE_REQUIREMENTS, os.path.join(pipeline_dir, "requirements.txt"))
     print(f"  requirements.txt     → pipeline/requirements.txt")
     print(f"collect_extraction_scripts: pipeline ready at {pipeline_dir}")

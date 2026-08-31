@@ -11,6 +11,7 @@ from PIL import Image
 from src.agents.block_artifacts import block_artifacts_node
 from src.agents.block_separation import block_separation_node
 from viz_blocks import _parse_targets, render_blocks, run_block_separator
+from viz_record_separation import _load_record_blocks, render_record_separation
 
 
 class BlockArtifactTests(unittest.TestCase):
@@ -104,10 +105,93 @@ with open(os.path.join(sys.argv[2], 'block_separation.json'), 'w') as target:
             self.assertEqual(written, [str(output_dir / "page_1_blocks.png")])
             self.assertTrue((output_dir / "page_1_blocks.png").is_file())
 
+    def test_record_renderer_groups_blocks_and_writes_page_overlay(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            pdf_path = root / "train.pdf"
+            blocks_path = root / "block_separation.json"
+            output_dir = root / "artifacts" / "record_separation"
+            Image.new("RGB", (200, 200), "white").save(pdf_path, "PDF")
+            blocks_path.write_text(
+                json.dumps({
+                    "pages": [{
+                        "page": 1,
+                        "blocks": [
+                            {
+                                "block_id": "0_0",
+                                "type": "kv",
+                                "words": [{
+                                    "x0": 10, "top": 10,
+                                    "x1": 80, "bottom": 35,
+                                }],
+                            },
+                            {
+                                "block_id": "1_0",
+                                "type": "table",
+                                "words": [{
+                                    "x0": 10, "top": 40,
+                                    "x1": 150, "bottom": 75,
+                                }],
+                            },
+                            {
+                                "block_id": "0_1",
+                                "type": "kv",
+                                "words": [{
+                                    "x0": 10, "top": 90,
+                                    "x1": 80, "bottom": 115,
+                                }],
+                            },
+                            {
+                                "block_id": "1_1",
+                                "type": "table",
+                                "words": [{
+                                    "x0": 10, "top": 120,
+                                    "x1": 150, "bottom": 160,
+                                }],
+                            },
+                        ],
+                    }],
+                }),
+                encoding="utf-8",
+            )
+            template = [
+                {
+                    "node_id": 0, "type": "kv", "bid": [0],
+                    "complexity": {"repeated": False},
+                },
+                {
+                    "node_id": 1, "type": "table", "bid": [1],
+                    "complexity": {
+                        "same_row_structure": True, "nested": False,
+                    },
+                },
+            ]
+
+            records = _load_record_blocks(str(blocks_path), template)
+            written = render_record_separation(
+                str(pdf_path),
+                str(blocks_path),
+                template,
+                str(output_dir),
+                label="sample",
+            )
+
+            self.assertEqual(len(records), 2)
+            self.assertEqual(
+                [[b["block_id"] for b in record["data"]] for record in records],
+                [["0_0", "1_0"], ["0_1", "1_1"]],
+            )
+            self.assertEqual(
+                written,
+                [str(output_dir / "page_1_records.png")],
+            )
+            self.assertTrue((output_dir / "page_1_records.png").is_file())
+
+    @patch("src.agents.block_artifacts.render_record_separation")
     @patch("src.agents.block_artifacts.render_blocks")
     @patch("src.agents.block_artifacts.run_block_separator")
     def test_graph_node_targets_document_artifacts_folder(
-        self, separator, render
+        self, separator, render, render_records
     ) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             document = Path(tmp) / "id_05"
@@ -118,6 +202,12 @@ with open(os.path.join(sys.argv[2], 'block_separation.json'), 'w') as target:
             generated_json = document / "generated" / "block_separation.json"
             separator.return_value = str(generated_json)
             render.return_value = [str(document / "artifacts" / "blocks" / "page_1_blocks.png")]
+            render_records.return_value = [
+                str(
+                    document / "artifacts" / "record_separation"
+                    / "page_1_records.png"
+                )
+            ]
 
             result = block_artifacts_node({
                 "pdf_path": str(pdf_path),
@@ -137,11 +227,21 @@ with open(os.path.join(sys.argv[2], 'block_separation.json'), 'w') as target:
                 str(document / "artifacts" / "blocks"),
                 label="id_05",
             )
+            render_records.assert_called_once_with(
+                str(pdf_path),
+                str(generated_json),
+                [],
+                str(document / "artifacts" / "record_separation"),
+                label="id_05",
+            )
             self.assertEqual(result["cost"][0]["phase"], "block_artifacts")
 
+    @patch("src.agents.block_artifacts.render_record_separation")
     @patch("src.agents.block_artifacts.render_blocks")
     @patch("src.agents.block_artifacts.run_block_separator")
-    def test_graph_node_renders_held_out_test_pdf(self, separator, render) -> None:
+    def test_graph_node_renders_held_out_test_pdf(
+        self, separator, render, render_records
+    ) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             document = Path(tmp) / "id_05"
             train = document / "agent_space" / "train"
@@ -154,6 +254,10 @@ with open(os.path.join(sys.argv[2], 'block_separation.json'), 'w') as target:
             test_pdf.touch()
             separator.side_effect = ["/tmp/train.json", "/tmp/test.json"]
             render.side_effect = [["train.png"], ["test-1.png", "test-2.png"]]
+            render_records.side_effect = [
+                ["train-record.png"],
+                ["test-record-1.png", "test-record-2.png"],
+            ]
 
             block_artifacts_node({
                 "pdf_path": str(train_pdf),
@@ -172,6 +276,17 @@ with open(os.path.join(sys.argv[2], 'block_separation.json'), 'w') as target:
             ))
             self.assertEqual(
                 render.call_args_list[1].kwargs["label"],
+                "id_05 · evaluation test",
+            )
+            self.assertEqual(render_records.call_count, 2)
+            self.assertEqual(render_records.call_args_list[1].args, (
+                str(test_pdf),
+                "/tmp/test.json",
+                [],
+                str(document / "artifacts" / "test_record_separation"),
+            ))
+            self.assertEqual(
+                render_records.call_args_list[1].kwargs["label"],
                 "id_05 · evaluation test",
             )
 

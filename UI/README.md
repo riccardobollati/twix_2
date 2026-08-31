@@ -7,11 +7,12 @@ python3 UI/app.py
 ```
 
 Open `http://127.0.0.1:8765`. Upload a PDF, choose the run settings, and the
-dashboard will run the existing `run.py` pipeline locally. Its four-stage view
-follows template inference, block separation, data extraction with train
-evaluation, and independent test evaluation. The template and final JSON are
-shown beside their PDFs; block overlays come from the unseen test split when
-evaluation is enabled. Train holdout and test evaluation are separate controls:
+dashboard will run the existing `run.py` pipeline locally. Its five-stage view
+follows template inference, block separation, deterministic record separation,
+data extraction with train evaluation, and independent test evaluation. The
+template and final JSON are shown beside their PDFs; block and record overlays
+come from the unseen test split when evaluation is enabled. Train holdout and
+test evaluation are separate controls:
 holdout defaults to zero, while evaluation defaults to twenty pages and enabled.
 All generated files remain available in the artifact drawer.
 

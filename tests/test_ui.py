@@ -13,13 +13,15 @@ from UI.app import (
 
 
 class UiWorkflowTests(unittest.TestCase):
-    def test_ui_exposes_four_pipeline_stages(self) -> None:
+    def test_ui_exposes_five_pipeline_stages(self) -> None:
         self.assertEqual([stage[0] for stage in STAGES], [
-            "template", "blocks", "extraction", "results",
+            "template", "blocks", "record_separation", "extraction", "results",
         ])
         html = (Path(__file__).parents[1] / "UI" / "index.html").read_text()
         self.assertIn('id="model-assignments"', html)
         self.assertIn("What is running what", html)
+        self.assertIn('data-stage-panel="record_separation"', html)
+        self.assertIn('id="record-image"', html)
 
     def test_run_snapshot_exposes_the_terminal_command(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -98,6 +100,7 @@ class UiWorkflowTests(unittest.TestCase):
         by_id = {assignment["id"]: assignment for assignment in assignments}
         self.assertEqual(by_id["template_inference"]["model"], "openai/gpt-5.4")
         self.assertEqual(by_id["block_separation"]["model"], "qwen/qwen3.8-flash")
+        self.assertEqual(by_id["record_grouping"]["transport"], "No model call")
         self.assertEqual(by_id["difficulty_routing"]["model"], "qwen/qwen3.8-flash")
         self.assertEqual(by_id["easy_extractors"]["model"], "z-ai/glm-5.3-flash")
         self.assertEqual(by_id["hard_extractors"]["model"], "qwen/qwen3.8-flash")
@@ -133,9 +136,16 @@ class UiWorkflowTests(unittest.TestCase):
             ["hard_extractors"],
         )
 
-    def test_log_markers_advance_through_four_stages(self) -> None:
+    def test_log_markers_advance_through_five_stages(self) -> None:
         self.assertEqual(_stage_from_logs(["template_inference_node: done"], True), "template")
         self.assertEqual(_stage_from_logs(["block_artifacts_node: done"], True), "blocks")
+        self.assertEqual(
+            _stage_from_logs([
+                "block_artifacts_node: 2 train image(s)",
+                "block_artifacts_node: 2 train record image(s)",
+            ], True),
+            "record_separation",
+        )
         self.assertEqual(_stage_from_logs(["train_eval_node: 0.9"], True), "extraction")
         self.assertEqual(_stage_from_logs(["eval_node: complete"], True), "results")
 
@@ -152,6 +162,7 @@ class UiWorkflowTests(unittest.TestCase):
             (root / "agent_space" / "train").mkdir(parents=True)
             (root / "agent_space" / "test").mkdir(parents=True)
             (root / "artifacts" / "test_blocks").mkdir(parents=True)
+            (root / "artifacts" / "test_record_separation").mkdir(parents=True)
             (root / "artifacts" / "stats").mkdir(parents=True)
             (root / "pipeline" / "train_eval").mkdir(parents=True)
             (root / "input.pdf").write_bytes(b"%PDF-1.4")
@@ -159,6 +170,8 @@ class UiWorkflowTests(unittest.TestCase):
             (root / "agent_space" / "test" / "input.pdf").write_bytes(b"%PDF-1.4")
             (root / "artifacts" / "test_blocks" / "page_2_blocks.png").write_bytes(b"png")
             (root / "artifacts" / "test_blocks" / "page_1_blocks.png").write_bytes(b"png")
+            (root / "artifacts" / "test_record_separation" / "page_2_records.png").write_bytes(b"png")
+            (root / "artifacts" / "test_record_separation" / "page_1_records.png").write_bytes(b"png")
             (root / "artifacts" / "stats" / "overview.png").write_bytes(b"png")
             (root / "artifacts" / "stats" / "phase_cost.png").write_bytes(b"png")
             (root / "artifacts" / "stats" / "token_breakdown.png").write_bytes(b"png")
@@ -180,6 +193,11 @@ class UiWorkflowTests(unittest.TestCase):
             self.assertEqual(payload["blockImages"], [
                 "artifacts/test_blocks/page_1_blocks.png",
                 "artifacts/test_blocks/page_2_blocks.png",
+            ])
+            self.assertEqual(payload["recordSource"], "test")
+            self.assertEqual(payload["recordImages"], [
+                "artifacts/test_record_separation/page_1_records.png",
+                "artifacts/test_record_separation/page_2_records.png",
             ])
             self.assertEqual(payload["testPdf"], "agent_space/test/input.pdf")
             self.assertEqual(payload["evaluation"]["accuracy"], 0.91)

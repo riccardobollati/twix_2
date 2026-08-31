@@ -13,6 +13,7 @@ Usage:
         ocr_extraction_full.csv        – full word-level OCR dump (step 1)
         template.json                  – inferred template
         pipeline/extracted.json        – flat page-local blocks from the pipeline
+        pipeline/grouped.json          – deterministically grouped logical records
         pipeline/ground_truth.json     – LLM ground truth (when evaluation is enabled)
         pipeline/eval.json / eval.txt  – evaluation results (when enabled)
 
@@ -417,9 +418,16 @@ def main() -> None:
     pipeline_dir = os.path.join(output_dir, "pipeline")
     print(f"  template    → {os.path.join(output_dir, 'template.json')}", file=sys.stderr)
     print(f"  block viz   → {os.path.join(output_dir, 'artifacts', 'blocks')}", file=sys.stderr)
+    print(
+        f"  record viz  → "
+        f"{os.path.join(output_dir, 'artifacts', 'record_separation')}",
+        file=sys.stderr,
+    )
     print(f"  extracted   → {os.path.join(pipeline_dir, 'extracted.json')}", file=sys.stderr)
+    print(f"  grouped     → {os.path.join(pipeline_dir, 'grouped.json')}", file=sys.stderr)
     if args.eval:
         print(f"  ground truth → {os.path.join(pipeline_dir, 'ground_truth.json')}", file=sys.stderr)
+        print(f"  grouped GT   → {os.path.join(pipeline_dir, 'ground_truth_grouped.json')}", file=sys.stderr)
 
         eval_json_path = os.path.join(pipeline_dir, "eval.json")
         if os.path.isfile(eval_json_path):

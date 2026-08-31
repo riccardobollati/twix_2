@@ -175,7 +175,7 @@ flowchart TD
     EC --> TI["Infer template + metadata<br/>reference-model JSON"]
     TI --> BS["Generate block_separation.py<br/>OpenCode"]
     BS --> BSR["Run + validate block separation"]
-    BSR --> ART["Render block overlays<br/>artifacts/blocks/"]
+    BSR --> ART["Render block + record overlays<br/>artifacts/blocks/<br/>artifacts/record_separation/"]
     ART --> SMP["Crop deterministic block samples"]
     SMP --> ROUTE["Classify each block EASY/HARD<br/>parallel hard-model calls"]
     ROUTE --> EXT["Generate one extractor per detected node<br/>parallel OpenCode sessions"]
@@ -273,10 +273,12 @@ time out after 300 seconds.
 
 After block separation succeeds, the artifact node reapplies the generated
 separator to the complete train PDF and `viz_blocks.py` renders every train
-page under `<output>/artifacts/blocks/`. Eval runs also render the learned
-separator on held-out pages under `<output>/artifacts/test_blocks/` for UI
-inspection; those images do not feed back into training. Re-running replaces the generated
-`page_*_blocks.png` files in that folder.
+page under `<output>/artifacts/blocks/`. `viz_record_separation.py` applies the
+deterministic node-sequence grouper to the same block output and renders record
+envelopes under `<output>/artifacts/record_separation/`. Eval runs also render
+the learned separator on held-out pages under `<output>/artifacts/test_blocks/`
+and `<output>/artifacts/test_record_separation/`; these images do not feed back
+into training. Re-running replaces the generated page images in those folders.
 
 The key identity rules are:
 
@@ -349,7 +351,9 @@ flowchart LR
     OCR --> BLK["block_separation.py"]
     BLK --> REL["Translate each block to local coordinates"]
     REL --> EX["extraction_scripts/<node_id>.py"]
-    EX --> JSON["extracted.json"]
+    EX --> RAW["extracted.json"]
+    RAW --> REC["Deterministic template-node traversal"]
+    REC --> JSON["grouped.json"]
     EX --> HEALTH["pipeline_health.json"]
 ```
 
@@ -357,11 +361,17 @@ The runtime writes:
 
 - `ocr.csv` — runtime OCR words;
 - `block_separation.json` — physical page-local blocks;
-- `extracted.json` — final flat page-local block output; and
+- `extracted.json` — lossless flat page-local block output;
+- `grouped.json` — logical records inferred deterministically from the node
+  sequence and bundled `template.json`; and
 - `pipeline_health.json` — silent-failure and invariants report.
 
-Repeated blocks and same-node table continuations remain separate physical
-entries, including when they occur consecutively.
+The grouper closes a record when the completed template restarts or when a
+non-repeatable node is visited twice before completion. Nodes marked
+`complexity.repeated` (and nodes with multiple `bid` positions) may repeat
+inside a record. Adjacent same-table blocks across consecutive pages are kept
+in the same record as page-local continuations. Physical blocks are never
+discarded or merged.
 
 Health is marked degenerate if there are no extracted blocks, blocks appear on
 fewer than half of input pages, or any block contains foreign-page words.
@@ -411,6 +421,20 @@ Final extracted blocks:
 ]
 ```
 
+Deterministically grouped records (`grouped.json`):
+
+```json
+[
+  {
+    "record_id": "0",
+    "data": [
+      {"type": "kv", "block_id": "0_0", "data": {}, "page": 1, "uid": 0},
+      {"type": "table", "block_id": "1_0", "data": [], "page": 1, "uid": 1}
+    ]
+  }
+]
+```
+
 ## Ground truth generation
 
 Train and test use the shared generator in `src/agents/gt_common.py`. Train
@@ -418,7 +442,9 @@ ground truth sends five-page layout-preserving OCR windows to the selected
 reference model through OpenRouter. Final held-out/test ground truth sends
 rendered page images plus exact OCR text to that same model. Calls are parallel,
 and results are restored to document order. The model returns flat, page-local
-blocks; records and same-node table blocks are never merged. The default
+blocks; the same deterministic template-node traversal then writes
+`ground_truth_grouped.json` for record-aware scoring. Same-node physical blocks
+are never merged. The default
 128,000-token output cap matches GPT-5.4 and the bundled Flash alternatives;
 OpenRouter requires the API key's credit limit to cover that maximum. Override
 it with `OPENROUTER_GROUND_TRUTH_MAX_TOKENS` when needed.
@@ -439,6 +465,8 @@ flowchart TD
     EMPTY -- Yes --> SMALL["Retry whole document with window 5"]
     EMPTY -- No --> GT["ground_truth.json"]
     SMALL --> GT
+    GT --> GROUP["Deterministic record grouping"]
+    GROUP --> GTG["ground_truth_grouped.json"]
 ```
 
 Suspiciously low content coverage causes one window retry. A completely empty
@@ -452,7 +480,8 @@ not a substitute for human annotation.
 ## Evaluation
 
 The evaluator supports grouped records, legacy page/block ground truth, flat
-`extracted.json`, and the internal records/nodes shape. Duplicate JSON keys are
+`extracted.json`, and the internal records/nodes shape. Normal pipeline scoring
+uses `grouped.json` and `ground_truth_grouped.json`. Duplicate JSON keys are
 preserved during loading as `key`, `key#2`, and so on.
 
 ```mermaid
@@ -521,28 +550,37 @@ mapping, and parent mismatches; this report is also the input to repair.
 ├── metadata/
 │   └── cost.json                    # generation-time phase report
 ├── artifacts/
-│   └── blocks/                      # annotated block-separation page PNGs
+│   ├── blocks/                      # annotated block-separation page PNGs
+│   ├── record_separation/           # deterministic train record overlays
+│   ├── test_blocks/                 # held-out block overlays (eval mode)
+│   └── test_record_separation/      # held-out record overlays (eval mode)
 ├── debug/                           # optional partial OpenCode JSONL logs + prompts
 ├── agent_space/
 │   ├── train/                       # eval mode: cropped train PDF/OCR/work files
 │   └── test/                        # eval mode: cropped test PDF/OCR
 └── pipeline/
     ├── pipeline.py                  # standalone runtime
+    ├── record_grouping.py           # deterministic, reusable runtime logic
     ├── requirements.txt             # only pdfplumber
+    ├── template.json                # inferred template used at runtime
     ├── block_separation.py          # generated
     ├── extraction_scripts/          # generated, one file per detected node
     ├── ocr.csv
     ├── block_separation.json
     ├── extracted.json
+    ├── grouped.json
     ├── pipeline_health.json
     ├── train_eval/
     │   ├── extracted.json
+    │   ├── grouped.json
     │   ├── ground_truth.json
+    │   ├── ground_truth_grouped.json
     │   ├── eval.json
     │   ├── eval.txt
     │   ├── eval_history.json
     │   └── pipeline_health.json
     ├── ground_truth.json            # test eval only
+    ├── ground_truth_grouped.json    # test eval only
     ├── eval.json                    # test eval only
     └── eval.txt                     # test eval only
 ```
@@ -601,6 +639,9 @@ python viz_bb.py id_04 1 2
 python viz_blocks.py id_04 1 2
 python viz_blocks.py id_04 path/to.pdf
 python viz_blocks.py id_04 --pdf-path path/to.pdf
+python viz_record_separation.py id_04 1 2
+python viz_record_separation.py id_04 --pdf-path path/to.pdf
+python viz_record_separation.py id_04 --pdf-path path/to.pdf --template-path data/id_04/template.json
 python viz_agent_log.py data/id_04/debug/
 python viz_batch_results.py data
 ```
@@ -610,6 +651,11 @@ python viz_batch_results.py data
   PDF, then draws colored detected-block bounds and lists detected block
   IDs and types. Its current metadata lookup does not reliably display routing
   models because routing is keyed by node ID while blocks use instance IDs.
+- `viz_record_separation.py` runs the same generated separator, groups its
+  document-order blocks with `src/record_grouping.py`, and draws one colored
+  record envelope per page while retaining each physical block outline. It is
+  also imported by the graph artifact phase through
+  `render_record_separation(...)`.
 - `viz_agent_log.py` renders OpenCode JSONL events, commands, prompts, stderr, and
   token usage.
 - `viz_batch_results.py` creates accuracy, token/cost, phase, break-even, and

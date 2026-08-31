@@ -14,6 +14,7 @@ from src.eval.score import score as eval_score
 from src.eval.render import render_to_file
 from src.agents._usage import apply_usage
 from src.agents.gt_common import generate_ground_truth
+from src.record_grouping import group_blocks_into_records
 
 WINDOW = 5
 PIPELINE_TIMEOUT_S = 300  # hard cap for one pipeline.py run
@@ -30,7 +31,9 @@ def train_eval_node(state: dict[str, Any], llm: BaseChatModel) -> dict[str, Any]
 
     Writes:
         document_dir/pipeline/train_eval/extracted.json
+        document_dir/pipeline/train_eval/grouped.json
         document_dir/pipeline/train_eval/ground_truth.json
+        document_dir/pipeline/train_eval/ground_truth_grouped.json
         document_dir/pipeline/train_eval/eval.json
         document_dir/pipeline/train_eval/eval.txt
     """
@@ -65,7 +68,7 @@ def train_eval_node(state: dict[str, Any], llm: BaseChatModel) -> dict[str, Any]
         print(result.stdout, end="")
     cost_entries.append({"phase": "train_extraction", "duration_s": round(duration, 3)})
 
-    extracted_path = os.path.join(train_eval_dir, "extracted.json")
+    grouped_path = os.path.join(train_eval_dir, "grouped.json")
 
     # ── 2. Generate ground truth for train pages (only on first run) ─────────
     gt_path = os.path.join(train_eval_dir, "ground_truth.json")
@@ -81,14 +84,20 @@ def train_eval_node(state: dict[str, Any], llm: BaseChatModel) -> dict[str, Any]
         with open(gt_path, "w", encoding="utf-8") as f:
             json.dump(blocks, f, indent=2, ensure_ascii=False)
 
+    gt_grouped_path = os.path.join(train_eval_dir, "ground_truth_grouped.json")
+    blocks = load_json_dedup(gt_path)
+    grouped_ground_truth = group_blocks_into_records(blocks, template)
+    with open(gt_grouped_path, "w", encoding="utf-8") as f:
+        json.dump(grouped_ground_truth, f, indent=2, ensure_ascii=False)
+
     gt_cost: dict = {"phase": "train_ground_truth", "duration_s": round(gt_duration, 3)}
     apply_usage(gt_cost, gt_usage["input_tokens"], gt_usage["output_tokens"], gt_usage["total_tokens"])
     cost_entries.append(gt_cost)
 
     # ── 3. Evaluate ───────────────────────────────────────────────────────────
     t0 = time.time()
-    gold = load_json_dedup(gt_path)
-    candidate = load_json_dedup(extracted_path)
+    gold = load_json_dedup(gt_grouped_path)
+    candidate = load_json_dedup(grouped_path)
 
     eval_result  = eval_score(gold, candidate, reference="model_reference", threshold=0.9)
     eval_duration = time.time() - t0

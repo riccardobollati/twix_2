@@ -6,6 +6,11 @@
     <meta name="theme-color" content="#17211d" />
     <title>TWIX 2 · Extraction Workbench</title>
     <link rel="stylesheet" href="/styles.css" />
+    <style>
+      .stages { grid-template-columns: repeat(5, 1fr); }
+      @media (max-width: 1050px) { .stages { grid-template-columns: repeat(2, 1fr); } }
+      @media (max-width: 720px) { .stages { grid-template-columns: 1fr; } }
+    </style>
   </head>
   <body>
     <div class="app-shell">
@@ -61,7 +66,7 @@
 
         <section id="dashboard" class="dashboard hidden">
           <div class="stage-heading">
-            <div><p class="eyebrow">LIVE PIPELINE</p><h2>Four-stage extraction</h2></div>
+            <div><p class="eyebrow">LIVE PIPELINE</p><h2>Five-stage extraction</h2></div>
             <div class="run-actions"><button id="follow-live" class="quiet-button hidden" type="button">Return to live stage</button><button id="cancel-run" class="quiet-button" type="button">Cancel run</button></div>
           </div>
           <nav id="stages" class="stages" aria-label="Pipeline stages"></nav>
@@ -90,13 +95,21 @@
               </div>
             </article>
 
+            <article class="workflow-panel hidden" data-stage-panel="record_separation">
+              <div class="panel-heading"><div><span class="step-kicker">STEP 03</span><h3>Record separation</h3><p>Deterministic template-node traversal groups the detected blocks into logical records without a model call.</p></div><span id="record-source" class="artifact-state waiting">Waiting</span></div>
+              <div class="block-browser">
+                <div class="viewer-card block-main"><div class="viewer-title"><span id="record-page-title">Record overlay</span><span id="record-counter"></span></div><div id="record-empty" class="empty-state">Record previews appear here as soon as deterministic grouping finishes.</div><img id="record-image" class="block-image hidden" alt="Logical records overlaid on a PDF page" /></div>
+                <div id="record-thumbnails" class="thumbnail-rail"></div>
+              </div>
+            </article>
+
             <article class="workflow-panel hidden" data-stage-panel="extraction">
-              <div class="panel-heading"><div><span class="step-kicker">STEP 03</span><h3>Data extraction & train evaluation</h3><p>OpenCode builds the node extractors, evaluates them on train pages, and repairs them when required.</p></div><span id="train-score" class="artifact-state waiting">In progress</span></div>
+              <div class="panel-heading"><div><span class="step-kicker">STEP 04</span><h3>Data extraction & train evaluation</h3><p>OpenCode builds the node extractors, evaluates them on train pages, and repairs them when required.</p></div><span id="train-score" class="artifact-state waiting">In progress</span></div>
               <div class="console-card"><div class="viewer-title">Live pipeline output <span id="log-count"></span></div><pre id="run-log" class="run-log">Waiting for pipeline output…</pre></div>
             </article>
 
             <article class="workflow-panel hidden" data-stage-panel="results">
-              <div class="panel-heading results-heading"><div><span class="step-kicker">STEP 04</span><h3>Test evaluation & final results</h3><p>The finished pipeline runs on the independent test PDF. Compare the source with its extracted JSON.</p></div><div id="result-score" class="result-score"><small>Accuracy</small><strong>—</strong></div></div>
+              <div class="panel-heading results-heading"><div><span class="step-kicker">STEP 05</span><h3>Test evaluation & final results</h3><p>The finished pipeline runs on the independent test PDF. Compare the source with its extracted JSON.</p></div><div id="result-score" class="result-score"><small>Accuracy</small><strong>—</strong></div></div>
               <div class="result-tabs" role="tablist" aria-label="Final result views">
                 <button class="result-tab active" data-result-tab="output" type="button" role="tab" aria-selected="true">Output</button>
                 <button class="result-tab" data-result-tab="stats" type="button" role="tab" aria-selected="false">Stats</button>

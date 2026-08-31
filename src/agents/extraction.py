@@ -13,9 +13,8 @@ PIPELINE_TIMEOUT_S = 300
 def extraction_node(state: dict[str, Any]) -> dict[str, Any]:
     """Run the assembled pipeline on the test PDF, or train PDF without eval.
 
-    The standalone runner writes a flat, page-local ``extracted.json`` block
-    list. There is intentionally no record grouping or table continuation
-    merging after extraction.
+    The standalone runner keeps flat physical blocks in ``extracted.json`` and
+    deterministically groups their template-node sequence into ``grouped.json``.
     """
     document_dir = os.path.dirname(state["agent_space"])
     pipeline_dir = os.path.join(document_dir, "pipeline")
@@ -45,4 +44,5 @@ def extraction_node(state: dict[str, Any]) -> dict[str, Any]:
 
     extracted_path = os.path.join(pipeline_dir, "extracted.json")
     print(f"extraction_node: extracted.json → {extracted_path}")
+    print(f"extraction_node: grouped.json → {os.path.join(pipeline_dir, 'grouped.json')}")
     return {"cost": [{"phase": "extraction", "duration_s": round(duration, 3)}]}

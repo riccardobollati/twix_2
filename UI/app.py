@@ -64,6 +64,7 @@ def _pipeline_python() -> str:
 STAGES = [
     ("template", "Template inference"),
     ("blocks", "Block separation"),
+    ("record_separation", "Record separation"),
     ("extraction", "Data extraction"),
     ("results", "Test evaluation & results"),
 ]
@@ -137,6 +138,7 @@ def _stage_from_logs(lines: list[str], eval_enabled: bool) -> str:
                 "starting repair attempt",
             ),
         ),
+        ("record_separation", ("record image(s)",)),
         ("blocks", ("block_separation", "block_artifacts_node:")),
         (
             "template",
@@ -177,7 +179,7 @@ def _first_pdf(folder: Path) -> Path | None:
 
 
 def _page_sort_key(path: Path) -> tuple[int, str]:
-    match = re.search(r"page_(\d+)_blocks\.png$", path.name)
+    match = re.search(r"page_(\d+)_", path.name)
     return (int(match.group(1)) if match else 10**9, path.name)
 
 
@@ -236,6 +238,13 @@ def _effective_model_assignments(run: "Run") -> list[dict[str, Any]]:
             "task": "Block-separation script",
             "model": direct_model_id(opencode_model),
             "transport": "OpenCode via OpenRouter",
+        },
+        {
+            "id": "record_grouping",
+            "stage": "record_separation",
+            "task": "Deterministic record grouping",
+            "model": "Template-node traversal",
+            "transport": "No model call",
         },
     ]
 
@@ -332,6 +341,9 @@ def _active_model_assignment_ids(
         "blocks": [
             (("block_separation", "block_artifacts_node"), ["block_separation"]),
         ],
+        "record_separation": [
+            (("record image(s)",), ["record_grouping"]),
+        ],
         "extraction": [
             (("block_difficulty_router",), [] if single_model_mode else ["difficulty_routing"]),
             (("block_extraction_scripting",), extraction_ids),
@@ -354,6 +366,7 @@ def _active_model_assignment_ids(
     defaults = {
         "template": ["beginning_detection"],
         "blocks": ["block_separation"],
+        "record_separation": ["record_grouping"],
         "extraction": extraction_ids,
         "results": ["portable_extraction"],
     }
@@ -361,7 +374,7 @@ def _active_model_assignment_ids(
 
 
 def _workflow_payload(run: "Run") -> dict[str, Any]:
-    """Collect the user-facing artifacts for the four workflow stages."""
+    """Collect the user-facing artifacts for the five workflow stages."""
     with run.lock:
         logs = list(run.logs)
     root = run.run_dir
@@ -377,6 +390,17 @@ def _workflow_payload(run: "Run") -> dict[str, Any]:
         _relative_file(root, path)
         for path in sorted(block_dir.glob("page_*_blocks.png"), key=_page_sort_key)
     ]
+    test_records_dir = root / "artifacts" / "test_record_separation"
+    train_records_dir = root / "artifacts" / "record_separation"
+    record_dir = (
+        test_records_dir
+        if any(test_records_dir.glob("page_*_records.png"))
+        else train_records_dir
+    )
+    record_images = [
+        _relative_file(root, path)
+        for path in sorted(record_dir.glob("page_*_records.png"), key=_page_sort_key)
+    ]
     stats_dir = root / "artifacts" / "stats"
     stats_images = [
         _relative_file(root, stats_dir / filename)
@@ -391,6 +415,8 @@ def _workflow_payload(run: "Run") -> dict[str, Any]:
         "testPdf": _relative_file(root, test_pdf or source_pdf),
         "blockImages": [path for path in block_images if path],
         "blockSource": "test" if block_dir == test_blocks_dir else "train",
+        "recordImages": [path for path in record_images if path],
+        "recordSource": "test" if record_dir == test_records_dir else "train",
         "extracted": _load_json(pipeline / "extracted.json"),
         "groundTruth": _load_json(pipeline / "ground_truth.json"),
         "evaluation": _load_json(pipeline / "eval.json"),

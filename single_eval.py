@@ -16,7 +16,9 @@ Expects (found by walking up from pdf_path):
 Outputs in <base_folder>/evals/eval_<name>/:
     ocr.csv
     extracted.json
+    grouped.json
     ground_truth.json
+    ground_truth_grouped.json
     eval.json
     eval.txt
 """
@@ -42,6 +44,7 @@ from src.eval.score import score as eval_score
 from src.ground_truth_gen.helpers import load_ocr_pages, parse_json_response, render_page_b64
 from src.ground_truth_gen.prompt import build_prompt
 from src.models import get_ground_truth_llm
+from src.record_grouping import group_blocks_into_records
 
 
 def _find_base_folder(start: str) -> str:
@@ -196,7 +199,9 @@ def main() -> None:
     template_path = os.path.join(base_folder, "template.json")
     ocr_path      = os.path.join(eval_dir, "ocr.csv")
     extracted_path = os.path.join(eval_dir, "extracted.json")
+    grouped_path   = os.path.join(eval_dir, "grouped.json")
     gt_path       = os.path.join(eval_dir, "ground_truth.json")
+    gt_grouped_path = os.path.join(eval_dir, "ground_truth_grouped.json")
 
     os.makedirs(eval_dir, exist_ok=True)
 
@@ -216,7 +221,7 @@ def main() -> None:
 
     if can_reuse:
         print(f"--reuse: loading existing extracted.json and ground_truth.json from {eval_dir}")
-        candidate = load_json_dedup(extracted_path)
+        candidate_blocks = load_json_dedup(extracted_path)
         gt_results = load_json_dedup(gt_path)
     else:
         if args.reuse:
@@ -232,7 +237,7 @@ def main() -> None:
         print("Running pipeline...")
         _run_pipeline(pipeline_py, pdf_path, eval_dir)
 
-        candidate = load_json_dedup(extracted_path)
+        candidate_blocks = load_json_dedup(extracted_path)
 
         # --- ground truth ---
         print("Generating ground truth...")
@@ -264,10 +269,22 @@ def main() -> None:
         if block.get("page") is not None:
             gt_pages.add(block["page"])
     if gt_pages:
-        candidate = [block for block in candidate if block.get("page") in gt_pages]
+        candidate_blocks = [
+            block for block in candidate_blocks if block.get("page") in gt_pages
+        ]
+
+    candidate = group_blocks_into_records(candidate_blocks, template)
+    grouped_ground_truth = group_blocks_into_records(gt_results, template)
+    with open(grouped_path, "w", encoding="utf-8") as f:
+        json.dump(candidate, f, indent=2, ensure_ascii=False)
+    with open(gt_grouped_path, "w", encoding="utf-8") as f:
+        json.dump(grouped_ground_truth, f, indent=2, ensure_ascii=False)
 
     # --- score ---
-    eval_result = eval_score(gt_results, candidate, reference="model_reference", threshold=0.9)
+    eval_result = eval_score(
+        grouped_ground_truth, candidate,
+        reference="model_reference", threshold=0.9,
+    )
 
     eval_json_path = os.path.join(eval_dir, "eval.json")
     eval_txt_path  = os.path.join(eval_dir, "eval.txt")
