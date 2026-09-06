@@ -184,7 +184,7 @@ OpenCode writes two script layers:
 
 Separation generation is retried at most three times. Each attempt is executed
 with the active Python interpreter, has a 300-second runtime timeout, and must
-pass basic JSON validation. OpenCode sessions themselves have an 1800-second
+pass basic JSON validation. OpenCode sessions themselves have a 3600-second
 timeout.
 
 Never weaken these invariants:

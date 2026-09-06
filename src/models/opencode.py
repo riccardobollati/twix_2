@@ -9,7 +9,7 @@ from src.models.catalog import DEFAULT_EASY_MODEL
 DEFAULT_OPENCODE_MODEL = os.getenv(
     "OPENCODE_MODEL", DEFAULT_EASY_MODEL
 )
-OPENCODE_TIMEOUT_S = 1800
+OPENCODE_TIMEOUT_S = 3600
 _CAVEMAN_PREFIX = "/caveman full\n\n"
 _SCOPE_PREFIX = (
     "STRICT SCOPE RULE: You are running inside a single task folder. "

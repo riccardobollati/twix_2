@@ -14,6 +14,7 @@ from src.prompts.block_extraction_scripting_prompt import PROMPT_BLOCK_EXTRACTIO
 
 
 MAX_ATTEMPTS = 3
+MAX_WORKERS = 2
 
 
 # ── animated display ──────────────────────────────────────────────────────────
@@ -171,7 +172,9 @@ def block_extraction_scripting_node(state: dict[str, Any]) -> dict[str, Any]:
     block_tokens: list[dict] = []
     failed_ids: list[str] = []
     try:
-        with ThreadPoolExecutor() as executor:
+        with ThreadPoolExecutor(
+            max_workers=min(MAX_WORKERS, len(template_ids))
+        ) as executor:
             futures = {executor.submit(_run, tid): tid for tid in template_ids}
             for future in as_completed(futures):
                 template_id, ok, inp, out, tot = future.result()

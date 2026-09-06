@@ -35,6 +35,7 @@ class OpenCodeModelTests(unittest.TestCase):
         )
         self.assertIn("STRICT SCOPE RULE", command[6])
         self.assertEqual(run_mock.call_args.kwargs["cwd"], "/tmp/work")
+        self.assertEqual(run_mock.call_args.kwargs["timeout"], 3600)
 
     @patch("src.models.opencode.subprocess.run")
     def test_jsonl_usage_sums_agent_steps_and_cached_input(self, run_mock) -> None:

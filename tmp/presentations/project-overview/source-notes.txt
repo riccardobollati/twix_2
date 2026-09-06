@@ -1,0 +1,28 @@
+Communication job
+By the end, the interview team should understand that TWIX 2 converts a small
+sample of one PDF family into a reusable, model-free extraction program, and
+should see concrete id_05 evidence that the resulting program generalizes.
+
+Visual direction
+Use the local TWIX UI as the design source: warm paper backgrounds, serif
+headings, sans-serif body copy, mono metadata labels, forest green accents,
+mint success states, muted red exceptions, thin warm-gray rules, and dark
+terminal/code surfaces. User explicitly requested sharp edges, so all deck
+geometry uses square corners even where the UI itself uses rounding.
+
+Local sources
+- UI/styles.css
+- UI/index.html
+- UI/runs/run-20260901-184959-d47392/id_05.pdf
+- UI/runs/run-20260901-184959-d47392/metadata.json
+- UI/runs/run-20260901-184959-d47392/metadata/cost.json
+- UI/runs/run-20260901-184959-d47392/template.json
+- UI/runs/run-20260901-184959-d47392/ocr_extraction_full.csv
+- UI/runs/run-20260901-184959-d47392/agent_space/train/*
+- UI/runs/run-20260901-184959-d47392/agent_space/test/*
+- UI/runs/run-20260901-184959-d47392/pipeline/*
+- UI/runs/run-20260901-184959-d47392/artifacts/blocks/page_1_blocks.png
+- UI/runs/run-20260901-184959-d47392/artifacts/record_separation/page_1_records.png
+- tmp/pdfs/project-overview/source_pages/page_1.png
+
+No externally sourced images or claims are used.
