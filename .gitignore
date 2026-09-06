@@ -7,3 +7,4 @@ env
 *.pyc
 src/ground_truth_generator_y
 outputs/
+tmp/
