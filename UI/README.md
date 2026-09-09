@@ -36,7 +36,11 @@ separator and performs difficulty classification; it also handles hard block
 extractors and repair. The easy model is reserved for blocks classified easy.
 
 The dashboard always enables `--save-log`, so detailed OpenCode session logs
-are retained under each run's `debug/` folder.
+are retained under each run's `debug/` folder. OpenCode work is limited to two
+sessions globally across simultaneous dashboard, CLI, and batch runs, with a
+fresh temporary OpenCode database for every attempt. Completed log entries use
+a green check for success and a red cross for failure; failed extractor attempts
+are retried up to three times and retain their diagnostics in the debug logs.
 
 When the repository virtual environment exists at `env/bin/python`, the
 dashboard uses it automatically to execute the pipeline. This lets the UI be

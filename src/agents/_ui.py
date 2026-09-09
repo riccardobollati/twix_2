@@ -7,13 +7,15 @@ import time
 
 FRAMES = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]
 GREEN_TICK = "\033[32m✓\033[0m"
+RED_CROSS = "\033[31m✗\033[0m"
 
 
 def spinner(label: str, stop_event: threading.Event, result: dict) -> None:
     """Animate a single-line spinner until stop_event is set.
 
-    When stopped, prints a green tick followed by ``result["tokens"]`` (if the
-    caller stored a token count there before setting the event).
+    When stopped, prints a green tick for success or a red cross when the caller
+    stored ``False`` in ``result["ok"]``. Any captured token count is retained
+    for both outcomes.
     """
     frame = 0
     sys.stdout.write("\n")
@@ -24,6 +26,7 @@ def spinner(label: str, stop_event: threading.Event, result: dict) -> None:
         frame += 1
         time.sleep(0.1)
     tok = result.get("tokens")
-    suffix = f"  {GREEN_TICK}  {tok:,} tokens" if tok is not None else f"  {GREEN_TICK}"
+    marker = GREEN_TICK if result.get("ok", True) else RED_CROSS
+    suffix = f"  {marker}  {tok:,} tokens" if tok is not None else f"  {marker}"
     sys.stdout.write(f"\r\033[K  {label}{suffix}\n")
     sys.stdout.flush()

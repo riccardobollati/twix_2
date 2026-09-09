@@ -85,8 +85,8 @@ def _normalise_log_line(raw: str) -> str | None:
 
     Agent spinners redraw one terminal line with carriage returns and ANSI erase
     sequences. A pipe receives every redraw, but a browser cannot reproduce the
-    terminal's in-place update. Keep only the final spinner result (the ✓ line)
-    and discard interim frames.
+    terminal's in-place update. Keep only the final spinner result (a ✓ or ✗
+    line) and discard interim frames.
     """
     clean = _ANSI_ESCAPE.sub("", raw).replace("\b", "")
     if "\r" in clean:
@@ -94,7 +94,9 @@ def _normalise_log_line(raw: str) -> str | None:
     clean = clean.strip()
     if not clean:
         return None
-    if any(frame in clean for frame in _SPINNER_FRAMES) and "✓" not in clean:
+    if any(frame in clean for frame in _SPINNER_FRAMES) and not any(
+        marker in clean for marker in ("✓", "✗")
+    ):
         return None
     return clean
 
@@ -104,7 +106,7 @@ def _dedupe_log_lines(lines: list[str]) -> list[str]:
     result: list[str] = []
     seen_completions: set[str] = set()
     for line in lines:
-        if "✓" in line:
+        if any(marker in line for marker in ("✓", "✗")):
             if line in seen_completions:
                 continue
             seen_completions.add(line)
@@ -632,9 +634,12 @@ class RunManager:
                         if line is None:
                             continue
                         with run.lock:
-                            if "✓" in line and line in seen_completions:
+                            is_completion = any(
+                                marker in line for marker in ("✓", "✗")
+                            )
+                            if is_completion and line in seen_completions:
                                 continue
-                            if "✓" in line:
+                            if is_completion:
                                 seen_completions.add(line)
                             if run.logs and run.logs[-1] == line:
                                 continue

@@ -3,6 +3,13 @@ from __future__ import annotations
 import json
 import os
 import subprocess
+import tempfile
+import threading
+import time
+from contextlib import contextmanager
+from typing import IO, Iterator
+
+import fcntl
 
 from src.models.catalog import DEFAULT_EASY_MODEL
 
@@ -10,6 +17,11 @@ DEFAULT_OPENCODE_MODEL = os.getenv(
     "OPENCODE_MODEL", DEFAULT_EASY_MODEL
 )
 OPENCODE_TIMEOUT_S = 3600
+OPENCODE_GLOBAL_SLOTS = 2
+OPENCODE_TRANSIENT_EXIT_CODE = 75
+_SLOT_POLL_INTERVAL_S = 0.25
+_LOCAL_SLOT_LOCK = threading.Lock()
+_LOCAL_SLOT_IDS: set[int] = set()
 _CAVEMAN_PREFIX = "/caveman full\n\n"
 _SCOPE_PREFIX = (
     "STRICT SCOPE RULE: You are running inside a single task folder. "
@@ -18,6 +30,107 @@ _SCOPE_PREFIX = (
     "do NOT read or reference any file outside the current folder. "
     "Everything you need for this task is already here.\n\n"
 )
+
+
+def _slot_directory() -> str:
+    """Return the shared lock directory used by all TWIX processes."""
+    override = os.getenv("TWIX_OPENCODE_LOCK_DIR")
+    if override:
+        return os.path.abspath(override)
+    return os.path.join(
+        tempfile.gettempdir(),
+        f"twix-opencode-slots-{getattr(os, 'getuid', lambda: 0)()}",
+    )
+
+
+@contextmanager
+def _global_opencode_slot(task: str) -> Iterator[int]:
+    """Hold one of the process-wide OpenCode slots.
+
+    ``flock`` enforces the limit across separate UI/CLI/batch processes. The
+    in-process reservation set also makes the behavior unambiguous across
+    platforms whose ``flock`` semantics differ for two handles in one process.
+    Locks are released automatically if a worker or its parent process dies.
+    """
+    slot_dir = _slot_directory()
+    os.makedirs(slot_dir, exist_ok=True)
+    waiting_reported = False
+    handle: IO[str] | None = None
+    acquired_slot: int | None = None
+
+    while acquired_slot is None:
+        with _LOCAL_SLOT_LOCK:
+            for slot_id in range(OPENCODE_GLOBAL_SLOTS):
+                if slot_id in _LOCAL_SLOT_IDS:
+                    continue
+                candidate = open(
+                    os.path.join(slot_dir, f"slot-{slot_id}.lock"),
+                    "a+",
+                    encoding="utf-8",
+                )
+                try:
+                    fcntl.flock(candidate.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+                except BlockingIOError:
+                    candidate.close()
+                    continue
+                _LOCAL_SLOT_IDS.add(slot_id)
+                acquired_slot = slot_id
+                handle = candidate
+                break
+        if acquired_slot is None:
+            if not waiting_reported:
+                print(
+                    f"[opencode] task {task} waiting for a global execution slot",
+                    flush=True,
+                )
+                waiting_reported = True
+            time.sleep(_SLOT_POLL_INTERVAL_S)
+
+    try:
+        yield acquired_slot
+    finally:
+        assert handle is not None
+        with _LOCAL_SLOT_LOCK:
+            fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+            _LOCAL_SLOT_IDS.discard(acquired_slot)
+        handle.close()
+
+
+def _as_text(value: str | bytes | None) -> str:
+    if value is None:
+        return ""
+    if isinstance(value, bytes):
+        return value.decode("utf-8", errors="replace")
+    return value
+
+
+def _write_debug_log(
+    log_path: str | None,
+    stdout: str,
+    stderr: str,
+    prompt: str,
+) -> None:
+    if not log_path:
+        return
+    parent = os.path.dirname(log_path)
+    if parent:
+        os.makedirs(parent, exist_ok=True)
+    with open(log_path, "w", encoding="utf-8") as target:
+        target.write(stdout)
+        if stderr:
+            target.write("\n--- stderr ---\n")
+            target.write(stderr)
+    prompt_path = os.path.splitext(log_path)[0] + ".prompt"
+    with open(prompt_path, "w", encoding="utf-8") as target:
+        target.write(prompt)
+
+
+def _contains_database_lock_error(stdout: str, stderr: str) -> bool:
+    combined = f"{stdout}\n{stderr}".lower()
+    return any(
+        marker in combined
+        for marker in ("database is locked", "sqlite_busy", "sqlite_locked")
+    )
 
 
 def _opencode_exec(
@@ -52,22 +165,39 @@ def _opencode_exec(
         cmd.extend(["--format", "json"])
     cmd.append(prompt)
 
+    stdout = stderr = ""
     try:
-        result = subprocess.run(
-            cmd,
-            cwd=task_dir,
-            stdout=subprocess.PIPE if silent else None,
-            stderr=subprocess.PIPE if silent else None,
-            text=True,
-            timeout=OPENCODE_TIMEOUT_S,
-        )
-    except subprocess.TimeoutExpired:
+        # OpenCode normally shares one SQLite database across every CLI process.
+        # Give each attempt its own database while retaining the user's normal
+        # configuration and auth paths. The outer lock caps all TWIX processes,
+        # not only this thread pool.
+        with _global_opencode_slot(task):
+            with tempfile.TemporaryDirectory(prefix="twix-opencode-db-") as db_dir:
+                env = os.environ.copy()
+                env["OPENCODE_DB"] = os.path.join(db_dir, "opencode.db")
+                result = subprocess.run(
+                    cmd,
+                    cwd=task_dir,
+                    stdout=subprocess.PIPE if silent else None,
+                    stderr=subprocess.PIPE if silent else None,
+                    text=True,
+                    timeout=OPENCODE_TIMEOUT_S,
+                    env=env,
+                )
+    except subprocess.TimeoutExpired as exc:
+        stdout = _as_text(exc.stdout)
+        stderr = _as_text(exc.stderr)
+        _write_debug_log(log_path, stdout, stderr, prompt)
+        input_tokens, output_tokens, total_tokens = _parse_tokens(stdout)
         print(
             f"[opencode] task {task} timed out after {OPENCODE_TIMEOUT_S}s",
             flush=True,
         )
-        return 124, None, None, None
+        if stderr:
+            print(f"[opencode partial stderr]\n{stderr}", flush=True)
+        return 124, input_tokens, output_tokens, total_tokens
     except FileNotFoundError:
+        _write_debug_log(log_path, stdout, stderr, prompt)
         print(
             "[opencode] executable not found; install OpenCode and ensure it is "
             "on PATH (DeepSeek recommends version >= 1.14.24)",
@@ -78,22 +208,24 @@ def _opencode_exec(
     if not silent:
         return result.returncode, None, None, None
 
-    if result.returncode != 0:
-        print(f"[opencode stderr]\n{result.stderr}", flush=True)
-        print(f"[opencode stdout]\n{result.stdout}", flush=True)
-    if log_path:
-        os.makedirs(os.path.dirname(log_path), exist_ok=True)
-        with open(log_path, "w", encoding="utf-8") as target:
-            target.write(result.stdout)
-            if result.stderr:
-                target.write("\n--- stderr ---\n")
-                target.write(result.stderr)
-        prompt_path = os.path.splitext(log_path)[0] + ".prompt"
-        with open(prompt_path, "w", encoding="utf-8") as target:
-            target.write(prompt)
+    stdout = _as_text(result.stdout)
+    stderr = _as_text(result.stderr)
+    returncode = result.returncode
+    if _contains_database_lock_error(stdout, stderr):
+        # Some OpenCode versions have emitted a database error while still
+        # exiting zero. Give callers a reliable transient-failure signal.
+        returncode = OPENCODE_TRANSIENT_EXIT_CODE
+        print(
+            f"[opencode] task {task} hit a transient SQLite database error",
+            flush=True,
+        )
+    if returncode != 0:
+        print(f"[opencode stderr]\n{stderr}", flush=True)
+        print(f"[opencode stdout]\n{stdout}", flush=True)
+    _write_debug_log(log_path, stdout, stderr, prompt)
 
-    input_tokens, output_tokens, total_tokens = _parse_tokens(result.stdout)
-    return result.returncode, input_tokens, output_tokens, total_tokens
+    input_tokens, output_tokens, total_tokens = _parse_tokens(stdout)
+    return returncode, input_tokens, output_tokens, total_tokens
 
 
 def opencode(

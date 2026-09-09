@@ -185,7 +185,8 @@ def block_separation_node(state: dict[str, Any]) -> dict[str, Any]:
             last_error = _run_script(script_path, ocr_csv_path, train_dir)
 
         shown_t = (input_t or 0) + (output_t or 0) + (total_t or 0) or None
-        spinner_result["tokens"] = shown_t if last_error is None else None
+        spinner_result["tokens"] = shown_t
+        spinner_result["ok"] = last_error is None
         stop_event.set()
         spinner_thread.join(timeout=0.5)
 

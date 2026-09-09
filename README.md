@@ -303,16 +303,27 @@ Independent hard-model calls over the samples' OCR geometry classify each node:
 - `HARD` when samples show variable/repeating structure or multi-line values.
 
 The configured easy/hard OpenCode model then writes
-`extraction_scripts/<node_id>.py`. These sessions run in parallel. Every script
-must define:
+`extraction_scripts/<node_id>.py`. These sessions run with at most two OpenCode
+processes globally across concurrent TWIX UI, CLI, and batch runs. Every attempt
+uses an isolated temporary OpenCode database, so concurrent sessions do not
+contend for OpenCode's shared SQLite state. SQLite-lock diagnostics are treated
+as retryable failures even if the OpenCode process exits successfully.
+
+Extractor generation gets up to three attempts. TWIX removes the target before
+each attempt so a script left by an earlier run cannot be accepted, and feeds
+the failure reason back into the next prompt. The generated file must parse and
+contain exactly one synchronous, top-level function with one positional
+argument:
 
 ```python
 def extract(block: dict) -> dict:
     ...
 ```
 
-The result preserves the template's exact field names and uses `type`,
-`block_id`, and `data` keys.
+Missing, syntactically invalid, or contract-invalid files fail the attempt.
+Token usage is accumulated across successful and failed attempts. The result
+preserves the template's exact field names and uses `type`, `block_id`, and
+`data` keys.
 
 ### 6. Packaging and train repair
 
@@ -678,7 +689,8 @@ python viz_batch_results.py data
 - Generated scripts are retained, so extraction can be replayed without the
   original model calls.
 - `--save-log` retains exact OpenCode streams and prompts for block separation,
-  extraction, and repair.
+  extraction, and repair. Attempt-specific logs preserve partial stdout,
+  stderr, and token usage when a session times out.
 
 Remote DeepSeek and OpenCode outputs are not guaranteed to be byte-identical over
 time. Preserve the complete artifact directory when an experiment must be

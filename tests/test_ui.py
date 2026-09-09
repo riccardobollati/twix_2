@@ -151,9 +151,10 @@ class UiWorkflowTests(unittest.TestCase):
 
     def test_terminal_redraw_completions_are_deduplicated(self) -> None:
         line = "block_extraction_scripting | block 2  ✓  89,617 tokens"
+        failure = "block_extraction_scripting | block 3  ✗  10,000 tokens"
         self.assertEqual(
-            _dedupe_log_lines([line, line, "other output", line]),
-            [line, "other output"],
+            _dedupe_log_lines([line, line, failure, failure, "other output", line]),
+            [line, failure, "other output"],
         )
 
     def test_workflow_prefers_held_out_pdf_and_block_images(self) -> None:

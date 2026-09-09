@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ast
 import json
 import os
 import sys
@@ -8,13 +9,22 @@ import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any
 
-from src.agents._ui import FRAMES as _FRAMES, GREEN_TICK as _GREEN_TICK
-from src.models.opencode import DEFAULT_OPENCODE_MODEL, opencode_silent
+from src.agents._ui import (
+    FRAMES as _FRAMES,
+    GREEN_TICK as _GREEN_TICK,
+    RED_CROSS as _RED_CROSS,
+)
+from src.models.opencode import (
+    DEFAULT_OPENCODE_MODEL,
+    OPENCODE_TRANSIENT_EXIT_CODE,
+    opencode_silent,
+)
 from src.prompts.block_extraction_scripting_prompt import PROMPT_BLOCK_EXTRACTION_SCRIPTING
 
 
 MAX_ATTEMPTS = 3
 MAX_WORKERS = 2
+TRANSIENT_RETRY_BACKOFF_S = 1.0
 
 
 # ── animated display ──────────────────────────────────────────────────────────
@@ -25,6 +35,7 @@ class _Display:
     def __init__(self, ids: list[str]) -> None:
         self._ids = ids
         self._done: dict[str, bool] = {i: False for i in ids}
+        self._ok: dict[str, bool] = {i: False for i in ids}
         self._tokens: dict[str, int | None] = {i: None for i in ids}
         self._frame = 0
         self._lock = threading.Lock()
@@ -39,15 +50,17 @@ class _Display:
         for tid in self._ids:
             if self._done[tid]:
                 tok = self._tokens[tid]
-                suffix = f"  {_GREEN_TICK}  {tok:,} tokens" if tok is not None else f"  {_GREEN_TICK}"
+                marker = _GREEN_TICK if self._ok[tid] else _RED_CROSS
+                suffix = f"  {marker}  {tok:,} tokens" if tok is not None else f"  {marker}"
             else:
                 suffix = f"  {_FRAMES[self._frame % len(_FRAMES)]}"
             sys.stdout.write(f"\r\033[K  block_extraction_scripting | block {tid}{suffix}\n")
         sys.stdout.flush()
 
-    def mark_done(self, tid: str, tokens: int | None) -> None:
+    def mark_done(self, tid: str, ok: bool, tokens: int | None) -> None:
         with self._lock:
             self._done[tid] = True
+            self._ok[tid] = ok
             self._tokens[tid] = tokens
             self._redraw()
 
@@ -94,6 +107,52 @@ def _load_template_node(agent_space: str, template_id: str) -> dict:
     raise RuntimeError(f"no template node with node_id={node_id} in {template_path}")
 
 
+def _validate_extractor_script(script_path: str) -> str | None:
+    """Return a contract error, or ``None`` for a usable extractor module."""
+    try:
+        with open(script_path, encoding="utf-8") as source:
+            tree = ast.parse(source.read(), filename=script_path)
+    except (OSError, SyntaxError, UnicodeError) as exc:
+        return str(exc)
+
+    extractors = [
+        node
+        for node in tree.body
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+        and node.name == "extract"
+    ]
+    if len(extractors) != 1:
+        return "expected exactly one top-level extract function"
+    extractor = extractors[0]
+    if isinstance(extractor, ast.AsyncFunctionDef):
+        return "extract must be a synchronous function"
+    positional = [*extractor.args.posonlyargs, *extractor.args.args]
+    if (
+        len(positional) != 1
+        or extractor.args.vararg is not None
+        or extractor.args.kwarg is not None
+        or extractor.args.kwonlyargs
+        or extractor.args.defaults
+    ):
+        return "extract must accept exactly one positional argument"
+    return None
+
+
+def _failure_reason(returncode: int, script_path: str) -> str | None:
+    if returncode == 124:
+        return "OpenCode timed out"
+    if returncode == OPENCODE_TRANSIENT_EXIT_CODE:
+        return "OpenCode reported a transient SQLite database error"
+    if returncode != 0:
+        return f"OpenCode exited with code {returncode}"
+    if not os.path.isfile(script_path):
+        return "OpenCode exited successfully but did not produce the extractor script"
+    validation_error = _validate_extractor_script(script_path)
+    if validation_error:
+        return f"generated extractor script is invalid: {validation_error}"
+    return None
+
+
 # ── node ──────────────────────────────────────────────────────────────────────
 
 def block_extraction_scripting_node(state: dict[str, Any]) -> dict[str, Any]:
@@ -101,8 +160,8 @@ def block_extraction_scripting_node(state: dict[str, Any]) -> dict[str, Any]:
     to generate a Python extraction script generalizable to all instances of that block.
 
     Creates agent_space/extraction_scripts/ and writes one <template_id>.py per block type.
-    Each OpenCode session is retried up to MAX_ATTEMPTS times when it exits non-zero or
-    fails to produce the script file.
+    Each OpenCode session is retried up to MAX_ATTEMPTS times when it exits non-zero,
+    times out, fails to produce the script, or produces an invalid script.
 
     Reads:
         state["agent_space"]  – directory containing block_samples/ and ../template.json
@@ -145,7 +204,16 @@ def block_extraction_scripting_node(state: dict[str, Any]) -> dict[str, Any]:
     debug_dir   = os.path.join(os.path.dirname(agent_space), "debug") if state.get("save_log") else None
     t0 = time.time()
 
-    def _run(template_id: str) -> tuple[str, bool, int | None, int | None, int | None]:
+    def _run(
+        template_id: str,
+    ) -> tuple[
+        str,
+        bool,
+        int | None,
+        int | None,
+        int | None,
+        str | None,
+    ]:
         model = block_opencode_models.get(
             template_id,
             state.get("opencode_model", DEFAULT_OPENCODE_MODEL),
@@ -153,9 +221,15 @@ def block_extraction_scripting_node(state: dict[str, Any]) -> dict[str, Any]:
         sample_dir  = os.path.join(block_samples_dir, template_id)
         script_path = os.path.join(sample_dir, f"{template_id}.py")
         template_node = _load_template_node(agent_space, template_id)
-        prompt = PROMPT_BLOCK_EXTRACTION_SCRIPTING(template_id, template_node)
-        inp = out = tot = None
+        base_prompt = PROMPT_BLOCK_EXTRACTION_SCRIPTING(template_id, template_node)
+        prompt = base_prompt
+        input_sum = output_sum = total_sum = 0
+        saw_input = saw_output = saw_total = False
+        last_error: str | None = None
         for attempt in range(1, MAX_ATTEMPTS + 1):
+            # Never accept a script left by a previous run or failed attempt.
+            if os.path.isfile(script_path):
+                os.unlink(script_path)
             log_path = os.path.join(debug_dir, f"block_extraction_{template_id}_{attempt}.log") if debug_dir else None
             rc, inp, out, tot = opencode_silent(
                 prompt,
@@ -165,24 +239,70 @@ def block_extraction_scripting_node(state: dict[str, Any]) -> dict[str, Any]:
                 caveman=use_caveman,
                 log_path=log_path,
             )
-            if rc == 0 and os.path.isfile(script_path):
-                return template_id, True, inp, out, tot
-        return template_id, False, inp, out, tot
+            if inp is not None:
+                input_sum += inp
+                saw_input = True
+            if out is not None:
+                output_sum += out
+                saw_output = True
+            if tot is not None:
+                total_sum += tot
+                saw_total = True
+
+            last_error = _failure_reason(rc, script_path)
+            if last_error is None:
+                return (
+                    template_id,
+                    True,
+                    input_sum if saw_input else None,
+                    output_sum if saw_output else None,
+                    total_sum if saw_total else None,
+                    None,
+                )
+
+            print(
+                f"block_extraction_scripting: block {template_id} attempt "
+                f"{attempt} failed: {last_error}",
+                flush=True,
+            )
+            if attempt < MAX_ATTEMPTS:
+                prompt = (
+                    base_prompt
+                    + "\n\nA PREVIOUS ATTEMPT AT THIS TASK FAILED WITH:\n"
+                    + last_error
+                    + "\nCreate a fresh extractor script that satisfies the required contract."
+                )
+                if rc == OPENCODE_TRANSIENT_EXIT_CODE:
+                    time.sleep(TRANSIENT_RETRY_BACKOFF_S * attempt)
+
+        return (
+            template_id,
+            False,
+            input_sum if saw_input else None,
+            output_sum if saw_output else None,
+            total_sum if saw_total else None,
+            last_error,
+        )
 
     block_tokens: list[dict] = []
-    failed_ids: list[str] = []
+    failures: dict[str, str] = {}
     try:
         with ThreadPoolExecutor(
             max_workers=min(MAX_WORKERS, len(template_ids))
         ) as executor:
             futures = {executor.submit(_run, tid): tid for tid in template_ids}
             for future in as_completed(futures):
-                template_id, ok, inp, out, tot = future.result()
-                if not ok:
-                    failed_ids.append(template_id)
+                submitted_id = futures[future]
+                try:
+                    template_id, ok, inp, out, tot, last_error = future.result()
+                except Exception as exc:
+                    template_id, ok = submitted_id, False
                     inp = out = tot = None
+                    last_error = f"worker failed: {exc}"
+                if not ok:
+                    failures[template_id] = last_error or "unknown failure"
                 shown_t = (inp or 0) + (out or 0) + (tot or 0) or None
-                display.mark_done(template_id, shown_t)
+                display.mark_done(template_id, ok, shown_t)
                 if inp is not None or out is not None or tot is not None:
                     entry = {"id": template_id, "input_tokens": inp or 0, "output_tokens": out or 0}
                     if tot:
@@ -192,10 +312,14 @@ def block_extraction_scripting_node(state: dict[str, Any]) -> dict[str, Any]:
         display.stop()
         spinner_thread.join(timeout=0.2)
 
-    if failed_ids:
+    if failures:
+        details = "; ".join(
+            f"{template_id} ({failures[template_id]})"
+            for template_id in sorted(failures)
+        )
         raise RuntimeError(
-            "block_extraction_scripting: no script produced after "
-            f"{MAX_ATTEMPTS} attempt(s) for block(s): {', '.join(sorted(failed_ids))}"
+            "block_extraction_scripting: no valid script produced after "
+            f"{MAX_ATTEMPTS} attempt(s) for block(s): {details}"
         )
 
     duration = time.time() - t0

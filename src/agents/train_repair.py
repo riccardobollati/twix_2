@@ -188,7 +188,8 @@ def train_repair_node(state: dict[str, Any]) -> dict[str, Any]:
     duration = time.time() - t0
 
     shown_t = (input_t or 0) + (output_t or 0) + (total_t or 0) or None
-    spinner_result["tokens"] = shown_t if returncode == 0 else None
+    spinner_result["tokens"] = shown_t
+    spinner_result["ok"] = returncode == 0
     stop_event.set()
     spinner_thread.join(timeout=0.5)
 

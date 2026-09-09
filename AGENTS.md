@@ -182,10 +182,21 @@ OpenCode writes two script layers:
 2. `extraction_scripts/<node_id>.py` exposes
    `extract(block: dict) -> dict` for one relatively positioned block.
 
-Separation generation is retried at most three times. Each attempt is executed
-with the active Python interpreter, has a 300-second runtime timeout, and must
-pass basic JSON validation. OpenCode sessions themselves have a 3600-second
-timeout.
+Separation and extractor generation are each retried at most three times.
+Separation scripts are executed with the active Python interpreter, have a
+300-second runtime timeout, and must pass basic JSON validation. Before every
+extractor attempt, the target script is removed so a stale file cannot count as
+success. A generated extractor must parse and expose exactly one synchronous,
+top-level `extract` function that accepts exactly one positional argument;
+generation failures and contract errors are fed into the next attempt. Usage is
+accumulated across all attempts, including failed ones.
+
+OpenCode sessions themselves have a 3600-second timeout. All OpenCode calls use
+an isolated temporary database per attempt and share a cross-process two-slot
+limiter, preventing concurrent TWIX UI, CLI, and batch runs from contending for
+OpenCode's global SQLite database. Database-lock output is treated as a
+transient failure even if OpenCode exits zero. Timeout debug logs preserve any
+partial output and usage that OpenCode emitted.
 
 Never weaken these invariants:
 
