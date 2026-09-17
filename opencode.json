@@ -6,6 +6,9 @@
         "apiKey": "{env:OPENROUTER_API_KEY}"
       },
       "models": {
+        "deepseek/deepseek-v4.1-flash": {
+          "name": "DeepSeek V4.1 Flash"
+        },
         "deepseek/deepseek-v4-flash": {
           "name": "DeepSeek V4 Flash"
         },

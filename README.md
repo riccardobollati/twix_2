@@ -42,17 +42,19 @@ There are two kinds of model-driven work:
 
 - Direct OpenRouter calls return structured JSON for front-matter detection,
   template inference, easy/hard block routing, and ground truth.
-- The reference model defaults to GPT-5.4 and can instead use GLM 5.3 Flash or
-  Qwen3.8 Flash for template inference and both train/test ground truth.
+- The reference model defaults to GPT-5.4 and can instead use DeepSeek V4.1
+  Flash, GLM 5.3 Flash, or Qwen3.8 Flash for template inference and both
+  train/test ground truth.
 - OpenCode sessions use OpenRouter models to write executable Python files for
   block separation, per-block extraction, and optional
   repair.
 
-DeepSeek V4 does not accept image inputs. TWIX therefore serializes each OCR
-page into compact lines containing y coordinates and per-word x spans. This
-keeps row and column geometry available to the model while using a text-only
-API. The PNG block samples remain useful for human debugging, but routing uses
-their coordinate JSON.
+TWIX serializes each OCR page into compact lines containing y coordinates and
+per-word x spans. This keeps row and column geometry available to operational
+models without requiring image input. DeepSeek V4.1 Flash can additionally
+consume the rendered page images sent by held-out/test ground-truth generation;
+the PNG block samples used for human debugging do not feed difficulty routing,
+which continues to use coordinate JSON.
 
 ## Requirements
 
@@ -94,10 +96,16 @@ model everywhere, set the direct-call and OpenCode model variables to the
 corresponding Flash or Pro ID. Held-out ground truth defaults separately to
 `openai/gpt-5.4`. Never commit `.env`.
 
+DeepSeek V4.1 Flash is available as `deepseek/deepseek-v4.1-flash` for direct
+OpenRouter calls and CLI flags, or
+`openrouter/deepseek/deepseek-v4.1-flash` in OpenCode environment variables.
+It is included in the dashboard's easy, hard, single-model, and reference-model
+selectors; the existing defaults are unchanged.
+
 Authenticate OpenCode through `OPENROUTER_API_KEY`, or run `/connect` in the
 OpenCode TUI and choose OpenRouter. The repository's `opencode.json` registers
-the DeepSeek V4, GLM 5.3 Flash, and Qwen3.8 Flash targets; use `/models` to
-verify the available IDs.
+the DeepSeek V4/V4.1, GLM 5.3 Flash, and Qwen3.8 Flash targets; use `/models`
+to verify the available IDs.
 
 ## Quick start
 

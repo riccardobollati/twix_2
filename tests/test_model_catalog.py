@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import json
 import os
 import unittest
+from pathlib import Path
 from unittest.mock import patch
 
 from src.models.catalog import (
@@ -16,12 +18,26 @@ from src.models.catalog import (
 
 
 class ModelCatalogTests(unittest.TestCase):
-    def test_catalog_contains_glm_and_qwen_flash(self) -> None:
+    def test_catalog_contains_supported_flash_models(self) -> None:
         operational = {value for _, value in MODEL_OPTIONS}
         references = {value for _, value in REFERENCE_MODEL_OPTIONS}
-        expected = {"z-ai/glm-5.3-flash", "qwen/qwen3.8-flash"}
+        expected = {
+            "deepseek/deepseek-v4.1-flash",
+            "z-ai/glm-5.3-flash",
+            "qwen/qwen3.8-flash",
+        }
         self.assertTrue(expected <= operational)
         self.assertTrue(expected <= references)
+
+    def test_deepseek_v41_is_registered_for_opencode(self) -> None:
+        config_path = Path(__file__).parents[1] / "opencode.json"
+        config = json.loads(config_path.read_text(encoding="utf-8"))
+
+        self.assertEqual(
+            config["provider"]["openrouter"]["models"]
+            ["deepseek/deepseek-v4.1-flash"]["name"],
+            "DeepSeek V4.1 Flash",
+        )
 
     def test_model_ids_are_normalized_for_each_client(self) -> None:
         self.assertEqual(

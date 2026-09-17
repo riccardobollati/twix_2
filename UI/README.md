@@ -29,7 +29,8 @@ run. Enable “Use one model for every non-reference phase” to pass
 block separation, every extractor, and repair. Template inference plus both
 train and test ground-truth generation continue to use the separately selected
 reference model, which defaults to GPT-5.4. The built-in alternatives are GLM
-5.3 Flash and Qwen3.8 Flash through OpenRouter.
+5.3 Flash, Qwen3.8 Flash, and the multimodal DeepSeek V4.1 Flash through
+OpenRouter.
 
 With routing enabled, the selected hard model always generates the block
 separator and performs difficulty classification; it also handles hard block
