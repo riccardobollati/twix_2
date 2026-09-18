@@ -170,6 +170,59 @@ Model flags accept either the direct OpenRouter slug (for example
 reasoning and all OpenCode generation/repair. `--reference-model` remains
 separate. Without per-run flags, the corresponding `.env` values are used.
 
+## HTTP extraction API
+
+Start the standalone API from the repository root:
+
+```bash
+env/bin/python api.py --host 127.0.0.1 --port 8000
+```
+
+Submit a PDF as the raw request body. The API starts an asynchronous extraction
+job and returns HTTP 202 with the job ID plus status and result URLs:
+
+```bash
+curl --request POST \
+  --header "Content-Type: application/pdf" \
+  --header "X-Filename: document.pdf" \
+  --data-binary @document.pdf \
+  "http://127.0.0.1:8000/v1/extractions?pages=3"
+```
+
+Poll the pipeline state and current phase:
+
+```bash
+curl http://127.0.0.1:8000/v1/extractions/<job-id>/status
+```
+
+When `status` is `completed`, fetch the extraction:
+
+```bash
+curl http://127.0.0.1:8000/v1/extractions/<job-id>/result
+```
+
+The result's `data` field contains the logical records from `grouped.json`;
+`blocks` preserves the flat page-local `extracted.json` representation. The
+response also includes the inferred `template` and `pipeline_health.json`.
+`sourceStartPage` identifies which physical source page maps to local page 1 in
+the returned records.
+Before completion the result endpoint returns HTTP 202 and `Retry-After: 2`.
+Failed or interrupted jobs return HTTP 409 with their final status and error.
+
+Upload options are query parameters: `pages`, `startPage`, `trainThreshold`,
+`trainMaxRetries`, `easyModel`, `hardModel`, `referenceModel`, `noRouting`,
+`singleModel`, and `groupRows`. API jobs run `run.py --no-eval`, so extraction
+does not create an independent test split. After training and train evaluation,
+the service applies the finished portable pipeline to every structured page in
+the uploaded PDF and returns that full-document extraction. Jobs and artifacts
+are persisted under `api_runs/`; jobs in progress become `interrupted` if the
+API process restarts.
+
+The service allows two concurrent jobs by default; use `--workers N` to change
+the limit. It binds only to loopback by default and has no authentication. Put
+it behind an authenticated reverse proxy before exposing it to a network,
+because uploaded PDFs and generated artifacts may be sensitive.
+
 ## Complete orchestration pipeline
 
 The LangGraph state machine lives in `src/agents/graph.py`.
