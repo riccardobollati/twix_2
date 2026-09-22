@@ -19,12 +19,13 @@ source env/bin/activate                  # local virtualenv (python 3.14); deps 
 python run.py path/to/document.pdf --no-eval  # direct input without test scoring
 python run.py <name> --eval              # train/test split + ground truth + scoring (the default)
 python run.py <name> --eval --pages 5 --train-threshold 0.9   # with OpenCode repair loop on low train accuracy
+python api.py --host 127.0.0.1 --port 8000  # async PDF upload/status/result API
 python src/run_batch.py --jobs 2 --eval  # run all data/ folders with a terminal dashboard (or pass folder names)
 python single_eval.py ...                # re-run GT + eval standalone on an existing run
 python fix.py <doc_id>                   # re-run test GT + eval, patch metadata.json in place
 python rescore.py ...                    # re-score saved artifacts without model calls
 python -m unittest discover -s tests -v  # offline regression suite (no API calls)
-python -m compileall -q run.py fix.py rescore.py single_eval.py src
+python -m compileall -q api.py run.py fix.py rescore.py single_eval.py src
 ```
 
 There is no linter. The `tests/` directory contains offline `unittest` regressions. Visualization helpers: `viz_batch_results.py` (batch accuracy tables), `viz_blocks.py` / `viz_bb.py` (draw block/word bboxes on pages), `viz_agent_log.py` (OpenCode session logs).

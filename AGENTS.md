@@ -33,10 +33,11 @@ cp .env.example .env
 python run.py path/to/document.pdf --no-eval
 python run.py path/to/document.pdf --eval
 python run.py <dataset-name> --eval --pages 5 --train-threshold 0.9
+python api.py --host 127.0.0.1 --port 8000
 python src/run_batch.py --jobs 2 --eval
 
 python -m unittest discover -s tests -v
-python -m compileall -q run.py fix.py rescore.py single_eval.py src
+python -m compileall -q api.py run.py fix.py rescore.py single_eval.py src
 ```
 
 There is no configured linter. The tests are offline and must not make API
@@ -69,6 +70,7 @@ Environment selection:
 
 | Path | Responsibility |
 | --- | --- |
+| `api.py` | Asynchronous PDF upload, pipeline status, and extraction-result HTTP API |
 | `run.py` | Main CLI, input resolution, full-document OCR, graph invocation |
 | `src/agents/graph.py` | LangGraph topology and train-repair routing |
 | `src/agents/` | Individual graph phases and shared graph state |
@@ -84,9 +86,10 @@ Environment selection:
 | `viz_*.py` | Bounding-box, block, OpenCode-log, and batch-result visualizations |
 | `tests/` | Offline `unittest` regressions |
 
-`data/`, `outputs/`, `env/`, `.env`, PDFs, OCR dumps, and generated artifacts
-are runtime data, not source. `data/` can be very large: do not recursively glob,
-grep, copy, or format it unless a specific document is in scope.
+`data/`, `outputs/`, `api_runs/`, `env/`, `.env`, PDFs, OCR dumps, and generated
+artifacts are runtime data, not source. `data/` can be very large: do not
+recursively glob, grep, copy, or format it unless a specific document is in
+scope.
 
 ## End-to-end graph
 
@@ -366,7 +369,7 @@ Minimum verification for source changes:
 
 ```bash
 python -m unittest discover -s tests -v
-python -m compileall -q run.py fix.py rescore.py single_eval.py src
+python -m compileall -q api.py run.py fix.py rescore.py single_eval.py src
 ```
 
 Add focused offline regressions for bug fixes. Do not make tests depend on the
