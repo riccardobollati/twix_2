@@ -79,8 +79,8 @@ diversity; the scanner keeps the selected pages' words/rows in memory.
 
 | File | Meaning |
 | --- | --- |
-| `table_001.png` / `.svg`, etc. | One word-relative spatial heatmap per table-header group |
-| `kv_001.png` / `.svg`, etc. | One word-relative spatial heatmap per KV group, showing key words without their values |
+| `table_001.png`, etc. | One word-relative spatial heatmap per table-header group |
+| `kv_001.png`, etc. | One word-relative spatial heatmap per KV group, showing key words without their values |
 | `scan.json` | Rules, page sizes, exact individual word boxes, group membership, occurrence counts, table-body alignment evidence, and unconfirmed candidate groups |
 | `page_0001_overlay.png`, etc. | Optional source-page overlays: red header bands, green KV groups |
 
@@ -95,9 +95,9 @@ within one occurrence contribute only once. One file is made per confirmed
 group, even if its pages have different sizes.
 
 The heatmap is calculated by sweeping the exact edges of word bounding boxes
-and drawing their intersections as vector rectangles. There are no histogram
+and drawing their intersections as rectangles. There are no histogram
 bins, smoothing kernels, rounding, or coarse spatial cells. Spaces between words
-remain empty; the PNG is a rendering of the same geometry exported in the SVG.
+remain empty in the PNG.
 White means no matching detection at those relative coordinates, which may be
 a detector miss. A change in spacing or layout within the group spreads its
 heat across the corresponding relative positions.
@@ -139,7 +139,67 @@ Saved plot shortcuts after running the command above:
   [second dimensions layout](scan_results/new_04/table_003.png),
   [KV labels](scan_results/new_04/kv_001.png).
 
-The corresponding `.svg` files support zooming without pixelation.
+## Optional two-stage structure purge
+
+After the deterministic scan, the first purge stage keeps only confirmed
+table-header and KV groups with at least **10 occurrences across the scanned pages**.
+This counts occurrences, not distinct pages: two copies on one page count twice.
+By default, the second stage reviews each occurrence of an eligible table-header
+group with the locally running Laya playground. Eligible KV groups remain in the
+purged result without a Laya call because the current Laya question is specific
+to table headers. Use `--no-laya` to save the frequency-filtered table and KV
+groups without any model calls:
+
+```bash
+env/bin/python test/purge_structure.py id_05
+env/bin/python test/purge_structure.py id_03 --threshold 0.6
+env/bin/python test/purge_structure.py id_07_upscaled --min-occurrences 10
+env/bin/python test/purge_structure.py --all
+env/bin/python test/purge_structure.py --all --no-laya
+```
+
+The default endpoint is `http://127.0.0.1:8770/api/predict`; use `--url` if it
+runs elsewhere. `--min-occurrences` changes the frequency gate; its default is
+10. `--no-laya` needs only `scan.json`; it does not read the PDF or OCR and does
+not require a running Laya server. When it replaces previous Laya output, that
+run is moved under `purged/previous_laya/`. With Laya enabled, each eligible
+header occurrence has its bounding box expanded
+by **10% of the physical page width and height on each side**, clips the crop to
+the page, and takes every OCR word intersecting that crop. It reads the saved
+`ocr_extraction_full.csv` when available and falls back to the source PDF's
+text layer for missing pages. The Laya `noul` request includes the target labels
+and all crop words with page coordinates rounded to the nearest PDF point. The
+target and nearest rows appear first because the checkpoint can truncate long
+requests. Larger crops are split into multiple requests, each repeating the
+target and covering a different part of the context; saturated requests are
+split again. The retained score is the highest probability from complete
+chunks. If even the smallest chunk is truncated, the occurrence is marked
+inconclusive and retained. The crop PNG is saved for inspection; Laya's API
+accepts text, not the image. The default checkpoint is `typed-decisions`, which
+has a larger context than `english`; `--model` can change it.
+
+The default probability threshold is 0.3, chosen conservatively while this
+classifier is uncalibrated. An occurrence whose request appears truncated is
+marked inconclusive and retained regardless of score. Accepted occurrences remain in a
+table group only when they still appear on the scan's minimum number of distinct
+pages. All purge outputs are saved in `test/scan_results/<document>/purged/`,
+separate from the original `scan.json`:
+
+| File | Meaning |
+| --- | --- |
+| `purged_scan.json` | Frequency decisions for every table/KV group and retained groups; includes Laya decisions and usage when enabled |
+| `purged_table_001.png`, etc. | Word-relative heatmaps of retained header occurrences |
+| `purged_kv_001.png`, etc. | Word-relative heatmaps of KV groups that passed the frequency gate |
+| `purged_snapshots/*.png` | PDF crops with the candidate header outlined in red when Laya is enabled |
+| `purged_requests.jsonl` | Exact text requests sent to Laya, only when Laya is enabled |
+
+`--no-images` skips crop PNG generation. Laya's probability is an experimental
+classifier score; no precision or threshold calibration has been measured on
+this corpus. `possible_context_truncation` flags responses whose token usage is
+near the checkpoint limit, but Laya may silently truncate some requests. A
+small live pilot found real headers and a likely page title with very similar
+scores, so review saved decisions before using the purged set as training input.
+The purge stage is standalone and does not alter template inference or extraction.
 
 ## Limits and next integration boundary
 

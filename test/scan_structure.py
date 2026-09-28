@@ -604,7 +604,7 @@ def spatial_word_boxes(family: dict) -> list[tuple]:
     return sorted(boxes)
 
 
-def plot_results(report: dict, output: Path, title: str) -> list[str]:
+def plot_results(report: dict, output: Path, title: str, prefix: str = "") -> list[str]:
     """Overlay each group's occurrences at their word-relative coordinates."""
     import matplotlib
     matplotlib.use("Agg")
@@ -648,10 +648,9 @@ def plot_results(report: dict, output: Path, title: str) -> list[str]:
                      fontsize=12, pad=14)
         fig.text(0.5, 0.005, "Exact word boxes relative to each occurrence; whitespace stays empty.",
                  ha="center", fontsize=8, color="#475569")
-        for extension in ("png", "svg"):
-            name = f"{family['id']}.{extension}"
-            fig.savefig(output / name, dpi=180)
-            artifacts.append(name)
+        name = f"{prefix}{family['id']}.png"
+        fig.savefig(output / name, dpi=180)
+        artifacts.append(name)
         plt.close(fig)
 
     for family in report["families"]:

@@ -4,11 +4,13 @@ import json
 from contextlib import redirect_stdout
 from io import StringIO
 from pathlib import Path
+from tempfile import TemporaryDirectory
 import unittest
 from unittest.mock import MagicMock, patch
 
 from test.scan_structure import (Rules, cluster_candidates, compatibility, make_rows,
-                                load_pdf, scan_pages, spatial_coverage, spatial_word_boxes)
+                                load_pdf, plot_results, scan_pages, spatial_coverage,
+                                spatial_word_boxes)
 
 
 def words(text: str, x: float, y: float, scale: float = 1) -> list[dict]:
@@ -35,6 +37,18 @@ def table(number: int, y: float = 100, shift: float = 0, scale: float = 1) -> li
 
 
 class StructureScanTests(unittest.TestCase):
+    def test_heatmaps_are_png_only_for_scan_and_purge(self):
+        family = dict(id="table_001", kind="table", fields=[dict(text="Header")], pages=[1],
+                      occurrences=[dict(page=1, labels=[dict(words=words("Header", 40, 100))])])
+        with TemporaryDirectory() as directory:
+            output = Path(directory)
+            report = dict(families=[family])
+            self.assertEqual(plot_results(report, output, "sample"), ["table_001.png"])
+            self.assertEqual(plot_results(report, output, "sample", prefix="purged_"),
+                             ["purged_table_001.png"])
+            self.assertEqual({path.name for path in output.iterdir()},
+                             {"table_001.png", "purged_table_001.png"})
+
     def test_paragraph_spacing_does_not_make_a_header(self):
         content = words("This ordinary repeated paragraph contains words separated by normal spaces.", 40, 100)
         result = scan_pages([page(1, content), page(2, content)])
