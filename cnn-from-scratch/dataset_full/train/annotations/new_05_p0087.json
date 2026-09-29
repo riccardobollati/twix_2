@@ -1,0 +1,16 @@
+{
+  "image": "new_05_p0087.png",
+  "width": 1280,
+  "height": 906,
+  "regions": [
+    {
+      "class": "table",
+      "box": [
+        55,
+        118,
+        1225,
+        467
+      ]
+    }
+  ]
+}

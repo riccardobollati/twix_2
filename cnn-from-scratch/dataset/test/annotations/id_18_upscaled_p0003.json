@@ -1,0 +1,25 @@
+{
+  "image": "id_18_upscaled_p0003.png",
+  "width": 1280,
+  "height": 990,
+  "regions": [
+    {
+      "class": "key_value",
+      "box": [
+        45,
+        88,
+        1235,
+        282
+      ]
+    },
+    {
+      "class": "table",
+      "box": [
+        45,
+        311,
+        1235,
+        634
+      ]
+    }
+  ]
+}

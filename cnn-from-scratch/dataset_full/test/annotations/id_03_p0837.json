@@ -1,0 +1,16 @@
+{
+  "image": "id_03_p0837.png",
+  "width": 1280,
+  "height": 778,
+  "regions": [
+    {
+      "class": "table",
+      "box": [
+        43,
+        62,
+        1237,
+        718
+      ]
+    }
+  ]
+}

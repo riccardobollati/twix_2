@@ -1,0 +1,25 @@
+{
+  "image": "new_04_p0003.png",
+  "width": 1280,
+  "height": 906,
+  "regions": [
+    {
+      "class": "key_value",
+      "box": [
+        678,
+        91,
+        885,
+        185
+      ]
+    },
+    {
+      "class": "table",
+      "box": [
+        39,
+        202,
+        1242,
+        600
+      ]
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "image": "new_07_p0061.png",
+  "width": 1280,
+  "height": 990,
+  "regions": [
+    {
+      "class": "table",
+      "box": [
+        50,
+        211,
+        1234,
+        604
+      ]
+    },
+    {
+      "class": "key_value",
+      "box": [
+        46,
+        615,
+        1234,
+        701
+      ]
+    }
+  ]
+}

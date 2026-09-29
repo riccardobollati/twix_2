@@ -1,0 +1,16 @@
+{
+  "image": "id_24_p1354.png",
+  "width": 1280,
+  "height": 906,
+  "regions": [
+    {
+      "class": "table",
+      "box": [
+        20,
+        80,
+        1260,
+        863
+      ]
+    }
+  ]
+}
