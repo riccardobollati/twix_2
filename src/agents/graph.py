@@ -21,6 +21,7 @@ from src.agents.save_metadata import save_metadata_node
 from src.agents.template_inference import ExtractionState, template_inference_node
 from src.agents.train_eval import train_eval_node
 from src.agents.train_repair import train_repair_node
+from src.excluded_blocks_sonar import sonar_node
 
 
 def _route_after_train_eval(state: dict) -> str:
@@ -151,6 +152,7 @@ def build_graph(
     )
     graph.add_node("block_separation", block_separation_node)
     graph.add_node("run_block_separation", run_block_separation_node)
+    graph.add_node("excluded_blocks_sonar", sonar_node)
     graph.add_node("block_artifacts", block_artifacts_node)
     graph.add_node("block_samples", block_samples_node)
     graph.add_node(
@@ -193,7 +195,8 @@ def build_graph(
     graph.add_edge("environment_creation", "template_inference")
     graph.add_edge("template_inference", "block_separation")
     graph.add_edge("block_separation", "run_block_separation")
-    graph.add_edge("run_block_separation", "block_artifacts")
+    graph.add_edge("run_block_separation", "excluded_blocks_sonar")
+    graph.add_edge("excluded_blocks_sonar", "block_artifacts")
     graph.add_edge("block_artifacts", "block_samples")
     graph.add_edge("block_samples", "block_difficulty_router")
     graph.add_edge("block_difficulty_router", "block_extraction_scripting")

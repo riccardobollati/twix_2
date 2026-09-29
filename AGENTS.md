@@ -99,7 +99,8 @@ scope.
 detect_beginning (unless --start-page)
   -> environment_creation
   -> template_inference
-  -> block_separation -> run_block_separation -> block_artifacts
+  -> block_separation -> run_block_separation -> excluded_blocks_sonar
+  -> block_artifacts
   -> block_samples
   -> block_difficulty_router
   -> block_extraction_scripting
@@ -235,6 +236,15 @@ cover fewer than half the pages, or blocks cross page boundaries. A degenerate t
 repair gate even if its numerical accuracy reaches the threshold.
 
 Immediately after the generated block separator passes validation,
+`excluded_blocks_sonar` applies it to up to 100 source pages from the detected
+structured-data start, measures OCR-word coverage against its own OCR CSV, and
+writes a coverage plot and per-page `sonar.json` under
+`<output>/artifacts/excluded_blocks_sonar/`. Pages are flagged when coverage
+falls by the configured relative percentage below the scanned-page average.
+The UI can replay the separator on another source-page range and renders block
+overlays for selected pages on demand.
+
+After that,
 `block_artifacts` reapplies it to the complete train PDF, then calls the reusable
 renderers in `viz_blocks.py` and `viz_record_separation.py`. It writes block
 overlays under `<output>/artifacts/blocks/` and deterministic record overlays
@@ -308,6 +318,7 @@ For a document artifact directory `<output>/`:
 ├── metadata.json
 ├── metadata/cost.json
 ├── artifacts/blocks/               # block-separation overlay PNGs
+├── artifacts/excluded_blocks_sonar/ # per-page coverage, plot, and on-demand overlays
 ├── artifacts/record_separation/    # deterministic train record overlays
 ├── artifacts/stats/                # UI runs only: plots plus stats.json
 ├── artifacts/test_blocks/          # held-out overlays in eval mode

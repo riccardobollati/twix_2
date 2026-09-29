@@ -52,41 +52,83 @@ STEP 2 — Strip structural noise (headers, footers, page numbers)
   metadata patterns only. Hard-code the document-level patterns above into the script
   as a list of regex strings.
 
-STEP 3 — Detect block header rows
+STEP 3 — Detect and strictly validate block headers
   A block's header row is the row (or contiguous group of rows) where the block's
   field labels appear. Detect it as follows:
 
   For "table" nodes:
-    A header row is one where at least HALF of the node's field labels appear as
-    normalised tokens within the row's words. Multi-word field labels (e.g.
-    "Project Description") must appear as a contiguous token sequence within the row.
-    The entire contiguous group of rows where these header tokens are spread counts as
-    the header band.
+    Require a COMPLETE, UNAMBIGUOUS match of BOTH the fields and the table layout.
+    A similar-looking table or a table containing all expected fields plus extra
+    columns is NOT a match. Prefer leaving an incompatible table unclassified over
+    assigning it to the wrong node_id.
+
+    During generation, inspect the sample OCR to establish each node's structural
+    signature: ordered leaf columns, full parent/group-header paths, units, number
+    of header tiers, parent spans, and relative column arrangement. The template
+    JSON supplies field identities; the sample OCR supplies their physical layout.
+    Bind this signature to that node_id. Do not infer a replacement signature from
+    an arbitrary runtime candidate, broaden the signature to accept incompatible
+    sample tables, invent node IDs, or modify the template. If no sample provides
+    an unambiguous complete reference, report that node as unsupported rather than
+    creating a permissive fallback.
+
+    At runtime, isolate a candidate's header band using local geometry and the
+    transition to body rows. Reconstruct header cells within their own column spans
+    and associate each leaf with its enclosing group headers. Require ALL of:
+      - Every expected field maps to exactly one distinct leaf column, and every
+        observed leaf column maps to exactly one expected field. No missing, extra,
+        duplicated, merged, or split columns are allowed.
+      - Full field labels, units, column order, header hierarchy, and group spans
+        match the reference. A repeated label such as "Axis x-x" must be matched
+        under its own parent (e.g. Elastic Modulus versus Plastic Modulus).
+      - Relative column positions/widths and header-tier arrangement match the
+        reference after translation and uniform scaling, with only small tolerances
+        for OCR coordinate jitter and harmless wrapping inside the same header cell.
+        Derive tolerances from local text size and spacing; do not permit arbitrary
+        column movement, added tiers, or changed parent/child structure.
+
+    Join wrapped words only within the same header cell in reading order. Never
+    match a field using an unordered union of tokens from different columns, units,
+    body rows, or an arbitrarily enlarged row range. Shared words elsewhere in the
+    table cannot supply a missing field. Do not use majority/percentage matching,
+    fuzzy similarity, or a nearest-template fallback. If multiple nodes match and
+    layout cannot distinguish them, reject the candidate as ambiguous.
+
+    Normalise whitespace and equivalent Unicode typography only when meaning is
+    preserved. Preserve meaningful case, symbols, and units (e.g. T versus t,
+    N versus n, mm versus cm, cm2 versus cm4); do not lowercase table symbols or
+    discard units to force a match. Cosmetic line wrapping is not a new column.
 
   For "kv" nodes:
     A header row is one that contains at least ONE key label from the node's fields as
     a complete normalised token or contiguous token sequence.
 
-  Normalise before comparing: lowercase, strip leading/trailing punctuation (`:`, `.`,
-  `,`, `#`). Comparison must be case-insensitive.
+  For kv labels, compare case-insensitively and strip surrounding punctuation
+  (`:`, `.`, `,`, `#`). The stricter table rules above govern table headers.
 
 STEP 4 — Assign content rows to blocks
   Process pages in ascending page order (the script can therefore carry state from one
   page to the next). After locating the header row(s) of each block on the page:
-    - The block's words are all words in the header band PLUS all rows that follow
-      below the header band, down to (but not including) the header band of the next
-      block on the page (in top-to-bottom order), or the end of the page if no further
-      header band exists. Noise rows stripped in Step 2 are simply skipped — they are
-      NOT part of any block, but they never terminate one: rows below a stripped noise
-      row still belong to the block.
-    - If two template nodes have overlapping vertical extents on the page, assign each
-      word to the node whose header band it is closest to (by vertical distance).
+    - Include the validated header and its body within that table's column extent.
+      Detect boundaries of ALL candidate tables/blocks, including rejected or unknown
+      ones. Stop before a new candidate, incompatible header, section boundary, or
+      incompatible column structure. A rejected table must never be absorbed into
+      the preceding accepted table or kv block. Keep unknown regions unassigned.
+    - Use validated column spans and local geometry to distinguish side-by-side
+      tables. Vertical proximity alone must not assign words between different tables.
+    - Preserve valid wrapped rows, blank cells, and bottom data rows inside the
+      accepted table. Sparse rows alone are not evidence of a new table. Noise rows
+      stripped in Step 2 are skipped, but do not terminate the current table.
     - CONTINUATION BLOCKS: rows that appear ABOVE the first header band on a page (or
-      on a page with no header band at all) and that column-align with the previous
-      page's last block are a continuation of that block's template node. Emit them as
-      a block of that node on the current page (a continuation block has no header band
-      of its own). Track the node and column layout of the last block emitted on the
-      previous page to detect this.
+      on a page with no header band at all) may continue the immediately preceding
+      page's fully validated table ONLY with affirmative evidence that the entire
+      column structure and body-row layout remain compatible. Partial column overlap
+      is insufficient. There must be no intervening section boundary, unknown table,
+      or rejected header. Any visible repeated header must pass the full Step 3
+      validation; a failed header match is NEVER a headerless continuation. Clear
+      continuation state on rejection or uncertainty. If continuity cannot be proved,
+      leave the region unassigned. Emit validated continuations as separate page-local
+      blocks of the same node, preserving the established signature.
 
 ────────────────────────────────────────────────────────────────
 PROHIBITED HEURISTICS — these overfit the sample pages and break on unseen pages
@@ -115,8 +157,23 @@ CSV. The following shortcuts fit the sample but silently drop data later. Do NOT
     (Step 4) — never absorb later pages' words into the header page's block, and
     never synthesize a global cross-page y-axis by stacking page heights.
 
-A page where a node's header genuinely does not appear simply emits no block for
-that node — that is the only legitimate reason to skip one.
+A candidate with missing/extra fields, incompatible layout, ambiguous identity, or
+insufficient evidence emits no block for that node. Do not coerce it into a known
+template. A page with no accepted blocks must still appear with an empty blocks list.
+Print concise rejection diagnostics with page, candidate node_id, and reason
+(missing/extra field, unit mismatch, column order, hierarchy, layout, or ambiguity).
+Do not add rejected regions to the block JSON under fabricated node IDs.
+
+Before finishing generation, exercise the matching logic on sample-derived cases:
+  - Accept the complete reference and translations/uniform scalings of it, with
+    small coordinate jitter and harmless within-cell wrapping.
+  - Reject removal/addition/duplication of a column, swapped columns, changed units,
+    regrouped headers, and the same words scattered into unrelated columns/body rows.
+  - Reject a table with an extra imperial mass column even when every expected
+    metric field is still present.
+  - Ensure a rejected table below a valid block is not swallowed by that block,
+    and a rejected repeated header cannot be rescued by continuation handling.
+These are offline checks; do not install packages or call external services.
 
 STEP 5 — Output
   Write `<out_path>/block_separation.json`:
