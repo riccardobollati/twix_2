@@ -9,3 +9,5 @@ src/ground_truth_generator_y
 outputs/
 api_runs/
 tmp/
+/excluded-blocks-sonar/tests/
+/excluded-blocks-sonar/*.png
