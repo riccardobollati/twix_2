@@ -10,6 +10,7 @@ from src.agents.block_difficulty_router import block_difficulty_router_node
 from src.agents.block_artifacts import block_artifacts_node
 from src.agents.block_extraction_scripting import block_extraction_scripting_node
 from src.agents.block_samples import block_samples_node
+from src.agents.cluster_sampling import cluster_sampling_node
 from src.agents.block_separation import block_separation_node, run_block_separation_node
 from src.agents.collect_extraction_scripts import collect_extraction_scripts_node
 from src.agents.detect_beginning import detect_beginning_node
@@ -77,7 +78,7 @@ def _route_after_train_eval(state: dict) -> str:
 def recursion_limit_for(max_repair_retries: int) -> int:
     """Recursion budget for one graph run: the base node chain plus the extra
     opencode_fix → train_eval → routing steps added by each repair round."""
-    return 30 + 4 * max_repair_retries
+    return 32 + 4 * max_repair_retries
 
 
 def build_graph(
@@ -137,6 +138,7 @@ def build_graph(
         "detect_beginning",
         lambda state: detect_beginning_node(state, llm),
     )
+    graph.add_node("cluster_sampling", cluster_sampling_node)
     graph.add_node(
         "environment_creation",
         lambda state: {
@@ -182,16 +184,17 @@ def build_graph(
     graph.add_conditional_edges(
         START,
         lambda state: (
-            "environment_creation"
+            "cluster_sampling"
             if state.get("detected_start_page") is not None
             else "detect_beginning"
         ),
         {
             "detect_beginning": "detect_beginning",
-            "environment_creation": "environment_creation",
+            "cluster_sampling": "cluster_sampling",
         },
     )
-    graph.add_edge("detect_beginning", "environment_creation")
+    graph.add_edge("detect_beginning", "cluster_sampling")
+    graph.add_edge("cluster_sampling", "environment_creation")
     graph.add_edge("environment_creation", "template_inference")
     graph.add_edge("template_inference", "block_separation")
     graph.add_edge("block_separation", "run_block_separation")

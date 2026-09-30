@@ -42,7 +42,8 @@ class ExtractionState(TypedDict):
     opencode_model:    NotRequired[str]  # block-separation/fallback OpenCode model
     easy_model:        NotRequired[str]  # OpenCode target for easy blocks
     hard_model:        NotRequired[str]  # OpenCode target for hard blocks/repair
-    reference_model:   NotRequired[str]  # direct OpenRouter template/GT model
+    reference_model:   NotRequired[str]  # direct OpenRouter ground-truth model
+    template_model:    NotRequired[str]  # direct OpenRouter template-inference model
     doc_name:          str   # document folder name, used to name split PDFs
     train_pages:       int   # number of pages requested for the train set
     eval_mode:         bool  # whether to create a test split
@@ -65,6 +66,15 @@ class ExtractionState(TypedDict):
     beginning_confidence: NotRequired[str]
     beginning_reason:     NotRequired[str]
 
+    # ── set by cluster_sampling_node ─────────────────────────────────────────
+    train_source_pages: NotRequired[list[int]]
+    test_source_pages: NotRequired[list[int]]
+    first_source_pages: NotRequired[list[int]]
+    cluster_sample_pages: NotRequired[list[int]]
+    cluster_coverage: NotRequired[dict[str, int]]
+    table_cluster_count: NotRequired[int]
+    kv_cluster_count: NotRequired[int]
+
     # ── train-repair loop ────────────────────────────────────────────────────────
     train_accuracy_threshold: NotRequired[float]  # accuracy target; 0.0 = disabled
     train_repair_max_retries: NotRequired[int]    # max repair attempts (default 3)
@@ -77,6 +87,7 @@ class ExtractionState(TypedDict):
     build_ocr_csv_path: NotRequired[str]       # train OCR minus held-out pages — what
                                                # the generated scripts are built against
     actual_train_pages: NotRequired[int]       # actual number of train pages used
+    build_source_pages: NotRequired[list[int]] # source pages visible to generated scripts
 
     # eval-only — set by environment_creation_node when eval_mode=True
     test_pdf_path: NotRequired[str]
@@ -201,16 +212,32 @@ def template_inference_node(state: ExtractionState, llm: BaseChatModel) -> dict[
         template            – list of template node dicts (type, fields, bid, child, node_id).
         metadata            – list of fixed metadata phrase strings.
     """
+    source_pages = state.get("train_source_pages") or list(range(1, state["actual_train_pages"] + 1))
+    anchor_pages = set(state.get("first_source_pages") or source_pages[:3])
+    sampled_pages = set(state.get("cluster_sample_pages") or [])
+    covered: dict[int, list[str]] = {}
+    for cluster, page in state.get("cluster_coverage", {}).items():
+        covered.setdefault(page, []).append(cluster)
     content = [
-        "Here are the training pages as OCR layouts. Coordinates are PDF points; "
-        "use y positions for lines and x spans for columns and key/value alignment."
+        "Here are the selected training pages as OCR layouts. Coordinates are PDF "
+        "points; use y positions for lines and x spans for columns and key/value "
+        "alignment. The first structured-data pages establish block order and record "
+        "boundaries. Later sampled pages may reveal additional or alternate table/KV "
+        "nodes; include those structures without replacing the early-page order. "
+        f"The deterministic scan found {state.get('table_cluster_count', 'unknown')} "
+        f"table clusters and {state.get('kv_cluster_count', 'unknown')} KV clusters."
     ]
     page_numbers = range(1, state["actual_train_pages"] + 1)
     ocr_pages = load_ocr_pages(state["ocr_csv_path"], page_numbers)
     for page_number in page_numbers:
         layout = ocr_pages[page_number]["layout"]
+        source_page = source_pages[page_number - 1]
+        role = ("ordering anchor" if source_page in anchor_pages else
+                "cluster sample" if source_page in sampled_pages else "additional training page")
+        clusters = ", ".join(sorted(covered.get(source_page, []))) or "none"
         content.append(
-            f"Page {page_number} OCR layout:\n{layout or '[no OCR words]'}"
+            f"Training page {page_number} (source PDF page {source_page}; {role}; "
+            f"represents clusters: {clusters}) OCR layout:\n{layout or '[no OCR words]'}"
         )
 
     stop_event = threading.Event()

@@ -41,9 +41,9 @@
               <span class="file-icon">PDF</span><strong id="file-name">Choose a PDF</strong><small>PDF only · processed locally</small>
             </label>
             <div class="form-grid">
-              <label>Training pages<input id="pages" type="number" min="1" max="50" value="5" /></label>
+              <label>Minimum training pages<input id="pages" type="number" min="1" max="50" value="5" /><small>First 3 plus one or more pages covering every table and KV cluster</small></label>
               <label>Train holdout pages<input id="holdout-pages" type="number" min="0" max="48" value="0" /></label>
-              <label>Evaluation pages<input id="eval-pages" type="number" min="1" max="1000" value="20" /></label>
+              <label>Evaluation pages<input id="eval-pages" type="number" min="1" max="1000" value="20" /><small>Sampled from pages outside training</small></label>
               <label>Repair threshold<input id="threshold" type="number" min="0" max="1" step="0.05" value="0" /></label>
               <label>Missed sonar drop (%)<input id="sonar-drop-percent" type="number" min="0" max="100" step="1" value="15" /></label>
             </div>
@@ -58,7 +58,8 @@
                 <label>Pipeline model<select id="single-model"></select></label>
               </div>
               <div class="form-grid model-grid reference-grid">
-                <label>Reference model<select id="reference-model"></select><small>Template inference and train/test ground truth</small></label>
+                <label>Template model<select id="template-model"></select><small>Template inference only</small></label>
+                <label>Reference model<select id="reference-model"></select><small>Train/test ground truth only</small></label>
               </div>
             </fieldset>
             <label class="toggle"><input id="eval" type="checkbox" checked /> Run independent test evaluation</label>
@@ -82,7 +83,8 @@
 
           <section class="stage-workbench">
             <article class="workflow-panel" data-stage-panel="template">
-              <div class="panel-heading"><div><span class="step-kicker">STEP 01</span><h3>Template inference</h3><p>The system learns the document schema from the training pages.</p></div><span id="template-state" class="artifact-state waiting">Waiting</span></div>
+              <div class="panel-heading"><div><span class="step-kicker">STEP 01</span><h3>Page clustering and template inference</h3><p>The first structured pages establish block order; cluster samples reveal later table and KV variants.</p></div><span id="template-state" class="artifact-state waiting">Waiting</span></div>
+              <p id="cluster-selection" class="muted">Scanning table and KV layouts…</p>
               <div class="split-view">
                 <div class="viewer-card"><div class="viewer-title">Training PDF</div><div id="template-pdf-empty" class="empty-state">Preparing the training document…</div><iframe id="template-pdf" class="pdf-viewer hidden" title="Training PDF"></iframe></div>
                 <div class="viewer-card"><div class="viewer-title">Inferred template <span>template.json</span></div><pre id="template-json" class="json-viewer">Waiting for template inference…</pre></div>

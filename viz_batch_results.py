@@ -129,6 +129,7 @@ def _models_used(d: dict) -> list[str]:
     add(d.get("llm_model"))
     add(d.get("difficulty_model"))
     add(d.get("reference_model") or d.get("ground_truth_model"))
+    add(d.get("template_model"))
     add(d.get("opencode_model"))
     add((d.get("test_eval") or {}).get("ground_truth_model"))
 
@@ -334,7 +335,7 @@ def _ground_truth_cost_usd(cost: dict, d: dict | None = None) -> float:
 def _phase_model(d: dict | None, phase_name: str) -> str:
     document = d or {}
     if phase_name == "template_inference":
-        return _reference_model(document)
+        return _normalize_model_id(document.get("template_model")) or _reference_model(document)
     if phase_name == "block_separation":
         return _normalize_model_id(
             document.get("opencode_model") or document.get("hard_model")
@@ -1398,6 +1399,7 @@ def document_statistics(d: dict) -> dict:
         "easy_model": d.get("easy_model"),
         "hard_model": d.get("hard_model"),
         "reference_model": d.get("reference_model") or d.get("ground_truth_model"),
+        "template_model": d.get("template_model"),
         "generation_cost_usd": sum(phase_costs.values()),
         "phase_cost_usd": phase_costs,
         "model_pricing": d.get("model_pricing"),

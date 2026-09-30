@@ -37,11 +37,12 @@ failed run.
 The Model routing panel can override the `.env` easy and hard models for one
 run. Enable “Use one model for every non-reference phase” to pass
 `--no-routing` and use the selected pipeline model for front-matter detection,
-block separation, every extractor, and repair. Template inference plus both
-train and test ground-truth generation continue to use the separately selected
-reference model, which defaults to GPT-5.4. The built-in alternatives are GLM
-5.3 Flash, Qwen3.8 Flash, and the multimodal DeepSeek V4.1 Flash through
-OpenRouter.
+block separation, every extractor, and repair. Template inference uses its
+own selected model; train and test ground truth use the reference model.
+Both default to GPT-5.4. The template selector also offers DeepSeek V4/V4.1,
+GLM 5.3 Flash, and Qwen3.8 Flash through OpenRouter. The template panel shows
+the source pages selected by deterministic table and KV clustering, including
+the first three ordering pages and later structural variants.
 
 With routing enabled, the selected hard model always generates the block
 separator and performs difficulty classification; it also handles hard block

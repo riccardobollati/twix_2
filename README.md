@@ -80,6 +80,7 @@ LLM_PROVIDER=openrouter
 OPENROUTER_API_KEY=...
 OPENROUTER_MODEL=deepseek/deepseek-v4-flash
 OPENROUTER_GROUND_TRUTH_MODEL=openai/gpt-5.4
+OPENROUTER_TEMPLATE_INFERENCE_MODEL=openai/gpt-5.4
 OPENROUTER_GROUND_TRUTH_MAX_TOKENS=128000
 OPENROUTER_REASONING_EFFORT=high
 OPENROUTER_TEMPLATE_INFERENCE_REASONING_EFFORT=low
@@ -99,7 +100,7 @@ corresponding Flash or Pro ID. Held-out ground truth defaults separately to
 DeepSeek V4.1 Flash is available as `deepseek/deepseek-v4.1-flash` for direct
 OpenRouter calls and CLI flags, or
 `openrouter/deepseek/deepseek-v4.1-flash` in OpenCode environment variables.
-It is included in the dashboard's easy, hard, single-model, and reference-model
+It is included in the dashboard's easy, hard, single-model, template-model, and reference-model
 selectors; the existing defaults are unchanged.
 
 Authenticate OpenCode through `OPENROUTER_API_KEY`, or run `/connect` in the
@@ -142,14 +143,15 @@ Run `python run.py --help` for the complete interface. Important options are:
 
 | Option | Meaning |
 | --- | --- |
-| `--pages N` | Requested number of structured pages in the train split; default `3` |
+| `--pages N` | Minimum train pages; the first three structured pages and pages covering every detected table/KV cluster are always included; default `3` |
 | `--start-page N` | Use a fixed physical first record page and skip detection |
 | `--eval` / `--no-eval` | Final independent test evaluation is enabled by default; `--no-eval` disables it |
-| `--eval-pages N` | Limit independent test pages; default `20` |
-| `--holdout-pages N` | Hide trailing train pages from script generation but include them in train eval; default `0` (off) |
+| `--eval-pages N` | Number of disjoint evaluation pages sampled across the remaining document; default `20` |
+| `--holdout-pages N` | Hide optional train pages from script generation, while preserving first/cluster pages for block samples; default `0` (off) |
 | `--easy-model MODEL` | Override the `.env` easy OpenCode model for this run |
 | `--hard-model MODEL` | Override the `.env` model used for block separation, difficulty routing, hard extractors, and repair |
-| `--reference-model MODEL` | Use this direct OpenRouter model for template inference and all ground truth; default GPT-5.4 |
+| `--template-model MODEL` | Use this direct OpenRouter model for template inference only; default GPT-5.4 |
+| `--reference-model MODEL` | Use this direct OpenRouter model for train/test ground truth only; default GPT-5.4 |
 | `--no-routing` | Skip difficulty classification and use the easy model throughout every non-reference phase |
 | `--train-threshold F` | Repair below this train accuracy; `0` disables repair |
 | `--train-max-retries N` | Maximum OpenCode repair rounds; default `3` |
@@ -159,16 +161,24 @@ Run `python run.py --help` for the complete interface. Important options are:
 | `--caveman` | Prefix OpenCode prompts with `/caveman full` |
 | `--save-log` | Save OpenCode JSONL output and exact prompts for block separation, extraction, and repair under `debug/` |
 
-`--pages` is a request, not an unconditional count. In eval mode the train split
-is capped at half of the usable structured pages so at least one page remains
-for test.
+The deterministic scan covers up to 500 structured-data pages, starting at the
+detected or supplied start page. It clusters tables and KV groups independently.
+The first three pages establish block order; additional pages cover every
+detected cluster, reusing a page when it represents both a table and a KV
+cluster. The train and test PDFs contain explicitly selected source pages, each
+remapped to split-local page numbers. Test pages are disjoint and sampled across
+the remaining document rather than taken as the next 20 pages. The mapping and
+cluster coverage are saved under `artifacts/clustering/selection.json` and in
+`metadata.json`. Cluster pages remain visible to generated block separation and
+block-sample instructions even when `--holdout-pages` is set.
 
 Model flags accept either the direct OpenRouter slug (for example
 `z-ai/glm-5.3-flash`) or the OpenCode-prefixed form
 (`openrouter/z-ai/glm-5.3-flash`); TWIX normalizes it for each client. With
 `--no-routing`, `--easy-model` is the single operational model for direct
-reasoning and all OpenCode generation/repair. `--reference-model` remains
-separate. Without per-run flags, the corresponding `.env` values are used.
+reasoning and all OpenCode generation/repair. `--template-model` and
+`--reference-model` remain separate. Without per-run flags, the corresponding
+`.env` values are used.
 
 ## HTTP extraction API
 
@@ -186,7 +196,7 @@ curl --request POST \
   --header "Content-Type: application/pdf" \
   --header "X-Filename: document.pdf" \
   --data-binary @document.pdf \
-  "http://127.0.0.1:8000/v1/extractions?pages=3"
+  "http://127.0.0.1:8000/v1/extractions?pages=3&templateModel=z-ai/glm-5.3-flash"
 ```
 
 Poll the pipeline state and current phase:
@@ -231,9 +241,10 @@ The LangGraph state machine lives in `src/agents/graph.py`.
 flowchart TD
     S(["Start"]) --> Q{"--start-page supplied?"}
     Q -- No --> DB["Detect first structured page<br/>OCR-layout batches"]
-    Q -- Yes --> EC
-    DB --> EC["Create cropped train/test environment<br/>remap split pages to 1..N"]
-    EC --> TI["Infer template + metadata<br/>reference-model JSON"]
+    Q -- Yes --> CL
+    DB --> CL["Cluster table and KV layouts<br/>select source pages"]
+    CL --> EC["Create sampled train/test environment<br/>remap split pages to 1..N"]
+    EC --> TI["Infer template + metadata<br/>template-model JSON"]
     TI --> BS["Generate block_separation.py<br/>OpenCode"]
     BS --> BSR["Run + validate block separation"]
     BSR --> ART["Render block + record overlays<br/>artifacts/blocks/<br/>artifacts/record_separation/"]

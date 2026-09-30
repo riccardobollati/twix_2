@@ -66,6 +66,10 @@ def block_samples_node(state: dict[str, Any]) -> dict[str, Any]:
 
     # seeded from doc_name so repeated runs sample the same instances
     rng = random.Random(state.get("doc_name", "block_samples"))
+    source_pages = state.get("train_source_pages") or []
+    required_sources = set(state.get("first_source_pages", [])) | set(
+        state.get("cluster_sample_pages", [])
+    )
 
     with pdfplumber.open(pdf_path) as pdf:
         total_pages = len(pdf.pages)
@@ -73,10 +77,22 @@ def block_samples_node(state: dict[str, Any]) -> dict[str, Any]:
             out_dir = os.path.join(train_dir, "block_samples", template_id)
             os.makedirs(out_dir, exist_ok=True)
 
-            sample = (
-                rng.sample(all_instances, _SAMPLE_SIZE)
-                if len(all_instances) > _SAMPLE_SIZE
-                else all_instances
+            # Every cluster-selected page containing this node must reach the
+            # extractor's sample folder, even when it was far beyond source
+            # page 20 and this node has many more than ten instances.
+            required_instances = []
+            for source_page in sorted(required_sources):
+                matches = [instance for instance in all_instances
+                           if 1 <= instance[0] <= len(source_pages)
+                           and source_pages[instance[0] - 1] == source_page]
+                nonempty = next((instance for instance in matches if instance[2].get("words")), None)
+                if nonempty is not None:
+                    required_instances.append(nonempty)
+            required_ids = {id(instance) for instance in required_instances}
+            others = [instance for instance in all_instances if id(instance) not in required_ids]
+            extra_count = max(0, _SAMPLE_SIZE - len(required_instances))
+            sample = required_instances + (
+                rng.sample(others, extra_count) if len(others) > extra_count else others
             )
 
             saved = 0
@@ -108,8 +124,11 @@ def block_samples_node(state: dict[str, Any]) -> dict[str, Any]:
                     for w in words
                 ]
                 relative_block = {**block, "words": relative_words}
+                source_page = (source_pages[page_num - 1]
+                               if 1 <= page_num <= len(source_pages) else page_num)
                 with open(os.path.join(out_dir, f"{stem}.json"), "w", encoding="utf-8") as f:
-                    json.dump({"page": page_num, **relative_block}, f, indent=2, ensure_ascii=False)
+                    json.dump({"page": page_num, "source_page": source_page, **relative_block},
+                              f, indent=2, ensure_ascii=False)
                 saved += 1
 
             print(f"block_samples: {template_id} → {saved} sample(s) saved to {out_dir}")

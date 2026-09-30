@@ -39,13 +39,13 @@ LOCAL_COLUMN_MIN_SIMILARITY = 0.80
 LOCAL_MISMATCH_CAP = 0.79
 
 
-def noisy_scan(report: dict, headers_by_page: dict[int, list[dict]], page_count: int) -> bool:
+def noisy_scan(report: dict, headers_by_page: dict[int, list[dict]], page_numbers: list[int]) -> bool:
     """Recognize body rows misclassified as many unrelated header families."""
     families = sum(family["kind"] == "table" for family in report["families"])
     if families == 0:
         return True
     label_counts = [sum(len(header["labels"]) for header in headers_by_page.get(page, []))
-                    for page in range(1, page_count + 1)]
+                    for page in page_numbers]
     return families >= 8 and median(label_counts) > 100
 
 
@@ -390,7 +390,7 @@ def scores(features: list[dict], header_weight: float,
 
 
 def metrics(labels: list[int], distance: np.ndarray, features: list[dict],
-            header: np.ndarray, structure: np.ndarray) -> dict:
+            header: np.ndarray, structure: np.ndarray, first_page: int = 1) -> dict:
     groups: dict[int, list[int]] = defaultdict(list)
     for index, label in enumerate(labels):
         groups[label].append(index)
@@ -417,26 +417,32 @@ def metrics(labels: list[int], distance: np.ndarray, features: list[dict],
         "mean_within_header_similarity": round(float(np.mean([header[i, j] for i, j in within])), 4) if within else None,
         "mean_within_structure_similarity": round(float(np.mean([structure[i, j] for i, j in within])), 4) if within else None,
         "header_family_agreement": round(agreement, 4) if agreement is not None else None,
-        "first_five_cluster_coverage": len({labels[i] for i, feature in enumerate(features) if feature["page"] <= 5}) / len(groups),
+        "first_five_cluster_coverage": len({labels[i] for i, feature in enumerate(features)
+                                            if first_page <= feature["page"] < first_page + 5}) / len(groups),
     }
 
 
 def process(pdf_path: Path, max_pages: int, output_root: Path, scan_root: Path | None,
-            overlay_limit: int, result_name: str | None = None) -> dict:
+            overlay_limit: int, result_name: str | None = None, *, start_page: int = 1,
+            scan_report: dict | None = None) -> dict:
     import pdfplumber
 
     with pdfplumber.open(pdf_path) as pdf:
-        numbers = list(range(1, min(len(pdf.pages), max_pages) + 1))
-        scan = base.scan_report(pdf_path, numbers, scan_root, result_name)
+        if not 1 <= start_page <= len(pdf.pages):
+            raise ValueError(f"start page {start_page} is outside the PDF")
+        numbers = list(range(start_page, min(len(pdf.pages), start_page + max_pages - 1) + 1))
+        scan = scan_report if scan_report is not None else base.scan_report(pdf_path, numbers, scan_root, result_name)
+        if scan.get("pages") != numbers:
+            raise ValueError("scan pages do not match the requested source pages")
         headers_by_page = base.table_headers(scan)
-        replace_noisy_headers = noisy_scan(scan, headers_by_page, len(numbers))
+        replace_noisy_headers = noisy_scan(scan, headers_by_page, numbers)
         family_count = sum(family["kind"] == "table" for family in scan["families"])
         typical_tables = median(len(headers_by_page.get(number, [])) for number in numbers)
         column_layout_reliable = (not replace_noisy_headers
                                   and family_count <= 2 * max(1, typical_tables))
         consensus_by_page = consensus_headers(pdf, numbers) if replace_noisy_headers else {}
         features = []
-        for number in numbers:
+        for scan_index, number in enumerate(numbers, 1):
             page = pdf.pages[number - 1]
             headers = (consensus_by_page.get(number, []) if replace_noisy_headers
                        else recover_headers(page, headers_by_page.get(number, []), scan["families"]))
@@ -475,8 +481,11 @@ def process(pdf_path: Path, max_pages: int, output_root: Path, scan_root: Path |
                                  column_layout_reliable=column_layout_reliable,
                                  red_lines=red, green_lines=inferred, blue_lines=blue,
                                  has_red=has_red, eligible=bool(headers or has_red), word_count=len(words)))
-            if number == 1 or number % 25 == 0 or number == len(numbers):
-                print(f"  page {number}/{len(numbers)}: {len(red)} red, {len(blue)} blue, {len(inferred)} inferred", flush=True)
+            if scan_index == 1 or scan_index % 25 == 0 or scan_index == len(numbers):
+                source_suffix = f" (source {number})" if start_page != 1 else ""
+                print(f"  page {scan_index}/{len(numbers)}: "
+                      f"{len(red)} red, {len(blue)} blue, {len(inferred)} inferred"
+                      f"{source_suffix}", flush=True)
         column_layout_reliable = column_layout_reliable and column_counts_reliable(features)
         for feature in features:
             feature["column_layout_reliable"] = column_layout_reliable
@@ -487,7 +496,7 @@ def process(pdf_path: Path, max_pages: int, output_root: Path, scan_root: Path |
             if active:
                 combined, head, struct = scores(active, weight, parts)
                 labels, distance = base.cluster({"combined": combined}, {"combined": 1.0}, linkage, cutoff)
-                outcome = metrics(labels, distance, active, head, struct)
+                outcome = metrics(labels, distance, active, head, struct, start_page)
             else:
                 outcome = {"cluster_count": 0, "clusters": {}, "representatives": {},
                            "mean_silhouette": None, "mean_within_similarity": None,
@@ -507,12 +516,14 @@ def process(pdf_path: Path, max_pages: int, output_root: Path, scan_root: Path |
             if old.name not in {f"page_{number:04d}_features.png" for number in pictures}:
                 old.unlink()
         for number in pictures:
-            base.overlay(pdf.pages[number - 1], features[number - 1], output / f"page_{number:04d}_features.png")
+            base.overlay(pdf.pages[number - 1], features[number - start_page],
+                         output / f"page_{number:04d}_features.png")
         result = {
             "version": 2, "algorithm_revision": TABLE_ALGORITHM_REVISION,
             "result_name": result_name or pdf_path.stem,
             "source_pdf": str(pdf_path), "source_total_pages": len(pdf.pages),
             "source_mtime_ns": pdf_path.stat().st_mtime_ns, "page_count": len(numbers),
+            "source_start_page": start_page,
             "column_layout_reliable": column_layout_reliable,
             "skipped_pages": [f["page"] for f in features if not f["eligible"]],
             "feature_definitions": {"red": "usable PDF border lines near detected headers, summarized by column positions and row spacing; each table's local column rules also impose a mismatch gate",

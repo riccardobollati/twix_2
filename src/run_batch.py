@@ -264,7 +264,7 @@ def parse_args(argv: Sequence[str]) -> tuple[argparse.Namespace, list[str]]:
         type=positive_int,
         default=argparse.SUPPRESS,
         metavar="N",
-        help="Forwarded to run.py: number of structured pages used for training.",
+        help="Forwarded to run.py: minimum training pages; cluster samples are added.",
     )
     run_options.add_argument(
         "--start-page",
@@ -291,7 +291,7 @@ def parse_args(argv: Sequence[str]) -> tuple[argparse.Namespace, list[str]]:
         type=positive_int,
         default=argparse.SUPPRESS,
         metavar="N",
-        help="Forwarded to run.py: number of pages to use as the test set.",
+        help="Forwarded to run.py: maximum disjoint evaluation pages to sample.",
     )
     run_options.add_argument(
         "--group-rows",
@@ -359,7 +359,13 @@ def parse_args(argv: Sequence[str]) -> tuple[argparse.Namespace, list[str]]:
         "--reference-model",
         default=argparse.SUPPRESS,
         metavar="MODEL",
-        help="Forwarded to run.py: model for template inference and ground truth.",
+        help="Forwarded to run.py: model for train/test ground truth.",
+    )
+    run_options.add_argument(
+        "--template-model",
+        default=argparse.SUPPRESS,
+        metavar="MODEL",
+        help="Forwarded to run.py: model for template inference.",
     )
     run_options.add_argument(
         "--caveman",
@@ -397,6 +403,7 @@ def build_forwarded_args(args: argparse.Namespace, unknown_args: Sequence[str]) 
         ("--easy-model", "easy_model"),
         ("--hard-model", "hard_model"),
         ("--reference-model", "reference_model"),
+        ("--template-model", "template_model"),
     ):
         if hasattr(args, attr):
             forwarded.extend([flag, str(getattr(args, attr))])

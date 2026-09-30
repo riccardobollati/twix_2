@@ -89,6 +89,7 @@ class UiWorkflowTests(unittest.TestCase):
                 "easyModel": "z-ai/glm-5.3-flash",
                 "hardModel": "qwen/qwen3.8-flash",
                 "referenceModel": "openai/gpt-5.4",
+                "templateModel": "qwen/qwen3.8-flash",
             })
 
             command = _build_run_command(run, root / "input.pdf")
@@ -101,6 +102,8 @@ class UiWorkflowTests(unittest.TestCase):
             command[command.index("--reference-model") + 1],
             "openai/gpt-5.4",
         )
+        self.assertEqual(command[command.index("--template-model") + 1],
+                         "qwen/qwen3.8-flash")
         self.assertEqual(command[command.index("--sonar-drop-percent") + 1], "22")
 
     def test_ui_single_model_mode_uses_only_easy_model_flag(self) -> None:
@@ -136,11 +139,13 @@ class UiWorkflowTests(unittest.TestCase):
                 "easyModel": "z-ai/glm-5.3-flash",
                 "hardModel": "qwen/qwen3.8-flash",
                 "referenceModel": "openai/gpt-5.4",
+                "templateModel": "qwen/qwen3.8-flash",
             })
             assignments = _effective_model_assignments(run)
 
         by_id = {assignment["id"]: assignment for assignment in assignments}
-        self.assertEqual(by_id["template_inference"]["model"], "openai/gpt-5.4")
+        self.assertEqual(by_id["template_inference"]["model"], "qwen/qwen3.8-flash")
+        self.assertEqual(by_id["ground_truth"]["model"], "openai/gpt-5.4")
         self.assertEqual(by_id["block_separation"]["model"], "qwen/qwen3.8-flash")
         self.assertEqual(by_id["record_grouping"]["transport"], "No model call")
         self.assertEqual(by_id["difficulty_routing"]["model"], "qwen/qwen3.8-flash")

@@ -14,6 +14,7 @@ from src.models.catalog import (
     resolve_easy_model,
     resolve_hard_model,
     resolve_reference_model,
+    resolve_template_model,
 )
 
 
@@ -56,6 +57,7 @@ class ModelCatalogTests(unittest.TestCase):
                 "OPENCODE_EASY_MODEL": "openrouter/example/env-easy",
                 "OPENCODE_HARD_MODEL": "openrouter/example/env-hard",
                 "OPENROUTER_GROUND_TRUTH_MODEL": "example/env-reference",
+                "OPENROUTER_TEMPLATE_INFERENCE_MODEL": "example/env-template",
             },
             clear=True,
         ):
@@ -71,6 +73,8 @@ class ModelCatalogTests(unittest.TestCase):
                 resolve_reference_model("openrouter/openai/gpt-5.4"),
                 "openai/gpt-5.4",
             )
+            self.assertEqual(resolve_template_model("z-ai/glm-5.3-flash"),
+                             "z-ai/glm-5.3-flash")
 
     def test_empty_models_fall_back_to_environment(self) -> None:
         with patch.dict(
@@ -79,6 +83,7 @@ class ModelCatalogTests(unittest.TestCase):
                 "OPENCODE_EASY_MODEL": "openrouter/example/env-easy",
                 "OPENCODE_HARD_MODEL": "example/env-hard",
                 "OPENROUTER_GROUND_TRUTH_MODEL": "example/env-reference",
+                "OPENROUTER_TEMPLATE_INFERENCE_MODEL": "example/env-template",
             },
             clear=True,
         ):
@@ -91,6 +96,7 @@ class ModelCatalogTests(unittest.TestCase):
             self.assertEqual(
                 resolve_reference_model(None), "example/env-reference"
             )
+            self.assertEqual(resolve_template_model(None), "example/env-template")
 
 
 if __name__ == "__main__":

@@ -196,6 +196,7 @@ class ApiConfigurationTests(unittest.TestCase):
                 "startPage": ["2"],
                 "easyModel": ["deepseek/deepseek-v4.1-flash"],
                 "hardModel": ["deepseek/deepseek-v4-pro"],
+                "templateModel": ["z-ai/glm-5.3-flash"],
             })
             job = ExtractionJob("job-test", root / "job-test", "input.pdf", config)
             command = manager._build_command(job, root / "input.pdf")
@@ -209,8 +210,12 @@ class ApiConfigurationTests(unittest.TestCase):
             command[command.index("--easy-model") + 1],
             "deepseek/deepseek-v4.1-flash",
         )
+        self.assertEqual(command[command.index("--template-model") + 1],
+                         "z-ai/glm-5.3-flash")
 
     def test_stage_uses_latest_pipeline_marker(self) -> None:
+        self.assertEqual(_stage_from_logs(["cluster_sampling: scanning 20 source pages"]),
+                         "clustering_pages")
         self.assertEqual(
             _stage_from_logs([
                 "train_eval_node: accuracy=0.4",

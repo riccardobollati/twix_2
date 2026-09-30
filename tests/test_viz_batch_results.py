@@ -22,6 +22,12 @@ from viz_batch_results import (
 
 
 class TokenBreakdownTests(unittest.TestCase):
+    def test_template_cost_uses_its_separate_model(self):
+        document = {"template_model": "z-ai/glm-5.3-flash",
+                    "reference_model": "openai/gpt-5.4"}
+        self.assertEqual(_phase_model(document, "template_inference"),
+                         "z-ai/glm-5.3-flash")
+
     def test_separator_and_router_costs_are_attributed_to_hard_model(self):
         document = {
             "llm_model": "vendor/primary",

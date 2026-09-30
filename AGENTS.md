@@ -52,6 +52,8 @@ Environment selection:
 - `OPENROUTER_GROUND_TRUTH_MODEL` configures the reference model used for train
   and final held-out/test ground truth (`openai/gpt-5.4` by default); it uses
   the same `OPENROUTER_API_KEY` as other direct calls.
+- `OPENROUTER_TEMPLATE_INFERENCE_MODEL` configures template inference separately
+  (`openai/gpt-5.4` by default); `--template-model` overrides it for one run.
 - `OPENROUTER_GROUND_TRUTH_MAX_TOKENS` caps held-out/test ground-truth output
   (`128000` by default, GPT-5.4's full output allowance). OpenRouter requires
   the API key's credit limit to cover this maximum during its credit check.
@@ -62,7 +64,7 @@ Environment selection:
   for one run. The hard model always generates block separation and performs
   direct difficulty classification; it also handles hard extractors and repair.
   With `--no-routing`, the easy-model selection is used for every non-reference
-  phase; template inference and ground truth stay on the reference model.
+  phase; template inference and ground truth keep their separate selected models.
 - Never print, commit, or replace `.env`. The CLI currently prints only the
   first ten key characters for batch-job identification.
 
@@ -73,7 +75,9 @@ Environment selection:
 | `api.py` | Asynchronous PDF upload, pipeline status, and extraction-result HTTP API |
 | `run.py` | Main CLI, input resolution, full-document OCR, graph invocation |
 | `src/agents/graph.py` | LangGraph topology and train-repair routing |
+| `src/agents/cluster_sampling.py` | Deterministic table/KV page sampling and source-page split plan |
 | `src/agents/` | Individual graph phases and shared graph state |
+| `test-clustering/` | Shared deterministic table/KV cluster engines and research viewers |
 | `src/prompts/` | Contracts given to DeepSeek and OpenCode |
 | `src/models/` | DeepSeek provider and OpenCode CLI wrapper |
 | `src/pipeline.py` | Portable, model-free runtime copied into every generated pipeline |
@@ -97,6 +101,7 @@ scope.
 
 ```text
 detect_beginning (unless --start-page)
+  -> cluster_sampling
   -> environment_creation
   -> template_inference
   -> block_separation -> run_block_separation -> excluded_blocks_sonar
@@ -117,7 +122,8 @@ Important implications:
 - Train evaluation always runs, even with `--no-eval`. Setting
   `--train-threshold 0` disables only the repair loop.
 - Test evaluation is enabled by default. The generated pipeline is built on the
-  train split and the final `extraction` phase runs it on up to 20 test pages.
+  selected train pages and the final `extraction` phase runs it on up to 20
+  disjoint, spread-out test pages by default.
   With `--no-eval`, it runs
   on the cropped training PDF.
 - `--no-routing` skips difficulty-model calls and uses the selected easy model
@@ -130,16 +136,23 @@ Important implications:
 ### Page and OCR coordinates
 
 `run.py` assigns globally unique OCR word IDs and physical 1-based page numbers.
-After front-matter detection, `environment_creation.py` crops PDF and OCR splits
-from the detected source page and remaps each split to local pages beginning at
-1. Generated scripts operate only in split-local coordinates.
+After front-matter detection, `cluster_sampling.py` scans up to 500 structured
+source pages using independent table and KV clustering. It selects the first
+three structured pages for block order plus pages covering every detected
+cluster. `environment_creation.py` builds train and test PDFs from explicit,
+disjoint physical-page lists and remaps each split to local pages beginning at
+1. `artifacts/clustering/selection.json` and `metadata.json` preserve the
+local-to-source mapping. Generated scripts operate only in split-local coordinates.
 
-In eval mode, at least two usable structured pages are required. The train size
-is capped at half of the usable pages so at least one test page remains.
+In eval mode, at least two usable structured pages are required. A train-page
+selection must leave at least one source page for independent evaluation;
+`--pages` is a minimum and cannot remove cluster-representative pages.
 
 The holdout is an anti-overfitting aid: template inference still sees every
 train-page OCR layout, but generated separation code and its downstream block samples
-use `ocr_extraction_build.csv`, which excludes the last held-out train pages.
+use `ocr_extraction_build.csv`, which excludes only optional held-out train
+pages. First pages and cluster samples always remain available for script
+generation and block samples.
 `train_eval` then runs the finished pipeline on all train pages.
 
 ### Template contract

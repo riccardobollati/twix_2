@@ -24,6 +24,7 @@ REFERENCE_MODEL_OPTIONS = (
     ("GLM 5.3 Flash", "z-ai/glm-5.3-flash"),
     ("Qwen3.8 Flash", "qwen/qwen3.8-flash"),
 )
+TEMPLATE_MODEL_OPTIONS = (("GPT-5.4", DEFAULT_REFERENCE_MODEL), *MODEL_OPTIONS)
 
 
 def direct_model_id(model: str) -> str:
@@ -62,6 +63,13 @@ def resolve_reference_model(override: str | None = None) -> str:
     return direct_model_id(
         (override or "").strip()
         or os.getenv("OPENROUTER_GROUND_TRUTH_MODEL", "").strip()
+        or DEFAULT_REFERENCE_MODEL
+    )
+
+
+def resolve_template_model(override: str | None = None) -> str:
+    return direct_model_id(
+        (override or "").strip()
         or os.getenv("OPENROUTER_TEMPLATE_INFERENCE_MODEL", "").strip()
         or DEFAULT_REFERENCE_MODEL
     )

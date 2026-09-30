@@ -79,6 +79,7 @@ def _stage_from_logs(lines: list[str]) -> str:
         ("routing_blocks", ("block_difficulty_router", "block_samples")),
         ("separating_blocks", ("block_separation", "block_artifacts_node:")),
         ("inferring_template", ("template_inference", "cropped source pages")),
+        ("clustering_pages", ("cluster_sampling",)),
         ("detecting_beginning", ("structured data starts", "extracting full ocr")),
     ]
     ranked = [
@@ -150,6 +151,7 @@ def _parse_config(query: dict[str, list[str]]) -> dict[str, Any]:
         ("hardModel", "hardModel"),
         ("singleModel", "singleModel"),
         ("referenceModel", "referenceModel"),
+        ("templateModel", "templateModel"),
     ):
         value = _query_value(query, query_name, "").strip()
         if len(value) > 200:
@@ -325,6 +327,9 @@ class ExtractionManager:
         reference_model = str(config.get("referenceModel") or "").strip()
         if reference_model:
             command.extend(["--reference-model", reference_model])
+        template_model = str(config.get("templateModel") or "").strip()
+        if template_model:
+            command.extend(["--template-model", template_model])
         if config.get("noRouting"):
             command.append("--no-routing")
             single_model = str(config.get("singleModel") or "").strip()

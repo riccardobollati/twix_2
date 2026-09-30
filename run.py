@@ -67,7 +67,7 @@ from src.agents.graph import build_graph
 from src.models import get_ground_truth_llm, get_llm, get_template_inference_llm
 from src.models.catalog import (
     direct_model_id, resolve_easy_model, resolve_hard_model,
-    resolve_reference_model,
+    resolve_reference_model, resolve_template_model,
 )
 
 
@@ -234,7 +234,7 @@ def main() -> None:
     )
     parser.add_argument(
         "--pages", type=_positive_int, default=3, metavar="N",
-        help="Number of structured-data pages to use as the training set (default: 3).",
+        help="Minimum training pages; the first 3 and all table/KV cluster samples are always included (default: 3).",
     )
     parser.add_argument(
         "--start-page", type=_positive_int, default=None, metavar="N",
@@ -256,14 +256,14 @@ def main() -> None:
     parser.set_defaults(eval=True)
     parser.add_argument(
         "--eval-pages", type=_positive_int, default=20, metavar="N",
-        help="Maximum independent test pages used for final evaluation (default: 20).",
+        help="Maximum disjoint test pages sampled across the remaining document (default: 20).",
     )
     parser.add_argument(
         "--holdout-pages", type=_nonnegative_int, default=0, metavar="N",
         help=(
-            "Number of train pages hidden from script generation but included in "
-            "the train eval, so overfitted scripts fail where the repair loop can "
-            "fix them. Default: 0 (disabled)."
+            "Optional train pages hidden from script generation but included "
+            "in train eval. First pages and cluster samples remain available "
+            "for block samples. Default: 0 (disabled)."
         ),
     )
     parser.add_argument(
@@ -290,9 +290,16 @@ def main() -> None:
     parser.add_argument(
         "--reference-model", default=None, metavar="MODEL",
         help=(
-            "OpenRouter model used for both template inference and train/test "
-            "ground-truth generation. Default: OPENROUTER_GROUND_TRUTH_MODEL, "
-            "then GPT-5.4."
+            "OpenRouter model used for train/test ground-truth generation. "
+            "Default: OPENROUTER_GROUND_TRUTH_MODEL, then GPT-5.4."
+        ),
+    )
+    parser.add_argument(
+        "--template-model", default=None, metavar="MODEL",
+        help=(
+            "OpenRouter model used only for template inference. Choose GPT-5.4, "
+            "DeepSeek, Qwen, GLM, or another OpenRouter slug. Default: "
+            "OPENROUTER_TEMPLATE_INFERENCE_MODEL, then GPT-5.4."
         ),
     )
     parser.add_argument(
@@ -367,7 +374,7 @@ def main() -> None:
 
     # --- step 2: run graph ---
     # The graph handles everything:
-    #   detect_beginning → environment_creation → template_inference →
+    #   detect_beginning → cluster_sampling → environment_creation → template_inference →
     #   block_separation → run_block_separation → excluded_blocks_sonar →
     #   block_artifacts →
     #   block_samples → block_extraction_scripting → collect_extraction_scripts →
@@ -376,6 +383,7 @@ def main() -> None:
     easy_model = resolve_easy_model(args.easy_model)
     hard_model = resolve_hard_model(args.hard_model)
     reference_model = resolve_reference_model(args.reference_model)
+    template_model = resolve_template_model(args.template_model)
     if args.no_routing:
         hard_model = easy_model
         primary_llm = get_llm(model=direct_model_id(easy_model))
@@ -392,7 +400,7 @@ def main() -> None:
         primary_llm,
         train_repair_max_retries=args.train_max_retries,
         ground_truth_llm=get_ground_truth_llm(model=reference_model),
-        template_inference_llm=get_template_inference_llm(model=reference_model),
+        template_inference_llm=get_template_inference_llm(model=template_model),
         difficulty_routing_llm=difficulty_routing_llm,
     )
     graph.invoke({
@@ -404,6 +412,7 @@ def main() -> None:
         "easy_model":                 easy_model,
         "hard_model":                 hard_model,
         "reference_model":            reference_model,
+        "template_model":             template_model,
         "doc_name":                   doc_name,
         "train_pages":                args.pages,
         "eval_mode":                  args.eval,

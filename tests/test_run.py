@@ -105,6 +105,7 @@ class ResolveDocumentTests(unittest.TestCase):
             "--easy-model", "z-ai/glm-5.3-flash",
             "--hard-model", "qwen/qwen3.8-flash",
             "--reference-model", "openai/gpt-5.4",
+            "--template-model", "deepseek/deepseek-v4.1-flash",
         ])
 
         forwarded = build_forwarded_args(args, unknown)
@@ -115,6 +116,7 @@ class ResolveDocumentTests(unittest.TestCase):
                 "--easy-model", "z-ai/glm-5.3-flash",
                 "--hard-model", "qwen/qwen3.8-flash",
                 "--reference-model", "openai/gpt-5.4",
+                "--template-model", "deepseek/deepseek-v4.1-flash",
             ],
         )
 
@@ -157,6 +159,7 @@ class ResolveDocumentTests(unittest.TestCase):
                     "--easy-model", "z-ai/glm-5.3-flash",
                     "--hard-model", "deepseek/deepseek-v4-pro",
                     "--reference-model", "qwen/qwen3.8-flash",
+                    "--template-model", "z-ai/glm-5.3-flash",
                 ]),
                 patch("run.extract_ocr_full"),
                 patch("run.get_llm", return_value=primary) as primary_mock,
@@ -173,7 +176,7 @@ class ResolveDocumentTests(unittest.TestCase):
                 main()
 
             primary_mock.assert_called_once_with(model="z-ai/glm-5.3-flash")
-            template_mock.assert_called_once_with(model="qwen/qwen3.8-flash")
+            template_mock.assert_called_once_with(model="z-ai/glm-5.3-flash")
             ground_truth_mock.assert_called_once_with(model="qwen/qwen3.8-flash")
             self.assertIs(
                 build_mock.call_args.kwargs["template_inference_llm"],
@@ -195,6 +198,7 @@ class ResolveDocumentTests(unittest.TestCase):
             self.assertEqual(state["easy_model"], state["opencode_model"])
             self.assertEqual(state["hard_model"], state["opencode_model"])
             self.assertEqual(state["reference_model"], "qwen/qwen3.8-flash")
+            self.assertEqual(state["template_model"], "z-ai/glm-5.3-flash")
             self.assertTrue(state["no_routing"])
 
     def test_routed_mode_uses_hard_model_for_separator_and_difficulty(self) -> None:

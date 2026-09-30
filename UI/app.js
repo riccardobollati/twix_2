@@ -50,6 +50,8 @@ async function loadModelOptions() {
   $("#single-model").innerHTML = operational;
   $("#reference-model").innerHTML = data.referenceModels.map((model) => `<option value="${escapeHtml(model.value)}">${escapeHtml(model.label)}</option>`).join("");
   $("#reference-model").value = "openai/gpt-5.4";
+  $("#template-model").innerHTML = data.templateModels.map((model) => `<option value="${escapeHtml(model.value)}">${escapeHtml(model.label)}</option>`).join("");
+  $("#template-model").value = "openai/gpt-5.4";
 }
 
 function updateRoutingControls() {
@@ -191,6 +193,7 @@ function renderStatistics() {
     ["Est. generation cost", stats.generation_cost_usd == null ? null : `$${Number(stats.generation_cost_usd).toFixed(4)}`],
     ["Duration", stats.duration_s == null ? null : `${Math.round(stats.duration_s)}s`],
     ["Reference model", stats.reference_model],
+    ["Template model", stats.template_model],
   ].filter(([,value]) => value !== null && value !== undefined);
   summary.innerHTML = metrics.map(([label,value]) => `<div class="stat-card"><small>${escapeHtml(label)}</small><strong>${escapeHtml(value)}</strong></div>`).join("");
 
@@ -202,6 +205,10 @@ function renderStatistics() {
 function renderWorkflow() {
   renderModelAssignments();
   setPdf("#template-pdf", "#template-pdf-empty", workflow.templatePdf);
+  const selection = workflow.clusterSelection;
+  $("#cluster-selection").textContent = selection
+    ? `${selection.table_cluster_count} table clusters · ${selection.kv_cluster_count} KV clusters · ordering pages ${selection.first_source_pages.join(", ")} · train source pages ${selection.train_source_pages.join(", ")} · evaluation source pages ${selection.test_source_pages.join(", ") || "none"}`
+    : "Scanning table and KV layouts…";
   $("#template-json").textContent = pretty(workflow.template, "Waiting for template inference…");
   const templateState = $("#template-state");
   templateState.textContent = workflow.template ? "Template ready" : "Waiting";
@@ -508,7 +515,7 @@ $("#upload-form").addEventListener("submit", async (event) => {
   event.preventDefault();
   const file = $("#pdf-file").files[0];
   if (!file) return showToast("Choose a PDF first.", true);
-  const query = new URLSearchParams({pages:$("#pages").value,holdoutPages:$("#holdout-pages").value,evalPages:$("#eval-pages").value,trainThreshold:$("#threshold").value,sonarDropPercent:$("#sonar-drop-percent").value,trainMaxRetries:"3",eval:String($("#eval").checked),noRouting:String($("#no-routing").checked),easyModel:$("#easy-model").value,hardModel:$("#hard-model").value,singleModel:$("#single-model").value,referenceModel:$("#reference-model").value});
+  const query = new URLSearchParams({pages:$("#pages").value,holdoutPages:$("#holdout-pages").value,evalPages:$("#eval-pages").value,trainThreshold:$("#threshold").value,sonarDropPercent:$("#sonar-drop-percent").value,trainMaxRetries:"3",eval:String($("#eval").checked),noRouting:String($("#no-routing").checked),easyModel:$("#easy-model").value,hardModel:$("#hard-model").value,singleModel:$("#single-model").value,referenceModel:$("#reference-model").value,templateModel:$("#template-model").value});
   const button = $("#upload-form button[type=submit]"); button.disabled=true; button.textContent="Starting…";
   try {
     const response = await fetch(`/api/runs?${query}`,{method:"POST",headers:{"Content-Type":"application/pdf","X-Filename":file.name},body:file});

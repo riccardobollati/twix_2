@@ -37,10 +37,12 @@ from src.models.catalog import (
     DEFAULT_DIRECT_MODEL,
     MODEL_OPTIONS,
     REFERENCE_MODEL_OPTIONS,
+    TEMPLATE_MODEL_OPTIONS,
     direct_model_id,
     resolve_easy_model,
     resolve_hard_model,
     resolve_reference_model,
+    resolve_template_model,
 )
 
 
@@ -148,7 +150,7 @@ def _stage_from_logs(lines: list[str], eval_enabled: bool) -> str:
         (
             "template",
             (
-                "template_inference", "cropped source pages", "train: source pages",
+                "cluster_sampling", "template_inference", "cropped source pages", "train: source pages",
                 "structured data starts", "extracting full ocr", "ocr saved",
             ),
         ),
@@ -224,6 +226,11 @@ def _effective_model_assignments(run: "Run") -> list[dict[str, Any]]:
         or metadata.get("ground_truth_model")
         or resolve_reference_model(str(config.get("referenceModel") or ""))
     )
+    template_model = (
+        metadata.get("template_model")
+        or (resolve_template_model(str(config.get("templateModel") or ""))
+            if "templateModel" in config else reference_model)
+    )
     opencode_model = metadata.get("opencode_model") or opencode_model
     easy_model = metadata.get("easy_model") or easy_model
     hard_model = metadata.get("hard_model") or hard_model
@@ -243,11 +250,18 @@ def _effective_model_assignments(run: "Run") -> list[dict[str, Any]]:
             "transport": "OpenRouter direct",
         },
         {
+            "id": "cluster_sampling",
+            "stage": "template",
+            "task": "Table and KV page clustering",
+            "model": "Deterministic PDF scan",
+            "transport": "No model call",
+        },
+        {
             "id": "template_inference",
             "stage": "template",
             "task": "Template inference",
-            "model": direct_model_id(reference_model),
-            "transport": "Reference · OpenRouter direct",
+            "model": direct_model_id(template_model),
+            "transport": "OpenRouter direct",
         },
         {
             "id": "block_separation",
@@ -360,6 +374,7 @@ def _active_model_assignment_ids(
     candidates: dict[str, list[tuple[tuple[str, ...], list[str]]]] = {
         "template": [
             (("detect_beginning", "structured data starts"), ["beginning_detection"]),
+            (("cluster_sampling",), ["cluster_sampling"]),
             (("template_inference",), ["template_inference"]),
         ],
         "blocks": [
@@ -444,6 +459,7 @@ def _workflow_payload(run: "Run") -> dict[str, Any]:
     return {
         "stage": stage,
         "template": _load_json(root / "template.json"),
+        "clusterSelection": _load_json(root / "artifacts" / "clustering" / "selection.json"),
         "templatePdf": _relative_file(root, train_pdf or source_pdf),
         "testPdf": _relative_file(root, test_pdf or source_pdf),
         "blockImages": [path for path in block_images if path],
@@ -555,6 +571,9 @@ def _build_run_command(run: Run, input_path: Path) -> list[str]:
     reference_model = str(run.config.get("referenceModel", "")).strip()
     if reference_model:
         command.extend(["--reference-model", reference_model])
+    template_model = str(run.config.get("templateModel", "")).strip()
+    if template_model:
+        command.extend(["--template-model", template_model])
 
     if run.config.get("noRouting", False):
         command.append("--no-routing")
@@ -775,6 +794,10 @@ class Handler(BaseHTTPRequestHandler):
                     {"label": label, "value": value}
                     for label, value in REFERENCE_MODEL_OPTIONS
                 ],
+                "templateModels": [
+                    {"label": label, "value": value}
+                    for label, value in TEMPLATE_MODEL_OPTIONS
+                ],
             })
 
         parts = path.split("/")
@@ -968,6 +991,9 @@ class Handler(BaseHTTPRequestHandler):
             "singleModel": query.get("singleModel", [""])[0].strip()[:200],
             "referenceModel": query.get(
                 "referenceModel", ["openai/gpt-5.4"]
+            )[0].strip()[:200],
+            "templateModel": query.get(
+                "templateModel", ["openai/gpt-5.4"]
             )[0].strip()[:200],
             "noRouting": query.get("noRouting", ["false"])[0].lower() == "true",
         }

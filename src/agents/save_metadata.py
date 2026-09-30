@@ -7,7 +7,7 @@ import time
 from typing import Any
 
 _PIPELINE_PHASES = {
-    "template_inference", "block_separation", "run_block_separation",
+    "cluster_sampling", "template_inference", "block_separation", "run_block_separation",
     "block_artifacts", "block_samples",
     "block_difficulty_router", "block_extraction_scripting", "collect_extraction_scripts",
 }
@@ -100,8 +100,11 @@ def save_metadata_node(state: dict[str, Any]) -> dict[str, Any]:
     total_output   = sum(c.get("output_tokens", 0) for c in all_costs) or None
 
     test_pages = None
-    if state.get("test_start") and state.get("test_end"):
-        test_pages = state["test_end"] - state["test_start"] + 1
+    if state.get("eval_mode"):
+        if state.get("test_source_pages") is not None:
+            test_pages = len(state["test_source_pages"])
+        elif state.get("test_start") and state.get("test_end"):
+            test_pages = state["test_end"] - state["test_start"] + 1
 
     metadata = {
         "doc_name":         state.get("doc_name"),
@@ -117,6 +120,14 @@ def save_metadata_node(state: dict[str, Any]) -> dict[str, Any]:
         },
         "train_pages":      state.get("actual_train_pages"),
         "test_pages":       test_pages,
+        "train_source_pages": state.get("train_source_pages"),
+        "build_source_pages": state.get("build_source_pages"),
+        "test_source_pages": state.get("test_source_pages"),
+        "first_source_pages": state.get("first_source_pages"),
+        "cluster_sample_pages": state.get("cluster_sample_pages"),
+        "cluster_coverage": state.get("cluster_coverage"),
+        "table_cluster_count": state.get("table_cluster_count"),
+        "kv_cluster_count": state.get("kv_cluster_count"),
         "eval_mode":        state.get("eval_mode", False),
         "llm_model":        state.get("llm_model"),
         "difficulty_model": state.get("difficulty_model"),
@@ -125,6 +136,7 @@ def save_metadata_node(state: dict[str, Any]) -> dict[str, Any]:
         "easy_model":       state.get("easy_model"),
         "hard_model":       state.get("hard_model"),
         "reference_model":  state.get("reference_model"),
+        "template_model":   state.get("template_model"),
         "block_models":     state.get("block_opencode_models"),
         "run_config": {
             "requested_train_pages": state.get("train_pages"),
@@ -134,6 +146,7 @@ def save_metadata_node(state: dict[str, Any]) -> dict[str, Any]:
             "easy_model": state.get("easy_model"),
             "hard_model": state.get("hard_model"),
             "reference_model": state.get("reference_model"),
+            "template_model": state.get("template_model"),
             "train_accuracy_threshold": state.get("train_accuracy_threshold", 0.0),
             "train_repair_max_retries": state.get("train_repair_max_retries", 3),
             "ground_truth_test_window": state.get("gt_test_window", 20),

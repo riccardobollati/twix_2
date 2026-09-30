@@ -209,7 +209,7 @@ def page_similarity(a: list[dict], b: list[dict]) -> float:
     return (0.65 * total / min(len(a), len(b)) + 0.35 * total / max(len(a), len(b)))
 
 
-def cluster_pages(by_page: dict[int, list[dict]], page_count: int) -> dict:
+def cluster_pages(by_page: dict[int, list[dict]], page_count: int, first_page: int = 1) -> dict:
     active = sorted(by_page)
     n = len(active)
     similarity = np.eye(n)
@@ -241,7 +241,8 @@ def cluster_pages(by_page: dict[int, list[dict]], page_count: int) -> dict:
                           "clusters": {str(key): pages for key, pages in clusters.items()},
                           "representatives": representatives,
                           "mean_within_similarity": round(float(np.mean(within)), 4) if within else None,
-                          "first_five_cluster_coverage": len({labels[i] for i, page in enumerate(active) if page <= 5}) / len(clusters)}
+                          "first_five_cluster_coverage": len({labels[i] for i, page in enumerate(active)
+                                                              if first_page <= page < first_page + 5}) / len(clusters)}
     return outcomes
 
 
@@ -265,17 +266,22 @@ def overlay(page, groups: list[dict], path: Path, dpi: int = 110) -> None:
 
 
 def process(pdf_path: Path, max_pages: int, output_root: Path, scan_root: Path | None,
-            overlay_limit: int, result_name: str | None = None) -> dict:
+            overlay_limit: int, result_name: str | None = None, *, start_page: int = 1,
+            scan_report: dict | None = None) -> dict:
     import pdfplumber
 
     with pdfplumber.open(pdf_path) as pdf:
-        numbers = list(range(1, min(len(pdf.pages), max_pages) + 1))
-        scan = base.scan_report(pdf_path, numbers, scan_root, result_name)
+        if not 1 <= start_page <= len(pdf.pages):
+            raise ValueError(f"start page {start_page} is outside the PDF")
+        numbers = list(range(start_page, min(len(pdf.pages), start_page + max_pages - 1) + 1))
+        scan = scan_report if scan_report is not None else base.scan_report(pdf_path, numbers, scan_root, result_name)
+        if scan.get("pages") != numbers:
+            raise ValueError("scan pages do not match the requested source pages")
         page_sizes = {number: (pdf.pages[number - 1].width, pdf.pages[number - 1].height)
                       for number in numbers}
         by_page, families = extract_groups(scan, page_sizes)
         by_page, families = reject_tabular_rows(pdf, by_page, families)
-        outcomes = cluster_pages(by_page, len(numbers))
+        outcomes = cluster_pages(by_page, len(numbers), start_page)
         output = output_root / (result_name or pdf_path.stem)
         output.mkdir(parents=True, exist_ok=True)
         representatives = sorted({page for outcome in outcomes.values() for page in outcome["representatives"].values()})
@@ -291,6 +297,7 @@ def process(pdf_path: Path, max_pages: int, output_root: Path, scan_root: Path |
             "version": 1, "kind": "kv", "result_name": result_name or pdf_path.stem,
             "source_pdf": str(pdf_path), "source_total_pages": len(pdf.pages),
             "source_mtime_ns": pdf_path.stat().st_mtime_ns, "page_count": len(numbers),
+            "source_start_page": start_page,
             "families": families, "skipped_pages": [page for page in numbers if page not in by_page],
             "pages": [{"page": page, "eligible": page in by_page,
                        "groups": [{"family": group["family"], "keys": group["keys"],
