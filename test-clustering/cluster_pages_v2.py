@@ -34,6 +34,9 @@ METHODS = {
     "structure_complete": ("complete", 0.35, 0.82),
     "structure_average": ("average", 0.35, 0.82),
 }
+TABLE_ALGORITHM_REVISION = 6
+LOCAL_COLUMN_MIN_SIMILARITY = 0.80
+LOCAL_MISMATCH_CAP = 0.79
 
 
 def noisy_scan(report: dict, headers_by_page: dict[int, list[dict]], page_count: int) -> bool:
@@ -229,6 +232,90 @@ def header_geometry(headers: list[dict], width: float, height: float) -> np.ndar
     return np.concatenate(parts)
 
 
+def table_columns(headers: list[dict], lines: list[dict], width: float) -> list[dict]:
+    """Normalized vertical-rule positions for each detected table separately."""
+    result = []
+    for header in headers:
+        left, top, right, _ = header["bbox"]
+        span = right - left
+        if span <= 0:
+            continue
+        margin = 0.02 * span
+        positions = sorted((line["x0"] + line["x1"]) / 2 for line in lines
+                           if base.vertical(line) and left - margin <= line["x0"] <= right + margin
+                           and line["bottom"] >= top)
+        unique = []
+        for x in positions:
+            if not unique or x - unique[-1] > max(2.0, 0.003 * width):
+                unique.append(x)
+        result.append({"family": header.get("family"), "x_span": [left / width, right / width],
+                       "positions": [(x - left) / span for x in unique]})
+    return result
+
+
+def column_similarity(left: list[float], right: list[float], tolerance: float = 0.016) -> float:
+    """One-to-one rule matches; one added column leaves most boundaries intact."""
+    if not left or not right:
+        return 0.0
+    used = set()
+    matched = 0
+    for x in left:
+        candidates = [(abs(x - y), index) for index, y in enumerate(right)
+                      if index not in used and abs(x - y) <= tolerance]
+        if candidates:
+            _, index = min(candidates)
+            used.add(index)
+            matched += 1
+    return matched / max(len(left), len(right))
+
+
+def column_counts_reliable(features: list[dict]) -> bool:
+    """A fluctuating rule detector cannot support a hard local mismatch gate."""
+    counts: dict[str, list[int]] = defaultdict(list)
+    for feature in features:
+        for region in feature["table_columns"]:
+            if region.get("family") and len(region["positions"]) >= 4:
+                counts[region["family"]].append(len(region["positions"]))
+    for values in counts.values():
+        if len(values) < 3:
+            continue
+        low, high = np.percentile(values, [10, 90])
+        if high - low > max(3.0, 0.25 * median(values)):
+            return False
+    return True
+
+
+def local_layout_mismatch(a: dict, b: dict) -> bool:
+    """A changed table component must not be hidden by other, unchanged tables."""
+    if not (a.get("has_red") and b.get("has_red")
+            and a.get("column_layout_reliable", True) and b.get("column_layout_reliable", True)):
+        return False
+    left = a.get("table_columns", [])
+    right = b.get("table_columns", [])
+    for region in left:
+        first = region["positions"]
+        if len(first) < 4:
+            continue
+        l0, l1 = region["x_span"]
+        same_family = [other for other in right if region.get("family") is not None
+                       and other.get("family") == region["family"] and len(other["positions"]) >= 4]
+        candidates = same_family[:]
+        if not candidates:
+            # Different scanner families may still occupy the same table slot.
+            # The local column signature decides whether they are compatible.
+            for other in right:
+                second = other["positions"]
+                if len(second) < 4:
+                    continue
+                r0, r1 = other["x_span"]
+                overlap = max(0.0, min(l1, r1) - max(l0, r0)) / max(1e-9, min(l1 - l0, r1 - r0))
+                if overlap >= 0.5:
+                    candidates.append(other)
+        if candidates and max(column_similarity(first, other["positions"]) for other in candidates) < LOCAL_COLUMN_MIN_SIMILARITY:
+            return True
+    return False
+
+
 def cosine_nonempty(a: np.ndarray, b: np.ndarray) -> float:
     norm = np.linalg.norm(a) * np.linalg.norm(b)
     return float(np.dot(a, b) / norm) if norm else 0.0
@@ -261,6 +348,8 @@ def pair_similarity(a: dict, b: dict, header_weight: float) -> tuple[float, floa
             combined *= 0.96
     else:
         combined = 0.0
+    if local_layout_mismatch(a, b):
+        combined = min(combined, LOCAL_MISMATCH_CAP)
     return max(0.0, min(1.0, combined)), head, structural
 
 
@@ -276,6 +365,7 @@ def components(features: list[dict]) -> tuple[np.ndarray, np.ndarray]:
 
 def scores(features: list[dict], header_weight: float,
            parts: tuple[np.ndarray, np.ndarray] | None = None) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    n = len(features)
     header, structure = parts if parts is not None else components(features)
     has_header = np.array([bool(f["headers"]) for f in features])
     has_red = np.array([f["has_red"] for f in features])
@@ -291,6 +381,10 @@ def scores(features: list[dict], header_weight: float,
     combined[fallback] = ((1 - word_weight) * header + word_weight * structure)[fallback]
     mismatch = np.not_equal.outer(has_red, has_red)
     combined[fallback & mismatch] *= 0.96
+    for i in range(n):
+        for j in range(i + 1, n):
+            if local_layout_mismatch(features[i], features[j]):
+                combined[i, j] = combined[j, i] = min(combined[i, j], LOCAL_MISMATCH_CAP)
     np.fill_diagonal(combined, 1.0)
     return combined, header, structure
 
@@ -336,6 +430,10 @@ def process(pdf_path: Path, max_pages: int, output_root: Path, scan_root: Path |
         scan = base.scan_report(pdf_path, numbers, scan_root, result_name)
         headers_by_page = base.table_headers(scan)
         replace_noisy_headers = noisy_scan(scan, headers_by_page, len(numbers))
+        family_count = sum(family["kind"] == "table" for family in scan["families"])
+        typical_tables = median(len(headers_by_page.get(number, [])) for number in numbers)
+        column_layout_reliable = (not replace_noisy_headers
+                                  and family_count <= 2 * max(1, typical_tables))
         consensus_by_page = consensus_headers(pdf, numbers) if replace_noisy_headers else {}
         features = []
         for number in numbers:
@@ -373,10 +471,15 @@ def process(pdf_path: Path, max_pages: int, output_root: Path, scan_root: Path |
                                  header_words=base.header_signature(headers),
                                  header_geometry=header_geometry(headers, page.width, page.height),
                                  structure=structure_signature(red if has_red else inferred, page.width, page.height),
+                                 table_columns=table_columns(headers, red, page.width) if has_red else [],
+                                 column_layout_reliable=column_layout_reliable,
                                  red_lines=red, green_lines=inferred, blue_lines=blue,
                                  has_red=has_red, eligible=bool(headers or has_red), word_count=len(words)))
             if number == 1 or number % 25 == 0 or number == len(numbers):
                 print(f"  page {number}/{len(numbers)}: {len(red)} red, {len(blue)} blue, {len(inferred)} inferred", flush=True)
+        column_layout_reliable = column_layout_reliable and column_counts_reliable(features)
+        for feature in features:
+            feature["column_layout_reliable"] = column_layout_reliable
         active = [f for f in features if f["eligible"]]
         outcomes = {}
         parts = components(active) if active else None
@@ -406,16 +509,19 @@ def process(pdf_path: Path, max_pages: int, output_root: Path, scan_root: Path |
         for number in pictures:
             base.overlay(pdf.pages[number - 1], features[number - 1], output / f"page_{number:04d}_features.png")
         result = {
-            "version": 2, "result_name": result_name or pdf_path.stem,
+            "version": 2, "algorithm_revision": TABLE_ALGORITHM_REVISION,
+            "result_name": result_name or pdf_path.stem,
             "source_pdf": str(pdf_path), "source_total_pages": len(pdf.pages),
             "source_mtime_ns": pdf_path.stat().st_mtime_ns, "page_count": len(numbers),
+            "column_layout_reliable": column_layout_reliable,
             "skipped_pages": [f["page"] for f in features if not f["eligible"]],
-            "feature_definitions": {"red": "usable PDF border lines near detected headers, summarized by column positions and row spacing",
+            "feature_definitions": {"red": "usable PDF border lines near detected headers, summarized by column positions and row spacing; each table's local column rules also impose a mismatch gate",
                                     "blue": "header text overlap plus header-label geometry",
                                     "green": "word-center row/column alignment below headers, only when usable red borders are absent"},
             "pages": [{"page": f["page"], "red_line_count": len(f["red_lines"]),
                        "green_line_count": len(f["green_lines"]), "blue_line_count": len(f["blue_lines"]),
                        "word_count": f["word_count"], "header_families": f["families"],
+                       "table_column_counts": [len(region["positions"]) for region in f["table_columns"]],
                        "has_red_structure": f["has_red"], "eligible": f["eligible"]} for f in features],
             "algorithms": outcomes, "overlays": [f"page_{number:04d}_features.png" for number in pictures],
         }
@@ -425,7 +531,7 @@ def process(pdf_path: Path, max_pages: int, output_root: Path, scan_root: Path |
 
 def write_comparison(reports: list[dict], output_root: Path) -> Path:
     lines = ["# Clustering viewing 2", "", "Deterministic page clusters from blue header labels/geometry and red PDF table borders. A repeated, horizontally aligned header band is recovered when the candidate scanner misses the header or confuses body rows with headers. Green word alignment is inferred only where usable red structure is absent and a header is present.", "",
-             "All methods use the same features with different weights and hierarchical linkage. Complete linkage favors representative clusters; average linkage shows the broader alternative. Missing header or border evidence is not treated as a perfect match.", "",
+             "All methods use the same features with different weights and hierarchical linkage. When the header-family scan and column-rule counts are stable, each detected bordered table has an independent normalized column-rule sequence; a strong mismatch in one table caps page similarity even if another table is unchanged. Documents with many competing header families or unstable rule counts use the page-wide score. Complete linkage favors representative clusters; average linkage shows the broader alternative. Missing header or border evidence is not treated as a perfect match.", "",
              "## Corpus summary", "",
              f"{len(reports)} PDFs; {sum(report['page_count'] for report in reports):,} scanned pages; {sum(len(report['skipped_pages']) for report in reports):,} pages without eligible table evidence.", "",
              "| Method | Total clusters | Singleton clusters | Mean first 5 coverage |", "| --- | ---: | ---: | ---: |"]

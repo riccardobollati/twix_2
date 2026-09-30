@@ -14,6 +14,7 @@ import build_html  # noqa: E402
 import run_all  # noqa: E402
 import verify_results  # noqa: E402
 import cluster_pages_v2  # noqa: E402
+import run_viewing_2  # noqa: E402
 
 
 def sample_report(pdf_path: Path) -> dict:
@@ -38,6 +39,25 @@ def sample_report(pdf_path: Path) -> dict:
 
 
 class ClusteringHtmlTests(unittest.TestCase):
+    def test_table_view_rebuilds_results_from_an_older_clustering_revision(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            pdf_path = root / "sample.pdf"
+            pdf_path.touch()
+            result_path = root / "sample" / "clusters.json"
+            result_path.parent.mkdir()
+            report = sample_report(pdf_path)
+            report["version"] = 2
+            report["algorithms"] = {name: next(iter(report["algorithms"].values()))
+                                    for name in cluster_pages_v2.METHODS}
+            for filename in report["overlays"]:
+                (result_path.parent / filename).touch()
+            result_path.write_text(json.dumps(report), encoding="utf-8")
+            self.assertFalse(run_viewing_2.valid_result(result_path, pdf_path.resolve(), 3, 2))
+            report["algorithm_revision"] = cluster_pages_v2.TABLE_ALGORITHM_REVISION
+            result_path.write_text(json.dumps(report), encoding="utf-8")
+            self.assertTrue(run_viewing_2.valid_result(result_path, pdf_path.resolve(), 3, 2))
+
     def test_second_viewer_uses_its_own_methods_and_title(self):
         with tempfile.TemporaryDirectory() as temporary:
             base = Path(temporary)

@@ -11,7 +11,7 @@ from run_all import HERE, ROOT, sources, valid_result
 
 
 def validate_report(report: dict, folder: Path, total: int, max_pages: int,
-                    methods: list[str] | None = None) -> list[str]:
+                    methods: list[str] | None = None, kind: str = "table") -> list[str]:
     methods = methods or METHODS
     errors = []
     expected = set(range(1, min(total, max_pages) + 1))
@@ -21,7 +21,7 @@ def validate_report(report: dict, folder: Path, total: int, max_pages: int,
         errors.append("page metadata does not cover the scanned range exactly")
     eligible = {page["page"] for page in page_entries if page.get("eligible")}
     if set(report.get("skipped_pages", [])) != expected - eligible:
-        errors.append("skipped pages do not match pages without table evidence")
+        errors.append(f"skipped pages do not match pages without {kind} evidence")
     overlays = set(report.get("overlays", []))
     for name in overlays:
         if not (folder / name).is_file():
@@ -43,9 +43,10 @@ def validate_report(report: dict, folder: Path, total: int, max_pages: int,
         for key, number in representatives.items():
             if number not in clusters.get(key, []):
                 errors.append(f"{method} representative {number} is outside cluster {key}")
-            if f"page_{number:04d}_features.png" not in overlays:
+            image = f"kv_page_{number:04d}.png" if kind == "kv" else f"page_{number:04d}_features.png"
+            if image not in overlays:
                 errors.append(f"{method} representative {number} has no overlay")
-    if not (folder / "index.html").is_file():
+    if not (folder / ("kv.html" if kind == "kv" else "index.html")).is_file():
         errors.append("missing document HTML")
     return errors
 
@@ -58,8 +59,9 @@ def main() -> int:
     parser.add_argument("--view", type=int, choices=(1, 2), default=1)
     args = parser.parse_args()
     if args.view == 2:
+        from cluster_kv import METHODS as KV_METHODS
         from cluster_pages_v2 import METHODS as V2_METHODS
-        from run_viewing_2 import valid_result as valid_v2
+        from run_viewing_2 import valid_kv_result, valid_result as valid_v2
         methods, validator = list(V2_METHODS), valid_v2
         if args.output_root == HERE:
             args.output_root = HERE / "viewing-2"
@@ -76,8 +78,18 @@ def main() -> int:
             continue
         report = json.loads(result_path.read_text(encoding="utf-8"))
         problems.extend(f"{name}: {message}" for message in validate_report(report, folder, total, args.max_pages, methods))
+        if args.view == 2:
+            kv_path = folder / "kv_clusters.json"
+            if not valid_kv_result(kv_path, pdf_path, total, args.max_pages):
+                problems.append(f"{name}: missing, stale, or incomplete kv_clusters.json")
+            else:
+                kv_report = json.loads(kv_path.read_text(encoding="utf-8"))
+                problems.extend(f"{name} KV: {message}" for message in
+                                validate_report(kv_report, folder, total, args.max_pages,
+                                                list(KV_METHODS), "kv"))
         total_scanned += report["page_count"]
-    for filename in ("index.html", "summary.json", "report.md"):
+    for filename in (("index.html", "summary.json", "report.md", "kv_report.md")
+                     if args.view == 2 else ("index.html", "summary.json", "report.md")):
         if not (args.output_root / filename).is_file():
             problems.append(f"missing {filename}")
     summary_path = args.output_root / "summary.json"

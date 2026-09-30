@@ -53,11 +53,13 @@ def document_html(name: str, report: dict, pdf_path: Path, output: Path,
     methods = methods or METHODS
     primary = "balanced_complete" if title == "Clustering viewing 2" and "balanced_complete" in methods else methods[0]
     broad = methods[-1]
+    kv_link = '<a href="kv.html">KV clusters</a>' if report.get("version") == 2 and (output / "kv.html").is_file() else ""
     pdf_url = quote(os.path.relpath(pdf_path.resolve(), output.resolve()), safe="/.")
     payload = {
         "methods": {method: report["algorithms"][method] for method in methods},
         "pages": {str(item["page"]): {key: item[key] for key in ("red_line_count", "green_line_count",
-                                                       "blue_line_count", "word_count", "header_families", "eligible")}
+                                                       "blue_line_count", "word_count", "header_families", "eligible",
+                                                       "table_column_counts") if key in item}
                   for item in report["pages"]},
         "overlays": report["overlays"],
         "pdf": pdf_url,
@@ -69,11 +71,13 @@ def document_html(name: str, report: dict, pdf_path: Path, output: Path,
             if limited else f"Scanned all {total} pages.")
     if skipped == report["page_count"] and report.get("version") == 2:
         note += " No eligible table headers or border grids were found in the scanned pages."
+    if report.get("version") == 2 and report.get("column_layout_reliable") is False:
+        note += " This document has many competing header families, so the local column mismatch gate was not applied."
     return f"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{escape(name)} · {escape(title)}</title><style>{CSS}</style></head>
 <body><header><a href="../index.html">← All documents</a><h1>{escape(name)}</h1><p class="sub">{escape(title)}</p></header>
-<main>
+<main><nav class="bar"><strong>Table clusters</strong>{kv_link}</nav>
 <div class="summary-grid"><div class="card"><div class="label">Pages scanned</div><div class="value">{report['page_count']} / {total}</div></div>
 <div class="card"><div class="label">{primary.replace('_', ' ')} clusters</div><div class="value">{report['algorithms'][primary]['cluster_count']}</div></div>
 <div class="card"><div class="label">{broad.replace('_', ' ')} clusters</div><div class="value">{report['algorithms'][broad]['cluster_count']}</div></div>
@@ -89,7 +93,7 @@ const methods=DATA.methods, pages=DATA.pages, overlaySet=new Set(DATA.overlays),
 let currentMethod='{primary}', currentPage=null;
 function el(tag,cls,text){{const node=document.createElement(tag);if(cls)node.className=cls;if(text!==undefined)node.textContent=String(text);return node}}
 function pdfPage(number){{return DATA.pdf+'#page='+number}}
-function showPage(number){{const info=pages[String(number)];if(!info)return;currentPage=number;preview.replaceChildren();preview.appendChild(el('h2','',`Page ${{number}}`));const wordText=info.red_line_count>0&&info.word_count===0?'word alignment not used':`${{info.word_count}} words`;const meta=el('p','muted',`${{info.red_line_count}} red · ${{info.green_line_count}} green · ${{info.blue_line_count}} blue lines · ${{wordText}}`);preview.appendChild(meta);const link=el('a','','Open page in PDF ↗');link.href=pdfPage(number);link.target='_blank';preview.appendChild(link);const filename=`page_${{String(number).padStart(4,'0')}}_features.png`;if(overlaySet.has(filename)){{const image=el('img');image.src=filename;image.alt=`Feature overlay for page ${{number}}`;preview.appendChild(image)}}else{{const frame=el('iframe');frame.src=pdfPage(number);frame.title=`PDF page ${{number}}`;preview.appendChild(frame)}}document.querySelectorAll('.page-button').forEach(button=>button.classList.toggle('active',Number(button.dataset.page)===number))}}
+function showPage(number){{const info=pages[String(number)];if(!info)return;currentPage=number;preview.replaceChildren();preview.appendChild(el('h2','',`Page ${{number}}`));const wordText=info.red_line_count>0&&info.word_count===0?'word alignment not used':`${{info.word_count}} words`;const columns=info.table_column_counts?.length?` · column rules per table: ${{info.table_column_counts.join(' / ')}}`:'';const meta=el('p','muted',`${{info.red_line_count}} red · ${{info.green_line_count}} green · ${{info.blue_line_count}} blue lines · ${{wordText}}${{columns}}`);preview.appendChild(meta);const link=el('a','','Open page in PDF ↗');link.href=pdfPage(number);link.target='_blank';preview.appendChild(link);const filename=`page_${{String(number).padStart(4,'0')}}_features.png`;if(overlaySet.has(filename)){{const image=el('img');image.src=filename;image.alt=`Feature overlay for page ${{number}}`;preview.appendChild(image)}}else{{const frame=el('iframe');frame.src=pdfPage(number);frame.title=`PDF page ${{number}}`;preview.appendChild(frame)}}document.querySelectorAll('.page-button').forEach(button=>button.classList.toggle('active',Number(button.dataset.page)===number))}}
 function render(){{currentMethod=methodControl.value;const outcome=methods[currentMethod];metricRoot.replaceChildren();for(const [label,value] of [['Clusters',outcome.cluster_count],['Silhouette',outcome.mean_silhouette===null?'—':outcome.mean_silhouette],['First 5 coverage',outcome.first_five_cluster_coverage===null?'—':Math.round(outcome.first_five_cluster_coverage*100)+'%'],['Header-family agreement',outcome.header_family_agreement===null?'—':Math.round(outcome.header_family_agreement*100)+'%']]){{metricRoot.appendChild(el('span','',`${{label}}: ${{value}}`))}}clusterRoot.replaceChildren();for(const [clusterId,numbers] of Object.entries(outcome.clusters)){{const card=el('article','card cluster');card.id='cluster-'+clusterId;const top=el('div','cluster-top');top.appendChild(el('h3','',`Cluster ${{clusterId}}`));top.appendChild(el('span','pill',`${{numbers.length}} page${{numbers.length===1?'':'s'}}`));card.appendChild(top);const rep=outcome.representatives[clusterId];card.appendChild(el('p','muted',`Representative: page ${{rep}}`));const filename=`page_${{String(rep).padStart(4,'0')}}_features.png`;if(overlaySet.has(filename)){{const image=el('img');image.src=filename;image.alt=`Representative page ${{rep}} feature overlay`;image.onclick=()=>showPage(rep);card.appendChild(image)}}const box=el('div','pages');for(const number of numbers){{const button=el('button','page-button',number);button.dataset.page=number;button.onclick=()=>showPage(number);box.appendChild(button)}}card.appendChild(box);clusterRoot.appendChild(card)}}if(currentPage!==null&&pages[String(currentPage)])showPage(currentPage)}}
 methodControl.onchange=render;document.getElementById('find').onclick=()=>{{const number=Number(document.getElementById('jump').value);if(!pages[String(number)])return;let containing=null;for(const [key,numbers] of Object.entries(methods[currentMethod].clusters))if(numbers.includes(number)){{containing=key;break}}showPage(number);if(containing)document.getElementById('cluster-'+containing)?.scrollIntoView({{behavior:'smooth',block:'start'}})}};document.getElementById('jump').onkeydown=event=>{{if(event.key==='Enter')document.getElementById('find').click()}};render();
 </script></body></html>"""
@@ -106,21 +110,24 @@ def index_html(rows: list[dict], title: str = "Table clustering", is_v2: bool = 
             tight = row["tight_clusters"]
             structure = row["structure_clusters"]
             coverage = _percent(row["first_five_coverage"])
+            kv = (f'<a href="{quote(row["name"], safe="")}/kv.html">{row["kv_clusters"]}</a>'
+                  if is_v2 and row.get("kv_clusters") is not None else "—")
         else:
             link = name
             badge = '<span class="pill bad">Pending</span>'
             scanned = f"— / {row['total']}"
             tight = structure = coverage = "—"
-        table_rows.append(f"<tr data-name=\"{name.casefold()}\"><td>{link}</td><td>{badge}</td><td>{scanned}</td><td>{tight}</td><td>{structure}</td><td>{coverage}</td></tr>")
+            kv = "—"
+        table_rows.append(f"<tr data-name=\"{name.casefold()}\"><td>{link}</td><td>{badge}</td><td>{scanned}</td><td>{tight}</td><td>{structure}</td><td>{coverage}</td>{f'<td>{kv}</td>' if is_v2 else ''}</tr>")
     done = sum(row["status"] == "complete" for row in rows)
     return f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{escape(title)} · all documents</title><style>{CSS}</style></head><body><header><h1>{escape(title)}</h1><p class="sub">Browse page groups from all source PDFs</p></header>
 <main><div class="summary-grid"><div class="card"><div class="label">Documents processed</div><div class="value">{done} / {len(rows)}</div></div>
 <div class="card"><div class="label">Pages scanned</div><div class="value">{sum(row.get('scanned',0) for row in rows if row['status']=='complete'):,}</div></div></div>
-<p>{'Clusters use blue headers and red PDF borders. Green word alignment is used only below a header when usable red structure is absent.' if is_v2 else 'Clusters combine red PDF borders, green word-center alignments, and blue repeated headers.'} Open a document to compare five deterministic methods and inspect its representative overlays or any source PDF page.</p>
+<p>{'Table clusters use blue headers and red PDF borders; green word alignment is used only below a header when usable red structure is absent. KV clusters are computed independently from recurring key/value layouts.' if is_v2 else 'Clusters combine red PDF borders, green word-center alignments, and blue repeated headers.'} Open a document to compare deterministic methods and inspect its representative overlays or any source PDF page.</p>
 <p class="note">Documents longer than 500 pages use the first 500, following the scan limit. The scanned/total column shows the coverage for each PDF. These groups are candidates for page sampling; they are not verified table identities.</p>
-<div class="bar"><label for="filter">Filter documents</label><input id="filter" type="search" placeholder="Type a document name"><a href="report.md">Comparison report</a><a href="summary.json">Summary JSON</a></div>
-<div class="table-wrap"><table><thead><tr><th>Document</th><th>Status</th><th>Pages scanned / total</th><th>{'Balanced complete' if is_v2 else 'Tight'} clusters</th><th>{'Structure average' if is_v2 else 'Structure'} clusters</th><th>First 5 coverage</th></tr></thead><tbody>{''.join(table_rows)}</tbody></table></div>
+<div class="bar"><label for="filter">Filter documents</label><input id="filter" type="search" placeholder="Type a document name"><a href="report.md">Table report</a>{'<a href="kv_report.md">KV report</a>' if is_v2 else ''}<a href="summary.json">Summary JSON</a></div>
+<div class="table-wrap"><table><thead><tr><th>Document</th><th>Status</th><th>Pages scanned / total</th><th>{'Balanced complete' if is_v2 else 'Tight'} clusters</th><th>{'Structure average' if is_v2 else 'Structure'} clusters</th><th>First 5 coverage</th>{'<th>KV clusters</th>' if is_v2 else ''}</tr></thead><tbody>{''.join(table_rows)}</tbody></table></div>
 </main><script>document.getElementById('filter').oninput=e=>{{const q=e.target.value.toLowerCase();document.querySelectorAll('tbody tr').forEach(row=>row.hidden=!row.dataset.name.includes(q))}}</script></body></html>"""
 
 
@@ -141,6 +148,12 @@ def build(output_root: Path, sources: list[tuple[str, Path, int]],
                            tight_clusters=report["algorithms"][primary]["cluster_count"],
                            structure_clusters=report["algorithms"][methods[-1]]["cluster_count"],
                            first_five_coverage=report["algorithms"][primary]["first_five_cluster_coverage"])
+                kv_path = folder / "kv_clusters.json"
+                if title == "Clustering viewing 2" and kv_path.is_file() and (folder / "kv.html").is_file():
+                    kv_report = json.loads(kv_path.read_text(encoding="utf-8"))
+                    if (kv_report.get("source_pdf") == str(pdf_path.resolve())
+                            and kv_report.get("source_mtime_ns") == pdf_path.stat().st_mtime_ns):
+                        row["kv_clusters"] = kv_report["algorithms"]["kv_balanced"]["cluster_count"]
                 (folder / "index.html").write_text(document_html(name, report, pdf_path, folder, methods, title), encoding="utf-8")
         rows.append(row)
     (output_root / "summary.json").write_text(json.dumps(rows, indent=2) + "\n", encoding="utf-8")

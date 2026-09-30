@@ -60,12 +60,48 @@ class ClusterPagesV2Tests(unittest.TestCase):
         self.assertEqual(len(v2.recover_headers(shifted, [], families)), 1)
         self.assertLessEqual(shifted.bbox[2], 175)
 
-    def feature(self, words=(), red=True, geometry=None):
+    def feature(self, words=(), red=True, geometry=None, table_columns=None):
         vec = np.zeros(80)
         vec[0] = 1
         return {"header_words": {word: 1 for word in words}, "headers": [1] if words else [],
                 "header_geometry": np.ones(40) if geometry is None else geometry,
-                "structure": vec, "has_red": red}
+                "structure": vec, "has_red": red, "table_columns": table_columns or []}
+
+    def test_one_changed_table_cannot_hide_behind_an_unchanged_table(self):
+        old_left = {"x_span": [0.05, 0.45], "positions": [0.10, 0.20, 0.30, 0.40, 0.50]}
+        new_left = {"x_span": [0.05, 0.45], "positions": [0.10, 0.25, 0.35, 0.45, 0.55]}
+        right = {"x_span": [0.55, 0.95], "positions": [0.10, 0.20, 0.30, 0.40, 0.50]}
+        first = self.feature(("size", "width", "depth"), table_columns=[old_left, right])
+        changed = self.feature(("size", "width", "depth"), table_columns=[new_left, right])
+        score, _, _ = v2.pair_similarity(first, changed, 0.60)
+        self.assertLess(score, v2.METHODS["balanced_complete"][2])
+        self.assertAlmostEqual(v2.scores([first, changed], 0.60)[0][0, 1], score)
+        first["column_layout_reliable"] = changed["column_layout_reliable"] = False
+        self.assertEqual(v2.pair_similarity(first, changed, 0.60)[0], 1.0)
+        first["column_layout_reliable"] = changed["column_layout_reliable"] = True
+        optional = self.feature(("size", "width", "depth"), table_columns=[
+            {"x_span": [0.05, 0.45], "positions": [0.10, 0.20, 0.30, 0.40, 0.50, 0.60]}, right])
+        self.assertGreaterEqual(v2.pair_similarity(first, optional, 0.60)[0],
+                                v2.METHODS["balanced_complete"][2])
+
+    def test_stacked_tables_match_their_own_families(self):
+        first = {"family": "table_001", "x_span": [0.1, 0.9],
+                 "positions": [0.10, 0.20, 0.30, 0.40, 0.50]}
+        second = {"family": "table_002", "x_span": [0.1, 0.9],
+                  "positions": [0.12, 0.24, 0.36, 0.48, 0.60]}
+        a = self.feature(("size", "width"), table_columns=[first, second])
+        b = self.feature(("size", "width"), table_columns=[first, second])
+        self.assertFalse(v2.local_layout_mismatch(a, b))
+        self.assertEqual(v2.pair_similarity(a, b, 0.60)[0], 1.0)
+
+    def test_unstable_column_detection_disables_strong_local_gate(self):
+        def observations(counts):
+            return [self.feature(table_columns=[{"family": "table_001", "x_span": [0.1, 0.9],
+                                                 "positions": [index / 100 for index in range(count)]}])
+                    for count in counts]
+
+        self.assertTrue(v2.column_counts_reliable(observations([14] * 8 + [15] * 5)))
+        self.assertFalse(v2.column_counts_reliable(observations([4, 5, 6, 80, 82, 85])))
 
     def test_repeated_horizontal_table_rules_count_without_vertical_detection(self):
         lines = [dict(x0=x0, x1=x1, top=y, bottom=y)
