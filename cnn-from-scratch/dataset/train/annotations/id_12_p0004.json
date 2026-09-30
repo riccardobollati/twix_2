@@ -1,9 +1,0 @@
-{
-  "image": "id_12_p0004.png",
-  "width": 990,
-  "height": 1280,
-  "regions": [
-    {"class": "key_value", "box": [28, 49, 753, 121]},
-    {"class": "table", "box": [28, 158, 961, 1280]}
-  ]
-}

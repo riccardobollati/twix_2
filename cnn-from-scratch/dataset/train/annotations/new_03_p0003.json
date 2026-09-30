@@ -1,8 +1,0 @@
-{
-  "image": "new_03_p0003.png",
-  "width": 906,
-  "height": 1280,
-  "regions": [
-    {"class": "table", "box": [95, 218, 797, 1136]}
-  ]
-}
