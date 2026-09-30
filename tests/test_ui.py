@@ -1,27 +1,67 @@
 from __future__ import annotations
 
 import json
+from io import BytesIO
 import tempfile
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
+from unittest.mock import Mock, patch
 
 from UI.app import (
-    Run, STAGES, _active_model_assignment_ids, _build_run_command,
+    Handler, Run, STAGES, _active_model_assignment_ids, _build_run_command,
     _dedupe_log_lines, _effective_model_assignments, _stage_from_logs,
-    _workflow_payload,
+    _sonar_script, _workflow_payload,
 )
 
 
 class UiWorkflowTests(unittest.TestCase):
-    def test_ui_exposes_five_pipeline_stages(self) -> None:
+    def test_ui_exposes_six_pipeline_stages(self) -> None:
         self.assertEqual([stage[0] for stage in STAGES], [
-            "template", "blocks", "record_separation", "extraction", "results",
+            "template", "blocks", "sonar", "record_separation", "extraction", "results",
         ])
         html = (Path(__file__).parents[1] / "UI" / "index.html").read_text()
         self.assertIn('id="model-assignments"', html)
         self.assertIn("What is running what", html)
         self.assertIn('data-stage-panel="record_separation"', html)
         self.assertIn('id="record-image"', html)
+        self.assertIn('data-stage-panel="sonar"', html)
+        self.assertIn('id="sonar-page-list"', html)
+        self.assertIn('id="sonar-run-existing"', html)
+
+    def test_older_run_can_backfill_sonar_from_saved_pipeline(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "input.pdf").write_bytes(b"%PDF-1.4")
+            (root / "pipeline").mkdir()
+            script = root / "pipeline" / "block_separation.py"
+            script.write_text("# saved separator\n", encoding="utf-8")
+            (root / "metadata.json").write_text(json.dumps({"source_start_page": 7}))
+            run = Run("old-run", root, "input.pdf", {"eval": True, "sonarDropPercent": 15}, status="completed")
+            self.assertEqual(_sonar_script(root), script)
+            workflow = _workflow_payload(run)
+            self.assertTrue(workflow["sonarAvailable"])
+            self.assertEqual(workflow["sonarStartPage"], 7)
+
+            request = json.dumps({"thresholdPercent": 15}).encode()
+            handler = object.__new__(Handler)
+            handler.headers = {"Content-Length": str(len(request))}
+            handler.rfile = BytesIO(request)
+            handler._send_json = Mock()
+            report = {"startPage": 7, "endPage": 12, "totalPages": 12, "pages": [], "flaggedPages": []}
+
+            def complete_scan(command, **_kwargs):
+                self.assertEqual(command[command.index("--start") + 1], "7")
+                self.assertNotIn("--end", command)
+                self.assertEqual(Path(command[command.index("src.excluded_blocks_sonar") + 2]), script)
+                destination = root / "artifacts" / "excluded_blocks_sonar"
+                destination.mkdir(parents=True)
+                (destination / "sonar.json").write_text(json.dumps(report))
+                return SimpleNamespace(returncode=0, stderr="")
+
+            with patch("UI.app.subprocess.run", side_effect=complete_scan):
+                handler._scan_sonar(run)
+            handler._send_json.assert_called_once_with(report)
 
     def test_run_snapshot_exposes_the_terminal_command(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -43,6 +83,7 @@ class UiWorkflowTests(unittest.TestCase):
                 "eval": True,
                 "evalPages": 20,
                 "trainThreshold": 0.0,
+                "sonarDropPercent": 22,
                 "trainMaxRetries": 3,
                 "noRouting": False,
                 "easyModel": "z-ai/glm-5.3-flash",
@@ -60,6 +101,7 @@ class UiWorkflowTests(unittest.TestCase):
             command[command.index("--reference-model") + 1],
             "openai/gpt-5.4",
         )
+        self.assertEqual(command[command.index("--sonar-drop-percent") + 1], "22")
 
     def test_ui_single_model_mode_uses_only_easy_model_flag(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -136,9 +178,10 @@ class UiWorkflowTests(unittest.TestCase):
             ["hard_extractors"],
         )
 
-    def test_log_markers_advance_through_five_stages(self) -> None:
+    def test_log_markers_advance_through_six_stages(self) -> None:
         self.assertEqual(_stage_from_logs(["template_inference_node: done"], True), "template")
         self.assertEqual(_stage_from_logs(["block_artifacts_node: done"], True), "blocks")
+        self.assertEqual(_stage_from_logs(["excluded_blocks_sonar_node: scanning pages"], True), "sonar")
         self.assertEqual(
             _stage_from_logs([
                 "block_artifacts_node: 2 train image(s)",
@@ -165,6 +208,10 @@ class UiWorkflowTests(unittest.TestCase):
             (root / "artifacts" / "test_blocks").mkdir(parents=True)
             (root / "artifacts" / "test_record_separation").mkdir(parents=True)
             (root / "artifacts" / "stats").mkdir(parents=True)
+            (root / "artifacts" / "excluded_blocks_sonar").mkdir(parents=True)
+            (root / "artifacts" / "excluded_blocks_sonar" / "sonar.json").write_text(json.dumps({
+                "averageCoverage": 0.9, "flaggedPages": [2], "pages": [],
+            }))
             (root / "pipeline" / "train_eval").mkdir(parents=True)
             (root / "input.pdf").write_bytes(b"%PDF-1.4")
             (root / "agent_space" / "train" / "input.pdf").write_bytes(b"%PDF-1.4")
@@ -190,6 +237,7 @@ class UiWorkflowTests(unittest.TestCase):
             payload = _workflow_payload(run)
 
             self.assertEqual(payload["stage"], "results")
+            self.assertEqual(payload["sonar"]["flaggedPages"], [2])
             self.assertEqual(payload["blockSource"], "test")
             self.assertEqual(payload["blockImages"], [
                 "artifacts/test_blocks/page_1_blocks.png",

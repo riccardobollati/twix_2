@@ -7,14 +7,25 @@ python3 UI/app.py
 ```
 
 Open `http://127.0.0.1:8765`. Upload a PDF, choose the run settings, and the
-dashboard will run the existing `run.py` pipeline locally. Its five-stage view
-follows template inference, block separation, deterministic record separation,
+dashboard will run the existing `run.py` pipeline locally. Its six-stage view
+follows template inference, block separation, missed sonar, deterministic record separation,
 data extraction with train evaluation, and independent test evaluation. The
 template and final JSON are shown beside their PDFs; block and record overlays
 come from the unseen test split when evaluation is enabled. Train holdout and
 test evaluation are separate controls:
 holdout defaults to zero, while evaluation defaults to twenty pages and enabled.
 All generated files remain available in the artifact drawer.
+
+Missed sonar runs the generated separator on up to 100 source pages starting
+at the detected structured-data page. Its tab plots words inside and outside
+blocks with the coverage ratio, flags pages whose coverage is a configured
+relative percentage below the scanned-page average, and renders an overlay
+when a flagged page is selected. Adjusting the threshold updates the list
+immediately. Use Choose page range and Replay scan to analyze another range;
+the range controls show the PDF's maximum source page.
+Older runs with a saved source PDF and `pipeline/block_separation.py` show
+**Run sonar on this run** in the same tab. This uses the saved separator and
+the metadata source start page, so the extraction pipeline does not rerun.
 
 After a successful UI run, the dashboard calls the reusable single-document
 renderer from `viz_batch_results.py`. The final-results Stats tab shows summary

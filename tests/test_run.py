@@ -87,6 +87,11 @@ class ResolveDocumentTests(unittest.TestCase):
 
         self.assertIn("--no-routing", forwarded)
 
+    def test_batch_forwards_sonar_drop_percent(self) -> None:
+        args, unknown = parse_args(["id_60", "--sonar-drop-percent", "22"])
+        forwarded = build_forwarded_args(args, unknown)
+        self.assertEqual(forwarded[forwarded.index("--sonar-drop-percent") + 1], "22.0")
+
     def test_batch_forwards_no_eval(self) -> None:
         args, unknown = parse_args(["id_60", "--no-eval"])
 

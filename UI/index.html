@@ -6,8 +6,9 @@
     <meta name="theme-color" content="#17211d" />
     <title>TWIX 2 · Extraction Workbench</title>
     <link rel="stylesheet" href="/styles.css" />
+    <link rel="stylesheet" href="/sonar.css" />
     <style>
-      .stages { grid-template-columns: repeat(5, 1fr); }
+      .stages { grid-template-columns: repeat(6, 1fr); }
       @media (max-width: 1050px) { .stages { grid-template-columns: repeat(2, 1fr); } }
       @media (max-width: 720px) { .stages { grid-template-columns: 1fr; } }
     </style>
@@ -44,6 +45,7 @@
               <label>Train holdout pages<input id="holdout-pages" type="number" min="0" max="48" value="0" /></label>
               <label>Evaluation pages<input id="eval-pages" type="number" min="1" max="1000" value="20" /></label>
               <label>Repair threshold<input id="threshold" type="number" min="0" max="1" step="0.05" value="0" /></label>
+              <label>Missed sonar drop (%)<input id="sonar-drop-percent" type="number" min="0" max="100" step="1" value="15" /></label>
             </div>
             <fieldset class="model-settings">
               <legend>Model routing</legend>
@@ -66,7 +68,7 @@
 
         <section id="dashboard" class="dashboard hidden">
           <div class="stage-heading">
-            <div><p class="eyebrow">LIVE PIPELINE</p><h2>Five-stage extraction</h2></div>
+            <div><p class="eyebrow">LIVE PIPELINE</p><h2>Six-stage extraction</h2></div>
             <div class="run-actions"><button id="follow-live" class="quiet-button hidden" type="button">Return to live stage</button><button id="cancel-run" class="quiet-button" type="button">Cancel run</button></div>
           </div>
           <nav id="stages" class="stages" aria-label="Pipeline stages"></nav>
@@ -95,8 +97,33 @@
               </div>
             </article>
 
+            <article class="workflow-panel hidden" data-stage-panel="sonar">
+              <div class="panel-heading"><div><span class="step-kicker">STEP 03</span><h3>Missed sonar</h3><p>Pages whose block-word coverage drops relative to the average across the scanned pages.</p></div><span id="sonar-state" class="artifact-state waiting">Waiting</span></div>
+              <div class="sonar-controls">
+                <label>Relative drop threshold
+                  <input id="sonar-threshold-slider" type="range" min="0" max="100" step="1" value="15" />
+                </label>
+                <input id="sonar-threshold-number" type="number" min="0" max="100" step="1" value="15" aria-label="Relative drop threshold percent" />
+                <span>% below average</span>
+                <button id="sonar-run-existing" class="quiet-button hidden" type="button">Run sonar on this run</button>
+                <button id="sonar-choose-range" class="quiet-button" type="button">Choose page range</button>
+              </div>
+              <div id="sonar-range-controls" class="sonar-range-controls hidden">
+                <span id="sonar-page-max">Available pages: —</span>
+                <label>From <input id="sonar-range-start" type="number" min="1" value="1" /></label>
+                <label>To <input id="sonar-range-end" type="number" min="1" value="100" /></label>
+                <button id="sonar-replay" class="quiet-button" type="button">Replay scan</button>
+              </div>
+              <p id="sonar-description" class="sonar-description">Sonar will scan up to 100 pages after block separation.</p>
+              <div id="sonar-plot" class="sonar-plot" role="img" aria-label="Word counts inside and outside blocks with page coverage"></div>
+              <div class="sonar-browser">
+                <div class="sonar-list-card"><div class="viewer-title">Flagged pages <span id="sonar-flag-count">0</span></div><div id="sonar-page-list" class="sonar-page-list"><p class="sonar-list-empty">Waiting for scan…</p></div></div>
+                <div class="viewer-card sonar-preview-card"><div class="viewer-title"><span id="sonar-preview-title">Block overlay</span><span id="sonar-preview-coverage"></span></div><div id="sonar-preview-empty" class="empty-state">Select a flagged page to inspect its blocks.</div><img id="sonar-preview-image" class="block-image hidden" alt="Detected blocks overlaid on a flagged PDF page" /></div>
+              </div>
+            </article>
+
             <article class="workflow-panel hidden" data-stage-panel="record_separation">
-              <div class="panel-heading"><div><span class="step-kicker">STEP 03</span><h3>Record separation</h3><p>Deterministic template-node traversal groups the detected blocks into logical records without a model call.</p></div><span id="record-source" class="artifact-state waiting">Waiting</span></div>
+              <div class="panel-heading"><div><span class="step-kicker">STEP 04</span><h3>Record separation</h3><p>Deterministic template-node traversal groups the detected blocks into logical records without a model call.</p></div><span id="record-source" class="artifact-state waiting">Waiting</span></div>
               <div class="block-browser">
                 <div class="viewer-card block-main"><div class="viewer-title"><span id="record-page-title">Record overlay</span><span id="record-counter"></span></div><div id="record-empty" class="empty-state">Record previews appear here as soon as deterministic grouping finishes.</div><img id="record-image" class="block-image hidden" alt="Logical records overlaid on a PDF page" /></div>
                 <div id="record-thumbnails" class="thumbnail-rail"></div>
@@ -104,12 +131,12 @@
             </article>
 
             <article class="workflow-panel hidden" data-stage-panel="extraction">
-              <div class="panel-heading"><div><span class="step-kicker">STEP 04</span><h3>Data extraction & train evaluation</h3><p>OpenCode builds the node extractors, evaluates them on train pages, and repairs them when required.</p></div><span id="train-score" class="artifact-state waiting">In progress</span></div>
+              <div class="panel-heading"><div><span class="step-kicker">STEP 05</span><h3>Data extraction & train evaluation</h3><p>OpenCode builds the node extractors, evaluates them on train pages, and repairs them when required.</p></div><span id="train-score" class="artifact-state waiting">In progress</span></div>
               <div class="console-card"><div class="viewer-title">Live pipeline output <span id="log-count"></span></div><pre id="run-log" class="run-log">Waiting for pipeline output…</pre></div>
             </article>
 
             <article class="workflow-panel hidden" data-stage-panel="results">
-              <div class="panel-heading results-heading"><div><span class="step-kicker">STEP 05</span><h3>Test evaluation & final results</h3><p>The finished pipeline runs on the independent test PDF. Compare the source with its extracted JSON.</p></div><div id="result-score" class="result-score"><small>Accuracy</small><strong>—</strong></div></div>
+              <div class="panel-heading results-heading"><div><span class="step-kicker">STEP 06</span><h3>Test evaluation & final results</h3><p>The finished pipeline runs on the independent test PDF. Compare the source with its extracted JSON.</p></div><div id="result-score" class="result-score"><small>Accuracy</small><strong>—</strong></div></div>
               <div class="result-tabs" role="tablist" aria-label="Final result views">
                 <button class="result-tab active" data-result-tab="output" type="button" role="tab" aria-selected="true">Output</button>
                 <button class="result-tab" data-result-tab="stats" type="button" role="tab" aria-selected="false">Stats</button>

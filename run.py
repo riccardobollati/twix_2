@@ -49,6 +49,7 @@ import argparse
 import csv
 import hashlib
 import json
+import math
 import os
 import sys
 from pathlib import Path
@@ -266,6 +267,10 @@ def main() -> None:
         ),
     )
     parser.add_argument(
+        "--sonar-drop-percent", type=float, default=15.0, metavar="PERCENT",
+        help="Flag pages whose block-word coverage falls this percent below the scanned-page average (default: 15).",
+    )
+    parser.add_argument(
         "--easy-model", default=None, metavar="MODEL",
         help=(
             "OpenRouter model used for easy extraction blocks. Accepts either "
@@ -347,6 +352,8 @@ def main() -> None:
         print(f"Error: {exc}", file=sys.stderr)
         sys.exit(1)
     output_dir.mkdir(parents=True, exist_ok=True)
+    if not math.isfinite(args.sonar_drop_percent) or not 0 <= args.sonar_drop_percent <= 100:
+        parser.error("--sonar-drop-percent must be between 0 and 100")
     ocr_csv_path = output_dir / "ocr_extraction_full.csv"
 
     # --- step 1: full OCR extraction ---
@@ -361,7 +368,8 @@ def main() -> None:
     # --- step 2: run graph ---
     # The graph handles everything:
     #   detect_beginning → environment_creation → template_inference →
-    #   block_separation → run_block_separation → block_artifacts →
+    #   block_separation → run_block_separation → excluded_blocks_sonar →
+    #   block_artifacts →
     #   block_samples → block_extraction_scripting → collect_extraction_scripts →
     #   extraction [→ ground_truth → eval]  (last two only when eval_mode=True)
     print(f"[2/{total_steps}] Running graph ...", file=sys.stderr)
@@ -401,6 +409,7 @@ def main() -> None:
         "eval_mode":                  args.eval,
         "eval_pages":                 args.eval_pages,
         "train_accuracy_threshold":   args.train_threshold,
+        "sonar_drop_percent":        args.sonar_drop_percent,
         "train_repair_max_retries":   args.train_max_retries,
         "no_routing":                 args.no_routing,
         **({
@@ -418,6 +427,7 @@ def main() -> None:
     pipeline_dir = os.path.join(output_dir, "pipeline")
     print(f"  template    → {os.path.join(output_dir, 'template.json')}", file=sys.stderr)
     print(f"  block viz   → {os.path.join(output_dir, 'artifacts', 'blocks')}", file=sys.stderr)
+    print(f"  missed sonar → {os.path.join(output_dir, 'artifacts', 'excluded_blocks_sonar')}", file=sys.stderr)
     print(
         f"  record viz  → "
         f"{os.path.join(output_dir, 'artifacts', 'record_separation')}",

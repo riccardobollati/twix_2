@@ -1,6 +1,7 @@
 const stages = [
   {id: "template", label: "Template inference", detail: "Learn the schema"},
   {id: "blocks", label: "Block separation", detail: "Inspect unseen pages"},
+  {id: "sonar", label: "Missed sonar", detail: "Find uncovered pages"},
   {id: "record_separation", label: "Record separation", detail: "Inspect logical records"},
   {id: "extraction", label: "Data extraction", detail: "Build & train-evaluate"},
   {id: "results", label: "Final results", detail: "Test & compare"},
@@ -13,6 +14,10 @@ let selectedStage = null;
 let followLive = true;
 let selectedBlock = 0;
 let selectedRecord = 0;
+let selectedSonarPage = null;
+let hoveredSonarPage = null;
+let sonarThreshold = null;
+let sonarGeneration = 0;
 let selectedResultTab = "output";
 const $ = (selector) => document.querySelector(selector);
 
@@ -203,6 +208,7 @@ function renderWorkflow() {
   templateState.className = `artifact-state ${workflow.template ? "ready" : "waiting"}`;
 
   renderBlocks();
+  renderSonar();
   renderRecordSeparation();
   renderLog();
   const trainAccuracy = percent(workflow.trainEvaluation?.accuracy);
@@ -223,6 +229,154 @@ function renderWorkflow() {
   $("#score-breakdown").innerHTML = (details.length ? details : ["Evaluation is waiting for the test extraction."]).map((item) => `<span>${escapeHtml(item)}</span>`).join("");
   renderStatistics();
   showResultTab(selectedResultTab);
+}
+
+function sonarFlaggedPages() {
+  const sonar = workflow.sonar;
+  if (!sonar || sonar.averageCoverage == null) return [];
+  if (sonar.averageCoverage === 0) return sonar.pages.filter((page) => page.totalWords > 0);
+  const cutoff = sonar.averageCoverage * (1 - sonarThreshold / 100);
+  return sonar.pages.filter((page) => page.coverage != null && page.coverage < cutoff);
+}
+
+function sonarX(page) {
+  const pages = workflow.sonar?.pages || [];
+  const index = pages.findIndex((row) => row.page === page);
+  return index < 0 ? null : 55 + index * 13 + 5;
+}
+
+function highlightSonarPlot() {
+  const line = $("#sonar-hover-line");
+  if (!line) return;
+  const x = sonarX(hoveredSonarPage ?? selectedSonarPage);
+  line.style.display = x == null ? "none" : "block";
+  if (x != null) { line.setAttribute("x1", x); line.setAttribute("x2", x); }
+  if (hoveredSonarPage != null && x != null) {
+    const plot = $("#sonar-plot");
+    if (x < plot.scrollLeft + 30 || x > plot.scrollLeft + plot.clientWidth - 30) {
+      plot.scrollLeft = Math.max(0, x - plot.clientWidth / 2);
+    }
+  }
+}
+
+function renderSonarPlot() {
+  const sonar = workflow.sonar;
+  const container = $("#sonar-plot");
+  if (!sonar?.pages?.length) { container.innerHTML = ""; return; }
+  const previousScroll = container.scrollLeft;
+  const pages = sonar.pages;
+  const width = Math.max(900, pages.length * 13 + 105);
+  const top = 25, bottom = 252, chartHeight = bottom - top;
+  const maxWords = Math.max(1, ...pages.map((page) => page.totalWords));
+  const wordY = (count) => bottom - count / maxWords * chartHeight;
+  const coverageY = (ratio) => bottom - ratio * chartHeight;
+  const linePoints = pages.filter((page) => page.coverage != null).map((page) => `${sonarX(page.page)},${coverageY(page.coverage).toFixed(1)}`).join(" ");
+  const cutoff = sonar.averageCoverage == null ? null : sonar.averageCoverage * (1 - sonarThreshold / 100);
+  const bars = pages.map((page) => {
+    const x = sonarX(page.page) - 5;
+    const insideY = wordY(page.insideBlockWords);
+    const outsideY = wordY(page.totalWords);
+    const title = `Page ${page.page}: ${page.insideBlockWords} inside, ${page.outsideBlockWords} outside, ${page.coverage == null ? "no words" : Math.round(page.coverage * 100) + "% coverage"}`;
+    return `<g class="sonar-bar" data-sonar-plot-page="${page.page}"><title>${escapeHtml(title)}</title><rect x="${x}" y="${insideY}" width="10" height="${bottom - insideY}" fill="#2563eb"/><rect x="${x}" y="${outsideY}" width="10" height="${insideY - outsideY}" fill="#cbd5e1"/><rect x="${x}" y="${top}" width="10" height="${chartHeight}" fill="transparent"/></g>`;
+  }).join("");
+  const ticks = pages.filter((_, index) => index === 0 || index === pages.length - 1 || index % Math.max(1, Math.ceil(pages.length / 12)) === 0).map((page) => `<text x="${sonarX(page.page)}" y="275" text-anchor="middle" fill="#5f6862" font-size="10">${page.page}</text>`).join("");
+  container.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="310" viewBox="0 0 ${width} 310" aria-label="Inside and outside block word counts and coverage by page">
+    <line x1="50" x2="${width - 20}" y1="${bottom}" y2="${bottom}" stroke="#aab2aa"/>
+    <line x1="50" x2="${width - 20}" y1="${top}" y2="${top}" stroke="#e1e5e1"/>
+    ${bars}
+    ${sonar.averageCoverage == null ? "" : `<line x1="50" x2="${width - 20}" y1="${coverageY(sonar.averageCoverage)}" y2="${coverageY(sonar.averageCoverage)}" stroke="#a94f43" stroke-width="1" stroke-dasharray="5 4"/>`}
+    ${cutoff == null ? "" : `<line x1="50" x2="${width - 20}" y1="${coverageY(cutoff)}" y2="${coverageY(cutoff)}" stroke="#d97706" stroke-width="1.5" stroke-dasharray="3 3"/>`}
+    <polyline points="${linePoints}" fill="none" stroke="#dc2626" stroke-width="2" pointer-events="none"/>
+    <line id="sonar-hover-line" x1="0" x2="0" y1="${top}" y2="${bottom}" stroke="#1b4d39" stroke-width="2" style="display:none" pointer-events="none"/>
+    <text x="8" y="${top + 8}" fill="#5f6862" font-size="10">${maxWords} words</text>
+    <text x="8" y="${bottom + 3}" fill="#5f6862" font-size="10">0</text>
+    <text x="${width - 40}" y="${top + 8}" fill="#dc2626" font-size="10">100%</text>
+    <text x="${width - 30}" y="${bottom + 3}" fill="#dc2626" font-size="10">0%</text>
+    ${ticks}
+    <text x="${width / 2}" y="299" text-anchor="middle" fill="#5f6862" font-size="11">Source PDF page · blue: inside · gray: outside · red: coverage · dashed: average and threshold</text>
+  </svg>`;
+  container.scrollLeft = previousScroll;
+  document.querySelectorAll("[data-sonar-plot-page]").forEach((item) => item.addEventListener("click", () => selectSonarPage(Number(item.dataset.sonarPlotPage))));
+  highlightSonarPlot();
+}
+
+function selectSonarPage(page) {
+  selectedSonarPage = page;
+  const row = workflow.sonar?.pages?.find((item) => item.page === page);
+  if (!row) return;
+  document.querySelectorAll("[data-sonar-list-page]").forEach((button) => button.classList.toggle("selected", Number(button.dataset.sonarListPage) === page));
+  $("#sonar-preview-title").textContent = `Block overlay · source page ${page}`;
+  $("#sonar-preview-coverage").textContent = row.coverage == null ? "No words" : `${Math.round(row.coverage * 100)}% covered`;
+  const image = $("#sonar-preview-image");
+  const empty = $("#sonar-preview-empty");
+  image.classList.add("hidden"); empty.classList.remove("hidden"); empty.textContent = "Rendering page overlay…";
+  const runId = activeRun?.id;
+  image.onload = () => { if (activeRun?.id === runId && selectedSonarPage === page) { image.classList.remove("hidden"); empty.classList.add("hidden"); } };
+  image.onerror = () => { if (selectedSonarPage === page) empty.textContent = "Could not render this page."; };
+  image.src = `/api/runs/${encodeURIComponent(runId)}/sonar/page/${page}?scan=${sonarGeneration}`;
+  highlightSonarPlot();
+}
+
+function renderSonar() {
+  const sonar = workflow.sonar;
+  const state = $("#sonar-state");
+  if (!sonar) {
+    const available = Boolean(workflow.sonarAvailable);
+    if (sonarThreshold == null) sonarThreshold = Number(activeRun?.config?.sonarDropPercent ?? 15);
+    $("#sonar-threshold-slider").value = sonarThreshold;
+    $("#sonar-threshold-number").value = sonarThreshold;
+    $("#sonar-run-existing").classList.toggle("hidden", !available);
+    $("#sonar-choose-range").classList.add("hidden");
+    $("#sonar-range-controls").classList.add("hidden");
+    state.textContent = available ? "Ready to scan" : workflow.sonarError?.error ? "Scan failed" : "Waiting";
+    state.className = `artifact-state ${available || workflow.sonarError?.error ? "warning" : "waiting"}`;
+    $("#sonar-description").textContent = workflow.sonarError?.error || (available
+      ? `Run the saved block separator on up to 100 source pages starting at page ${workflow.sonarStartPage}. No model calls are needed.`
+      : "Sonar will scan up to 100 pages after block separation.");
+    $("#sonar-plot").innerHTML = ""; $("#sonar-page-list").innerHTML = '<p class="sonar-list-empty">Waiting for scan…</p>';
+    $("#sonar-preview-image").classList.add("hidden");
+    $("#sonar-preview-empty").classList.remove("hidden");
+    $("#sonar-preview-empty").textContent = "Select a flagged page to inspect its blocks.";
+    return;
+  }
+  $("#sonar-run-existing").classList.add("hidden");
+  $("#sonar-choose-range").classList.remove("hidden");
+  if (sonarThreshold == null) sonarThreshold = Number(sonar.thresholdPercent ?? activeRun?.config?.sonarDropPercent ?? 15);
+  $("#sonar-threshold-slider").value = sonarThreshold;
+  $("#sonar-threshold-number").value = sonarThreshold;
+  $("#sonar-range-start").max = sonar.totalPages;
+  $("#sonar-range-end").max = sonar.totalPages;
+  $("#sonar-page-max").textContent = `Available source pages: 1–${sonar.totalPages}`;
+  state.textContent = `Pages ${sonar.startPage}–${sonar.endPage}`;
+  state.className = "artifact-state ready";
+  const flagged = sonarFlaggedPages();
+  const average = sonar.averageCoverage == null ? "—" : `${Math.round(sonar.averageCoverage * 100)}%`;
+  const cutoff = sonar.averageCoverage == null ? "—" : `${Math.round(sonar.averageCoverage * (1 - sonarThreshold / 100) * 100)}%`;
+  $("#sonar-description").textContent = sonar.averageCoverage === 0
+    ? `Scanned source pages ${sonar.startPage}–${sonar.endPage} of ${sonar.totalPages}. No words were assigned to blocks; all ${flagged.length} nonblank pages are flagged.`
+    : `Scanned source pages ${sonar.startPage}–${sonar.endPage} of ${sonar.totalPages}. Average coverage ${average}; cutoff ${cutoff} (${sonarThreshold}% relative drop). ${flagged.length} page${flagged.length === 1 ? "" : "s"} flagged.`;
+  $("#sonar-flag-count").textContent = flagged.length;
+  if (!flagged.some((row) => row.page === selectedSonarPage)) selectedSonarPage = flagged[0]?.page ?? null;
+  $("#sonar-page-list").innerHTML = flagged.length ? flagged.map((row) => {
+    const drop = sonar.averageCoverage > 0 ? Math.round((1 - row.coverage / sonar.averageCoverage) * 100) : 100;
+    return `<button type="button" class="sonar-page-button ${selectedSonarPage === row.page ? "selected" : ""}" data-sonar-list-page="${row.page}"><span>Page ${row.page}</span><small>${Math.round(row.coverage * 100)}% · ↓${drop}%</small></button>`;
+  }).join("") : '<p class="sonar-list-empty">No pages meet this threshold.</p>';
+  document.querySelectorAll("[data-sonar-list-page]").forEach((button) => {
+    const page = Number(button.dataset.sonarListPage);
+    button.addEventListener("click", () => selectSonarPage(page));
+    button.addEventListener("mouseenter", () => { hoveredSonarPage = page; highlightSonarPlot(); });
+    button.addEventListener("mouseleave", () => { hoveredSonarPage = null; highlightSonarPlot(); });
+    button.addEventListener("focus", () => { hoveredSonarPage = page; highlightSonarPlot(); });
+    button.addEventListener("blur", () => { hoveredSonarPage = null; highlightSonarPlot(); });
+  });
+  renderSonarPlot();
+  if (selectedSonarPage == null) {
+    $("#sonar-preview-image").classList.add("hidden");
+    $("#sonar-preview-empty").classList.remove("hidden");
+    $("#sonar-preview-empty").textContent = "No flagged page to preview.";
+  } else if (!$("#sonar-preview-image").src.includes(`/sonar/page/${selectedSonarPage}?scan=${sonarGeneration}`)) {
+    selectSonarPage(selectedSonarPage);
+  }
 }
 
 function renderBlocks() {
@@ -292,7 +446,9 @@ async function loadWorkflow() {
 
 async function selectRun(runId) {
   if (activeEventSource) activeEventSource.close();
-  activeEventSource = null; workflow = {}; selectedBlock = 0; selectedRecord = 0; followLive = true; selectedResultTab = "output";
+  activeEventSource = null; workflow = {}; selectedBlock = 0; selectedRecord = 0; selectedSonarPage = null; hoveredSonarPage = null; sonarThreshold = null; sonarGeneration = 0; followLive = true; selectedResultTab = "output";
+  $("#sonar-preview-image").removeAttribute("src");
+  $("#sonar-range-controls").classList.add("hidden");
   const response = await fetch(`/api/runs/${encodeURIComponent(runId)}`);
   if (!response.ok) return showToast("That run is no longer available.", true);
   const run = await response.json();
@@ -352,7 +508,7 @@ $("#upload-form").addEventListener("submit", async (event) => {
   event.preventDefault();
   const file = $("#pdf-file").files[0];
   if (!file) return showToast("Choose a PDF first.", true);
-  const query = new URLSearchParams({pages:$("#pages").value,holdoutPages:$("#holdout-pages").value,evalPages:$("#eval-pages").value,trainThreshold:$("#threshold").value,trainMaxRetries:"3",eval:String($("#eval").checked),noRouting:String($("#no-routing").checked),easyModel:$("#easy-model").value,hardModel:$("#hard-model").value,singleModel:$("#single-model").value,referenceModel:$("#reference-model").value});
+  const query = new URLSearchParams({pages:$("#pages").value,holdoutPages:$("#holdout-pages").value,evalPages:$("#eval-pages").value,trainThreshold:$("#threshold").value,sonarDropPercent:$("#sonar-drop-percent").value,trainMaxRetries:"3",eval:String($("#eval").checked),noRouting:String($("#no-routing").checked),easyModel:$("#easy-model").value,hardModel:$("#hard-model").value,singleModel:$("#single-model").value,referenceModel:$("#reference-model").value});
   const button = $("#upload-form button[type=submit]"); button.disabled=true; button.textContent="Starting…";
   try {
     const response = await fetch(`/api/runs?${query}`,{method:"POST",headers:{"Content-Type":"application/pdf","X-Filename":file.name},body:file});
@@ -365,6 +521,51 @@ $("#upload-form").addEventListener("submit", async (event) => {
 $("#pdf-file").addEventListener("change",(event)=>{$("#file-name").textContent=event.target.files[0]?.name||"Choose a PDF";});
 $("#eval").addEventListener("change",()=>{$("#eval-pages").disabled=!$("#eval").checked;});
 $("#no-routing").addEventListener("change",updateRoutingControls);
+function changeSonarThreshold(value) {
+  if (value === "") return;
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return;
+  sonarThreshold = Math.max(0, Math.min(100, parsed));
+  hoveredSonarPage = null;
+  renderSonar();
+}
+$("#sonar-threshold-slider").addEventListener("input", (event) => changeSonarThreshold(event.target.value));
+$("#sonar-threshold-number").addEventListener("input", (event) => changeSonarThreshold(event.target.value));
+async function submitSonarScan(payload, button, idleText) {
+  const runId = activeRun?.id;
+  if (!runId) return;
+  button.disabled = true; button.textContent = "Scanning…";
+  try {
+    const response = await fetch(`/api/runs/${encodeURIComponent(runId)}/sonar/scan`, {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({...payload,thresholdPercent:sonarThreshold})});
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || "Sonar scan failed.");
+    if (activeRun?.id !== runId) return;
+    workflow.sonar = result; workflow.sonarError = null; selectedSonarPage = null; sonarGeneration++;
+    $("#sonar-preview-image").removeAttribute("src");
+    renderSonar(); await loadArtifacts();
+    showToast(`Sonar scanned pages ${result.startPage}–${result.endPage}.`);
+  } catch (error) { if (activeRun?.id === runId) showToast(error.message, true); }
+  finally { button.disabled = false; button.textContent = idleText; }
+}
+$("#sonar-run-existing").addEventListener("click", () => {
+  if (!workflow.sonarAvailable || workflow.sonar) return;
+  submitSonarScan({}, $("#sonar-run-existing"), "Run sonar on this run");
+});
+$("#sonar-choose-range").addEventListener("click", () => {
+  const sonar = workflow.sonar;
+  if (!sonar) return showToast("Wait for the first sonar scan.", true);
+  $("#sonar-range-controls").classList.toggle("hidden");
+  $("#sonar-range-start").value = sonar.startPage;
+  $("#sonar-range-end").value = sonar.endPage;
+});
+$("#sonar-replay").addEventListener("click", async () => {
+  if (!activeRun || !workflow.sonar) return;
+  const startPage = Number($("#sonar-range-start").value);
+  const endPage = Number($("#sonar-range-end").value);
+  const max = workflow.sonar.totalPages;
+  if (!Number.isInteger(startPage) || !Number.isInteger(endPage) || startPage < 1 || endPage < startPage || endPage > max) return showToast(`Choose a range within pages 1–${max}.`, true);
+  await submitSonarScan({startPage,endPage}, $("#sonar-replay"), "Replay scan");
+});
 document.querySelectorAll("[data-result-tab]").forEach((button)=>button.addEventListener("click",()=>showResultTab(button.dataset.resultTab)));
 $("#show-upload").addEventListener("click",()=>{$("#upload-panel").classList.remove("hidden");$("#dashboard").classList.add("hidden");$("#show-logs").classList.add("hidden");$("#run-title").textContent="Start an extraction";$("#run-status").className="status-pill idle";$("#run-status").textContent="Ready";});
 function closeLogs(){ $("#logs-modal").classList.add("hidden"); document.body.classList.remove("modal-open"); }

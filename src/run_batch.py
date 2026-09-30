@@ -313,6 +313,13 @@ def parse_args(argv: Sequence[str]) -> tuple[argparse.Namespace, list[str]]:
         help="Forwarded to run.py: train accuracy threshold for repair.",
     )
     run_options.add_argument(
+        "--sonar-drop-percent",
+        type=float,
+        default=argparse.SUPPRESS,
+        metavar="PERCENT",
+        help="Forwarded to run.py: relative coverage drop flagged by sonar.",
+    )
+    run_options.add_argument(
         "--train-max-retries",
         type=nonnegative_int,
         default=argparse.SUPPRESS,
@@ -383,6 +390,7 @@ def build_forwarded_args(args: argparse.Namespace, unknown_args: Sequence[str]) 
         ("--start-page", "start_page"),
         ("--eval-pages", "eval_pages"),
         ("--train-threshold", "train_threshold"),
+        ("--sonar-drop-percent", "sonar_drop_percent"),
         ("--train-max-retries", "train_max_retries"),
         ("--gt-test-window", "gt_test_window"),
         ("--holdout-pages", "holdout_pages"),

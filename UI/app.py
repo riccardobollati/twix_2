@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import mimetypes
 import os
 import re
@@ -64,6 +65,7 @@ def _pipeline_python() -> str:
 STAGES = [
     ("template", "Template inference"),
     ("blocks", "Block separation"),
+    ("sonar", "Missed sonar"),
     ("record_separation", "Record separation"),
     ("extraction", "Data extraction"),
     ("results", "Test evaluation & results"),
@@ -141,6 +143,7 @@ def _stage_from_logs(lines: list[str], eval_enabled: bool) -> str:
             ),
         ),
         ("record_separation", ("record image(s)",)),
+        ("sonar", ("excluded_blocks_sonar_node:",)),
         ("blocks", ("block_separation", "block_artifacts_node:")),
         (
             "template",
@@ -178,6 +181,18 @@ def _first_pdf(folder: Path) -> Path | None:
     if not folder.is_dir():
         return None
     return next(iter(sorted(folder.glob("*.pdf"))), None)
+
+
+def _sonar_script(run_dir: Path) -> Path | None:
+    """Locate the saved separator in current and older UI run layouts."""
+    for path in (
+        run_dir / "pipeline" / "block_separation.py",
+        run_dir / "agent_space" / "train" / "block_separation.py",
+        run_dir / "agent_space" / "block_separation.py",
+    ):
+        if path.is_file():
+            return path
+    return None
 
 
 def _page_sort_key(path: Path) -> tuple[int, str]:
@@ -240,6 +255,13 @@ def _effective_model_assignments(run: "Run") -> list[dict[str, Any]]:
             "task": "Block-separation script",
             "model": direct_model_id(opencode_model),
             "transport": "OpenCode via OpenRouter",
+        },
+        {
+            "id": "excluded_blocks_sonar",
+            "stage": "sonar",
+            "task": "Excluded blocks sonar",
+            "model": "Generated Python separator",
+            "transport": "No model call",
         },
         {
             "id": "record_grouping",
@@ -343,6 +365,9 @@ def _active_model_assignment_ids(
         "blocks": [
             (("block_separation", "block_artifacts_node"), ["block_separation"]),
         ],
+        "sonar": [
+            (("excluded_blocks_sonar_node:",), ["excluded_blocks_sonar"]),
+        ],
         "record_separation": [
             (("record image(s)",), ["record_grouping"]),
         ],
@@ -368,6 +393,7 @@ def _active_model_assignment_ids(
     defaults = {
         "template": ["beginning_detection"],
         "blocks": ["block_separation"],
+        "sonar": ["excluded_blocks_sonar"],
         "record_separation": ["record_grouping"],
         "extraction": extraction_ids,
         "results": ["portable_extraction"],
@@ -376,7 +402,7 @@ def _active_model_assignment_ids(
 
 
 def _workflow_payload(run: "Run") -> dict[str, Any]:
-    """Collect the user-facing artifacts for the five workflow stages."""
+    """Collect the user-facing artifacts for the workflow stages."""
     with run.lock:
         logs = list(run.logs)
     root = run.run_dir
@@ -404,12 +430,17 @@ def _workflow_payload(run: "Run") -> dict[str, Any]:
         for path in sorted(record_dir.glob("page_*_records.png"), key=_page_sort_key)
     ]
     stats_dir = root / "artifacts" / "stats"
+    sonar_dir = root / "artifacts" / "excluded_blocks_sonar"
     stats_images = [
         _relative_file(root, stats_dir / filename)
         for filename in ("overview.png", "phase_cost.png", "token_breakdown.png")
     ]
 
     stage = _stage_from_logs(logs, run.eval_enabled)
+    metadata = _load_json(root / "metadata.json") or {}
+    source_start = metadata.get("source_start_page", 1)
+    if not isinstance(source_start, int) or source_start < 1:
+        source_start = 1
     return {
         "stage": stage,
         "template": _load_json(root / "template.json"),
@@ -425,6 +456,13 @@ def _workflow_payload(run: "Run") -> dict[str, Any]:
         "trainEvaluation": _load_json(pipeline / "train_eval" / "eval.json"),
         "statistics": _load_json(stats_dir / "stats.json"),
         "statsImages": [path for path in stats_images if path],
+        "sonar": _load_json(sonar_dir / "sonar.json"),
+        "sonarError": _load_json(sonar_dir / "error.json"),
+        "sonarAvailable": (
+            source_pdf.is_file() and _sonar_script(root) is not None
+            and run.status not in {"queued", "running"}
+        ),
+        "sonarStartPage": source_start,
         "modelAssignments": _effective_model_assignments(run),
         "activeModelAssignments": _active_model_assignment_ids(
             logs, stage, bool(run.config.get("noRouting", False))
@@ -464,6 +502,7 @@ class Run:
     logs: list[str] = field(default_factory=list)
     process: subprocess.Popen[str] | None = None
     lock: threading.Lock = field(default_factory=threading.Lock)
+    sonar_lock: threading.Lock = field(default_factory=threading.Lock)
 
     @property
     def eval_enabled(self) -> bool:
@@ -503,6 +542,7 @@ def _build_run_command(run: Run, input_path: Path) -> list[str]:
         _pipeline_python(), str(PROJECT_DIR / "run.py"), str(input_path),
         "--out-dir", str(run.run_dir), "--pages", str(run.config["pages"]),
         "--holdout-pages", str(run.config.get("holdoutPages", 0)),
+        "--sonar-drop-percent", str(run.config.get("sonarDropPercent", 15)),
         "--save-log",
     ]
     if run.config["eval"]:
@@ -721,7 +761,7 @@ class Handler(BaseHTTPRequestHandler):
         path = unquote(parsed.path)
         if path == "/":
             return self._send_file(UI_DIR / "index.html")
-        if path in {"/app.js", "/styles.css"}:
+        if path in {"/app.js", "/styles.css", "/sonar.css"}:
             return self._send_file(UI_DIR / path.lstrip("/"))
         if path == "/api/runs":
             return self._send_json({"runs": MANAGER.list()})
@@ -757,6 +797,15 @@ class Handler(BaseHTTPRequestHandler):
             return self._send_comparison(run)
         if len(parts) == 5 and parts[4] == "workflow":
             return self._send_json(_workflow_payload(run))
+        if len(parts) == 7 and parts[4:6] == ["sonar", "page"]:
+            try:
+                page = int(parts[6])
+                from src.excluded_blocks_sonar import render_page
+                with run.sonar_lock:
+                    preview = render_page(run.run_dir / "artifacts" / "excluded_blocks_sonar", page)
+                return self._send_file(preview)
+            except (ValueError, OSError, KeyError, FileNotFoundError):
+                return self._send_json({"error": "Page is outside the sonar scan."}, HTTPStatus.BAD_REQUEST)
         if len(parts) >= 6 and parts[4] in {"preview", "artifact"}:
             requested = "/".join(parts[5:])
             target = _safe_artifact_path(run.run_dir, requested)
@@ -827,7 +876,62 @@ class Handler(BaseHTTPRequestHandler):
         run = self._run_from_path(parts)
         if run and len(parts) == 5 and parts[4] == "cancel":
             return self._send_json({"cancelled": MANAGER.cancel(run)})
+        if run and len(parts) == 5 and parts[4] == "ground-truth":
+            return self._submit_ground_truth(run)
+        if run and len(parts) == 6 and parts[4:6] == ["sonar", "scan"]:
+            return self._scan_sonar(run)
         self.send_error(HTTPStatus.NOT_FOUND)
+
+    def _scan_sonar(self, run: Run) -> None:
+        try:
+            length = int(self.headers.get("Content-Length", "0"))
+            if not 0 < length < 4096:
+                raise ValueError("Invalid scan request")
+            payload = json.loads(self.rfile.read(length).decode("utf-8"))
+            if not isinstance(payload, dict):
+                raise ValueError("Scan request must be an object")
+            current = _load_json(run.run_dir / "artifacts" / "excluded_blocks_sonar" / "sonar.json")
+            metadata = _load_json(run.run_dir / "metadata.json") or {}
+            default_start = metadata.get("source_start_page", 1)
+            if not isinstance(default_start, int) or default_start < 1:
+                default_start = 1
+            start = int(payload.get("startPage", current["startPage"] if current else default_start))
+            raw_end = payload.get("endPage", current["endPage"] if current else None)
+            end = int(raw_end) if raw_end is not None else None
+            threshold = float(payload.get("thresholdPercent", run.config.get("sonarDropPercent", 15)))
+            if start < 1 or (end is not None and end < start):
+                raise ValueError("Invalid sonar page range")
+            if current and end is not None and end > int(current["totalPages"]):
+                raise ValueError(f"Page range must be within 1–{current['totalPages']}")
+            if not math.isfinite(threshold) or not 0 <= threshold <= 100:
+                raise ValueError("Drop threshold must be between 0 and 100 percent")
+            source_pdf = run.run_dir / run.filename
+            script = _sonar_script(run.run_dir)
+            if not source_pdf.is_file() or script is None:
+                raise ValueError("This run needs its source PDF and saved block separator")
+        except (UnicodeDecodeError, json.JSONDecodeError, KeyError, TypeError, ValueError) as exc:
+            return self._send_json({"error": str(exc)}, HTTPStatus.BAD_REQUEST)
+        if not run.sonar_lock.acquire(blocking=False):
+            return self._send_json({"error": "A sonar scan or page render is already running"}, HTTPStatus.CONFLICT)
+        try:
+            command = [
+                _pipeline_python(), "-m", "src.excluded_blocks_sonar",
+                str(source_pdf), str(script),
+                str(run.run_dir / "artifacts" / "excluded_blocks_sonar"),
+                "--start", str(start), "--threshold", str(threshold),
+            ]
+            if end is not None:
+                command.extend(["--end", str(end)])
+            result = subprocess.run(command, cwd=PROJECT_DIR, capture_output=True, text=True, timeout=3600)
+            if result.returncode:
+                return self._send_json({"error": result.stderr[-3000:] or "Sonar scan failed"}, HTTPStatus.INTERNAL_SERVER_ERROR)
+            return self._send_json(_load_json(run.run_dir / "artifacts" / "excluded_blocks_sonar" / "sonar.json"))
+        except subprocess.TimeoutExpired:
+            return self._send_json({"error": "Sonar scan timed out"}, HTTPStatus.INTERNAL_SERVER_ERROR)
+        except OSError as exc:
+            return self._send_json({"error": f"Could not run sonar: {exc}"}, HTTPStatus.INTERNAL_SERVER_ERROR)
+        finally:
+            run.sonar_lock.release()
 
     def _create_run(self, parsed: Any) -> None:
         try:
@@ -843,6 +947,9 @@ class Handler(BaseHTTPRequestHandler):
         try:
             pages = max(1, min(int(query.get("pages", ["5"])[0]), 50))
             threshold = max(0.0, min(float(query.get("trainThreshold", ["0"])[0]), 1.0))
+            sonar_drop = float(query.get("sonarDropPercent", ["15"])[0])
+            if not math.isfinite(sonar_drop) or not 0 <= sonar_drop <= 100:
+                raise ValueError("Invalid sonar threshold")
             retries = max(0, min(int(query.get("trainMaxRetries", ["3"])[0]), 10))
             eval_pages = max(1, min(int(query.get("evalPages", ["20"])[0]), 1_000))
             holdout_pages = max(0, min(int(query.get("holdoutPages", ["0"])[0]), 48))
@@ -852,6 +959,7 @@ class Handler(BaseHTTPRequestHandler):
             "pages": pages,
             "eval": query.get("eval", ["true"])[0].lower() != "false",
             "trainThreshold": threshold,
+            "sonarDropPercent": sonar_drop,
             "trainMaxRetries": retries,
             "evalPages": eval_pages,
             "holdoutPages": holdout_pages,
