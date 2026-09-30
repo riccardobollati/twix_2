@@ -6,9 +6,10 @@
     <meta name="theme-color" content="#17211d" />
     <title>TWIX 2 · Extraction Workbench</title>
     <link rel="stylesheet" href="/styles.css" />
+    <link rel="stylesheet" href="/manual-ground-truth.css" />
     <link rel="stylesheet" href="/sonar.css" />
     <style>
-      .stages { grid-template-columns: repeat(6, 1fr); }
+      .stages { grid-template-columns: repeat(7, 1fr); }
       @media (max-width: 1050px) { .stages { grid-template-columns: repeat(2, 1fr); } }
       @media (max-width: 720px) { .stages { grid-template-columns: 1fr; } }
     </style>
@@ -59,10 +60,11 @@
               </div>
               <div class="form-grid model-grid reference-grid">
                 <label>Template model<select id="template-model"></select><small>Template inference only</small></label>
-                <label>Reference model<select id="reference-model"></select><small>Train/test ground truth only</small></label>
+                <label>Reference model<select id="reference-model"></select><small>Train ground truth; also test ground truth unless manual paste is selected</small></label>
               </div>
             </fieldset>
             <label class="toggle"><input id="eval" type="checkbox" checked /> Run independent test evaluation</label>
+            <label class="toggle manual-mode-toggle"><input id="manual-ground-truth" type="checkbox" /> Paste final test ground truth instead of generating it through OpenRouter<small>Train ground truth still uses the Reference model selected above.</small></label>
             <button class="primary-button" type="submit">Start pipeline <span>→</span></button>
           </form>
         </section>
@@ -149,6 +151,7 @@
               <div class="panel-heading results-heading"><div><span class="step-kicker">STEP 07</span><h3>Test evaluation & final results</h3><p>The finished pipeline runs on the independent test PDF. Compare the source with its extracted JSON.</p></div><div id="result-score" class="result-score"><small>Accuracy</small><strong>—</strong></div></div>
               <div class="result-tabs" role="tablist" aria-label="Final result views">
                 <button class="result-tab active" data-result-tab="output" type="button" role="tab" aria-selected="true">Output</button>
+                <button id="ground-truth-tab" class="result-tab hidden" data-result-tab="ground-truth" type="button" role="tab" aria-selected="false">Ground truth</button>
                 <button class="result-tab" data-result-tab="stats" type="button" role="tab" aria-selected="false">Stats</button>
               </div>
               <div data-result-panel="output">
@@ -157,6 +160,25 @@
                   <div class="viewer-card"><div class="viewer-title">Independent test PDF</div><div id="result-pdf-empty" class="empty-state">Preparing the test document…</div><iframe id="result-pdf" class="pdf-viewer hidden" title="Independent test PDF"></iframe></div>
                   <div class="viewer-card"><div class="viewer-title">Extracted data <span>pipeline/extracted.json</span></div><pre id="extracted-json" class="json-viewer">Waiting for test extraction…</pre></div>
                 </div>
+              </div>
+              <div id="manual-ground-truth-panel" class="manual-ground-truth-panel hidden" data-result-panel="ground-truth">
+                <div class="manual-ground-truth-copy">
+                  <div>
+                    <p class="eyebrow">MANUAL GROUND TRUTH</p>
+                    <h4>Paste the held-out test ground truth when extraction finishes.</h4>
+                    <p>Use the project skill to prepare the exact prompt, page images, and OCR, or provide your own JSON with the same template fields. Page numbers start at 1 in the held-out test PDF, even when source pages are noncontiguous. Train ground truth still uses the selected reference model.</p>
+                  </div>
+                  <span id="manual-ground-truth-state" class="artifact-state waiting">Waiting for test extraction</span>
+                </div>
+                <div class="skill-command-row">
+                  <code id="ground-truth-skill-prompt">Use $twix-ground-truth for this run</code>
+                  <button id="copy-skill-prompt" class="quiet-button" type="button">Copy skill prompt</button>
+                </div>
+                <form id="ground-truth-form" class="ground-truth-form">
+                  <label>Ground-truth JSON<textarea id="ground-truth-json" spellcheck="false" placeholder='{"blocks": [...]}' required></textarea></label>
+                  <label>Model or source used<input id="ground-truth-model" type="text" maxlength="200" placeholder="e.g. gpt-6-astra" required /><small>Saved in the run metadata alongside the pasted ground truth.</small></label>
+                  <button id="submit-ground-truth" class="primary-button" type="submit">Validate and evaluate <span>→</span></button>
+                </form>
               </div>
               <div class="stats-panel hidden" data-result-panel="stats">
                 <div id="stats-summary" class="stats-summary"></div>

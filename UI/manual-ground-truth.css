@@ -1,0 +1,142 @@
+.status-pill.awaiting_ground_truth {
+  border-color: #c4a469;
+  background: #f7efdf;
+  color: #866626;
+}
+
+.manual-mode-toggle small {
+  display: block;
+  margin: 4px 0 0 20px;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.run-state.awaiting_ground_truth {
+  background: #c4933f;
+  box-shadow: 0 0 0 3px #f4e8cf;
+}
+
+.manual-ground-truth-panel {
+  padding: 14px;
+}
+
+.manual-ground-truth-copy {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: var(--card);
+}
+
+.manual-ground-truth-copy h4 {
+  margin: 3px 0 7px;
+  font-family: var(--serif);
+  font-size: 23px;
+  font-weight: 600;
+}
+
+.manual-ground-truth-copy p:last-child {
+  max-width: 760px;
+  margin: 0;
+  color: var(--soft);
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.skill-command-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin: 12px 0;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #202824;
+  color: #e8eee9;
+}
+
+.skill-command-row code {
+  overflow: auto;
+  font-family: var(--mono);
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.ground-truth-form {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(230px, 1fr);
+  gap: 12px;
+}
+
+.ground-truth-form label {
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 9px;
+  text-transform: uppercase;
+}
+
+.ground-truth-form textarea,
+.ground-truth-form input {
+  display: block;
+  width: 100%;
+  margin-top: 6px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--card);
+  color: var(--ink);
+  outline: none;
+}
+
+.ground-truth-form textarea {
+  height: 410px;
+  resize: vertical;
+  font-family: var(--mono);
+  font-size: 10px;
+  line-height: 1.55;
+}
+
+.ground-truth-form input:focus,
+.ground-truth-form textarea:focus {
+  border-color: var(--forest-2);
+  box-shadow: 0 0 0 3px var(--mint);
+}
+
+.ground-truth-form small {
+  display: block;
+  margin-top: 6px;
+  color: var(--muted);
+  font-family: var(--sans);
+  font-size: 9px;
+  line-height: 1.4;
+  text-transform: none;
+}
+
+.ground-truth-form .primary-button {
+  grid-column: 1 / -1;
+}
+
+.ground-truth-form textarea:disabled,
+.ground-truth-form input:disabled {
+  opacity: 0.62;
+}
+
+@media (max-width: 720px) {
+  .manual-ground-truth-copy,
+  .skill-command-row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .ground-truth-form {
+    grid-template-columns: 1fr;
+  }
+
+  .ground-truth-form .primary-button {
+    grid-column: auto;
+  }
+}

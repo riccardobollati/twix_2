@@ -46,6 +46,17 @@ and the page selected for each cluster. It also shows the first ordering pages,
 additional cluster samples, training pages, and independent evaluation pages.
 Template inference is the following stage.
 
+For a UI run with evaluation enabled, select **Paste final test ground truth**
+to skip the OpenRouter call for the held-out test ground truth. After test
+extraction, the run pauses at **Awaiting ground truth**. Open its Ground truth
+tab, copy the `$twix-ground-truth` prompt if you want Codex to prepare the
+held-out page images and exact OCR, then paste the resulting `{"blocks": [...]}`
+JSON and identify the model or source used. The UI validates page numbers,
+node IDs, field names, and value types before local scoring. An invalid paste
+can be corrected and retried. Train ground truth still calls the selected
+reference model; choose a non-GPT reference model if you also want to avoid
+GPT-5.4 for that phase. The template model remains independent.
+
 With routing enabled, the selected hard model always generates the block
 separator and performs difficulty classification; it also handles hard block
 extractors and repair. The easy model is reserved for blocks classified easy.

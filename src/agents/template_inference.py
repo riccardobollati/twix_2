@@ -47,6 +47,7 @@ class ExtractionState(TypedDict):
     doc_name:          str   # document folder name, used to name split PDFs
     train_pages:       int   # number of pages requested for the train set
     eval_mode:         bool  # whether to create a test split
+    manual_ground_truth: NotRequired[bool]  # defer final test GT for UI paste
     sonar_drop_percent: NotRequired[float]  # relative drop below mean coverage
 
     eval_pages:      NotRequired[int]        # max test pages (None = all remaining)

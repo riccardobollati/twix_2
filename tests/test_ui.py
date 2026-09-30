@@ -6,13 +6,15 @@ import tempfile
 import unittest
 from pathlib import Path
 from types import SimpleNamespace
+from urllib.parse import urlparse
 from unittest.mock import Mock, patch
 
 from UI.app import (
-    Handler, Run, STAGES, _active_model_assignment_ids, _build_run_command,
+    Handler, Run, RunManager, STAGES, _active_model_assignment_ids, _build_run_command,
     _dedupe_log_lines, _effective_model_assignments, _stage_from_logs,
     _sonar_script, _workflow_payload,
 )
+from src.manual_ground_truth import ManualGroundTruthError
 
 
 class UiWorkflowTests(unittest.TestCase):
@@ -25,6 +27,8 @@ class UiWorkflowTests(unittest.TestCase):
         self.assertIn('data-stage-panel="clustering"', html)
         self.assertIn('id="cluster-list"', html)
         self.assertIn('id="cluster-image"', html)
+        self.assertIn('id="manual-ground-truth"', html)
+        self.assertIn('id="ground-truth-form"', html)
         self.assertIn('id="model-assignments"', html)
         self.assertIn("What is running what", html)
         self.assertIn('data-stage-panel="record_separation"', html)
@@ -136,6 +140,29 @@ class UiWorkflowTests(unittest.TestCase):
         )
         self.assertNotIn("--hard-model", command)
 
+    def test_ui_command_can_defer_final_ground_truth(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            run = Run("run-test", root, "input.pdf", {
+                "pages": 5, "holdoutPages": 0, "eval": True,
+                "evalPages": 20, "trainThreshold": 0.0,
+                "manualGroundTruth": True,
+            })
+            command = _build_run_command(run, root / "input.pdf")
+        self.assertIn("--manual-ground-truth", command)
+
+    def test_ui_rejects_manual_ground_truth_without_test_eval(self) -> None:
+        payload = b"%PDF-1.4\n"
+        handler = object.__new__(Handler)
+        handler.headers = {"Content-Length": str(len(payload)), "X-Filename": "input.pdf"}
+        handler.rfile = BytesIO(payload)
+        handler._send_json = Mock()
+        with patch("UI.app.MANAGER.create") as create:
+            handler._create_run(urlparse("/api/runs?eval=false&manualGroundTruth=true"))
+        create.assert_not_called()
+        self.assertIn("requires independent test evaluation",
+                      handler._send_json.call_args.args[0]["error"])
+
     def test_effective_model_assignments_explain_each_model_role(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             run = Run("run-test", Path(tmp), "input.pdf", {
@@ -158,6 +185,21 @@ class UiWorkflowTests(unittest.TestCase):
         self.assertEqual(by_id["hard_extractors"]["model"], "qwen/qwen3.8-flash")
         self.assertEqual(by_id["portable_extraction"]["transport"], "No model call")
         self.assertIn("difficulty_routing", by_id)
+
+    def test_manual_test_ground_truth_has_separate_model_assignment(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "metadata.json").write_text(json.dumps({
+                "test_eval": {"ground_truth_model": "external-model"},
+            }))
+            run = Run("run-test", root, "input.pdf", {
+                "manualGroundTruth": True,
+                "referenceModel": "openai/gpt-5.4",
+            })
+            assignments = _effective_model_assignments(run)
+        by_id = {assignment["id"]: assignment for assignment in assignments}
+        self.assertEqual(by_id["ground_truth"]["task"], "Train ground truth")
+        self.assertEqual(by_id["manual_ground_truth"]["model"], "external-model")
 
     def test_single_model_assignment_collapses_extractor_roles(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -206,6 +248,63 @@ class UiWorkflowTests(unittest.TestCase):
         )
         self.assertEqual(_stage_from_logs(["train_eval_node: 0.9"], True), "extraction")
         self.assertEqual(_stage_from_logs(["eval_node: complete"], True), "results")
+        self.assertEqual(
+            _stage_from_logs(["manual_ground_truth: test extraction ready"], True),
+            "results",
+        )
+
+    def test_awaiting_run_exposes_manual_handoff(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "metadata.json").write_text(json.dumps({
+                "manual_ground_truth": {"model": "external-model"},
+            }))
+            run = Run("run-test", root, "input.pdf", {"manualGroundTruth": True},
+                      status="awaiting_ground_truth")
+            run.logs = ["manual_ground_truth: test extraction ready"]
+            payload = _workflow_payload(run)
+        self.assertTrue(payload["manualGroundTruth"]["awaiting"])
+        self.assertEqual(payload["manualGroundTruth"]["model"], "external-model")
+        self.assertIn("$twix-ground-truth", payload["manualGroundTruth"]["skillPrompt"])
+        self.assertEqual(payload["stage"], "results")
+
+    def test_manual_submission_keeps_bad_paste_retryable_then_completes(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            run = Run("run-test", Path(tmp), "input.pdf",
+                      {"manualGroundTruth": True, "eval": True},
+                      status="awaiting_ground_truth")
+            manager = object.__new__(RunManager)
+            with patch("UI.app.load_manual_ground_truth_inputs",
+                       side_effect=ManualGroundTruthError("bad fields")):
+                with self.assertRaisesRegex(ManualGroundTruthError, "bad fields"):
+                    manager.submit_ground_truth(run, "{}", "external-model")
+            self.assertEqual(run.status, "awaiting_ground_truth")
+            with (patch("UI.app.load_manual_ground_truth_inputs"),
+                  patch("UI.app.finalize_manual_ground_truth",
+                        return_value={"accuracy": 1.0}) as finalize,
+                  patch("UI.app._generate_run_statistics", return_value={"plots": []})):
+                result = manager.submit_ground_truth(run, "{}", "external-model")
+            self.assertEqual(result["accuracy"], 1.0)
+            self.assertEqual(run.status, "completed")
+            finalize.assert_called_once()
+
+    def test_successful_manual_pipeline_waits_without_rendering_statistics(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            run = Run("run-test", Path(tmp), "input.pdf", {
+                "pages": 5, "eval": True, "manualGroundTruth": True,
+                "trainThreshold": 0.0,
+            })
+            manager = object.__new__(RunManager)
+            with (patch("UI.app.threading.Thread") as thread,
+                  patch("UI.app.subprocess.Popen") as popen,
+                  patch("UI.app._generate_run_statistics") as stats):
+                thread.return_value.start.side_effect = lambda: thread.call_args.kwargs["target"]()
+                popen.return_value.stdout = iter(["manual_ground_truth: test extraction ready\n"])
+                popen.return_value.wait.return_value = 0
+                manager._start(run, Path(tmp) / "input.pdf")
+            self.assertEqual(run.status, "awaiting_ground_truth")
+            self.assertIsNone(run.finished_at)
+            stats.assert_not_called()
 
     def test_cluster_groups_are_inspectable_in_workflow(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

@@ -39,7 +39,7 @@ function showToast(message, error = false) {
 }
 
 function statusLabel(status) {
-  return ({queued:"Queued",running:"Running",completed:"Completed",failed:"Failed",interrupted:"Interrupted"}[status] || "Ready");
+  return ({queued:"Queued",running:"Running",awaiting_ground_truth:"Awaiting ground truth",completed:"Completed",failed:"Failed",interrupted:"Interrupted"}[status] || "Ready");
 }
 
 async function loadModelOptions() {
@@ -78,7 +78,7 @@ function renderStages() {
   if (!selectedStage || followLive) selectedStage = stages[current].id;
   $("#stages").innerHTML = stages.map((stage, index) => {
     let state = index < current || activeRun?.status === "completed" ? "done" : "upcoming";
-    if (index === current && activeRun?.status === "running") state = "active";
+    if (index === current && ["running", "awaiting_ground_truth"].includes(activeRun?.status)) state = "active";
     if (index === current && ["failed", "interrupted"].includes(activeRun?.status)) state = "failed";
     const selected = selectedStage === stage.id ? "selected" : "";
     return `<button class="stage ${state} ${selected}" data-stage="${stage.id}" type="button"><span class="stage-dot">${state === "done" ? "✓" : index + 1}</span><span class="stage-copy"><b>${escapeHtml(stage.label)}</b><small>${escapeHtml(stage.detail)}</small></span></button>`;
@@ -186,7 +186,7 @@ function pageRanges(pages) {
 function renderClustering() {
   const selection = workflow.clusterSelection;
   const groups = workflow.clusterGroups || [];
-  const finished = ["completed", "failed", "interrupted"].includes(activeRun?.status);
+  const finished = ["completed", "failed", "interrupted", "awaiting_ground_truth"].includes(activeRun?.status);
   const state = $("#cluster-state");
   state.textContent = selection ? "Selection ready" : groups.length ? "Clusters ready" : "Waiting";
   state.className = `artifact-state ${selection || groups.length ? "ready" : "waiting"}`;
@@ -277,6 +277,32 @@ function renderStatistics() {
   empty.classList.toggle("hidden", images.length > 0);
 }
 
+function renderManualGroundTruth() {
+  const manual = workflow.manualGroundTruth || {};
+  const enabled = Boolean(manual.enabled);
+  $("#ground-truth-tab").classList.toggle("hidden", !enabled);
+  if (!enabled) {
+    if (selectedResultTab === "ground-truth") selectedResultTab = "output";
+    return;
+  }
+  $("#ground-truth-skill-prompt").textContent = manual.skillPrompt || "Use $twix-ground-truth for this run";
+  const state = $("#manual-ground-truth-state");
+  if (manual.awaiting) {
+    state.textContent = "Ready for paste";
+    state.className = "artifact-state warning";
+  } else if (manual.model) {
+    state.textContent = `Submitted · ${manual.model}`;
+    state.className = "artifact-state ready";
+  } else {
+    state.textContent = "Waiting for test extraction";
+    state.className = "artifact-state waiting";
+  }
+  $("#submit-ground-truth").disabled = !manual.awaiting;
+  $("#ground-truth-json").disabled = !manual.awaiting;
+  $("#ground-truth-model").disabled = !manual.awaiting;
+  if (manual.model && !$("#ground-truth-model").value) $("#ground-truth-model").value = manual.model;
+}
+
 function renderWorkflow() {
   renderModelAssignments();
   renderClustering();
@@ -306,6 +332,7 @@ function renderWorkflow() {
   if (contentScore) details.push(`Content ${contentScore}`);
   if (evaluation?.exact_match != null) details.push(evaluation.exact_match ? "Exact match" : "Differences found");
   $("#score-breakdown").innerHTML = (details.length ? details : ["Evaluation is waiting for the test extraction."]).map((item) => `<span>${escapeHtml(item)}</span>`).join("");
+  renderManualGroundTruth();
   renderStatistics();
   showResultTab(selectedResultTab);
 }
@@ -526,12 +553,15 @@ async function loadWorkflow() {
 async function selectRun(runId) {
   if (activeEventSource) activeEventSource.close();
   activeEventSource = null; workflow = {}; selectedBlock = 0; selectedCluster = null; selectedRecord = 0; selectedSonarPage = null; hoveredSonarPage = null; sonarThreshold = null; sonarGeneration = 0; followLive = true; selectedResultTab = "output";
+  $("#ground-truth-json").value = "";
+  $("#ground-truth-model").value = "";
   $("#sonar-preview-image").removeAttribute("src");
   $("#sonar-range-controls").classList.add("hidden");
   const response = await fetch(`/api/runs/${encodeURIComponent(runId)}`);
   if (!response.ok) return showToast("That run is no longer available.", true);
   const run = await response.json();
   selectedStage = run.stage;
+  if (run.status === "awaiting_ground_truth") selectedResultTab = "ground-truth";
   activateRun(run);
   await Promise.all([loadWorkflow(), loadArtifacts()]);
   if (["queued", "running"].includes(run.status)) streamRun(run.id);
@@ -547,10 +577,15 @@ function streamRun(runId) {
     if (payload.logs?.length) activeRun.logs = [...(activeRun.logs || []), ...payload.logs].slice(-1000);
     activateRun({...payload.run, logs: activeRun.logs});
     await loadWorkflow();
-    if (["completed", "failed", "interrupted"].includes(activeRun.status)) {
+    if (["completed", "failed", "interrupted", "awaiting_ground_truth"].includes(activeRun.status)) {
       activeEventSource.close(); activeEventSource = null;
       await Promise.all([loadRuns(), loadArtifacts(), loadWorkflow()]);
-      showToast(activeRun.status === "completed" ? "Pipeline completed. Final results are ready." : "Pipeline stopped. Review the extraction log.", activeRun.status !== "completed");
+      if (activeRun.status === "awaiting_ground_truth") {
+        selectedStage = "results"; selectedResultTab = "ground-truth"; renderStages(); showResultTab(selectedResultTab);
+        showToast("Test extraction is ready. Paste the held-out ground truth.");
+      } else {
+        showToast(activeRun.status === "completed" ? "Pipeline completed. Final results are ready." : "Pipeline stopped. Review the extraction log.", activeRun.status !== "completed");
+      }
     }
   };
   activeEventSource.onerror = () => { if (activeRun?.status === "running") window.setTimeout(() => streamRun(runId), 1400); };
@@ -587,7 +622,7 @@ $("#upload-form").addEventListener("submit", async (event) => {
   event.preventDefault();
   const file = $("#pdf-file").files[0];
   if (!file) return showToast("Choose a PDF first.", true);
-  const query = new URLSearchParams({pages:$("#pages").value,holdoutPages:$("#holdout-pages").value,evalPages:$("#eval-pages").value,trainThreshold:$("#threshold").value,sonarDropPercent:$("#sonar-drop-percent").value,trainMaxRetries:"3",eval:String($("#eval").checked),noRouting:String($("#no-routing").checked),easyModel:$("#easy-model").value,hardModel:$("#hard-model").value,singleModel:$("#single-model").value,referenceModel:$("#reference-model").value,templateModel:$("#template-model").value});
+  const query = new URLSearchParams({pages:$("#pages").value,holdoutPages:$("#holdout-pages").value,evalPages:$("#eval-pages").value,trainThreshold:$("#threshold").value,sonarDropPercent:$("#sonar-drop-percent").value,trainMaxRetries:"3",eval:String($("#eval").checked),manualGroundTruth:String($("#manual-ground-truth").checked),noRouting:String($("#no-routing").checked),easyModel:$("#easy-model").value,hardModel:$("#hard-model").value,singleModel:$("#single-model").value,referenceModel:$("#reference-model").value,templateModel:$("#template-model").value});
   const button = $("#upload-form button[type=submit]"); button.disabled=true; button.textContent="Starting…";
   try {
     const response = await fetch(`/api/runs?${query}`,{method:"POST",headers:{"Content-Type":"application/pdf","X-Filename":file.name},body:file});
@@ -598,7 +633,8 @@ $("#upload-form").addEventListener("submit", async (event) => {
 });
 
 $("#pdf-file").addEventListener("change",(event)=>{$("#file-name").textContent=event.target.files[0]?.name||"Choose a PDF";});
-$("#eval").addEventListener("change",()=>{$("#eval-pages").disabled=!$("#eval").checked;});
+function updateEvalControls(){const enabled=$("#eval").checked;$("#eval-pages").disabled=!enabled;$("#manual-ground-truth").disabled=!enabled;if(!enabled)$("#manual-ground-truth").checked=false;}
+$("#eval").addEventListener("change",updateEvalControls);
 $("#no-routing").addEventListener("change",updateRoutingControls);
 function changeSonarThreshold(value) {
   if (value === "") return;
@@ -656,4 +692,7 @@ $("#follow-live").addEventListener("click",()=>{followLive=true;selectedStage=ac
 $("#refresh-artifacts").addEventListener("click",loadArtifacts);
 $("#cancel-run").addEventListener("click",async()=>{if(!activeRun)return;await fetch(`/api/runs/${activeRun.id}/cancel`,{method:"POST"});showToast("Cancellation requested.");});
 
-Promise.all([loadModelOptions(),loadRuns()]).then(updateRoutingControls).catch(()=>showToast("Could not connect to the local dashboard server.",true));
+$("#copy-skill-prompt").addEventListener("click",async()=>{try{await navigator.clipboard.writeText($("#ground-truth-skill-prompt").textContent);showToast("Skill prompt copied.");}catch{showToast("Could not copy the skill prompt.",true);}});
+$("#ground-truth-form").addEventListener("submit",async(event)=>{event.preventDefault();if(!activeRun||!workflow.manualGroundTruth?.awaiting)return;const button=$("#submit-ground-truth");button.disabled=true;button.textContent="Validating…";try{const runId=activeRun.id;const response=await fetch(`/api/runs/${encodeURIComponent(runId)}/ground-truth`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({groundTruth:$("#ground-truth-json").value,model:$("#ground-truth-model").value})});const data=await response.json();if(!response.ok)throw new Error(data.error||"Could not submit ground truth.");await loadRuns();await selectRun(runId);showToast("Ground truth accepted. Evaluation and metadata are complete.");}catch(error){showToast(error.message,true);await loadWorkflow();}finally{button.innerHTML='Validate and evaluate <span>→</span>';button.disabled=!workflow.manualGroundTruth?.awaiting;}});
+
+Promise.all([loadModelOptions(),loadRuns()]).then(()=>{updateRoutingControls();updateEvalControls();}).catch(()=>showToast("Could not connect to the local dashboard server.",true));

@@ -334,6 +334,10 @@ def parse_args(argv: Sequence[str]) -> tuple[argparse.Namespace, list[str]]:
         help="Forwarded to run.py: pages per LLM call for test ground truth (default: 20).",
     )
     run_options.add_argument(
+        "--manual-ground-truth", action="store_true", default=argparse.SUPPRESS,
+        help="Forwarded to run.py: defer final test ground truth for UI submission.",
+    )
+    run_options.add_argument(
         "--holdout-pages",
         type=nonnegative_int,
         default=argparse.SUPPRESS,
@@ -413,6 +417,7 @@ def build_forwarded_args(args: argparse.Namespace, unknown_args: Sequence[str]) 
         ("--no-eval", "no_eval"),
         ("--group-rows", "group_rows"),
         ("--reuse-ocr", "reuse_ocr"),
+        ("--manual-ground-truth", "manual_ground_truth"),
         ("--no-routing", "no_routing"),
         ("--caveman", "caveman"),
         ("--save-log", "save_log"),

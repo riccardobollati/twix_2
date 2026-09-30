@@ -44,10 +44,16 @@ from src.models.catalog import (
     resolve_reference_model,
     resolve_template_model,
 )
+from src.manual_ground_truth import (
+    ManualGroundTruthError,
+    finalize_manual_ground_truth,
+    load_manual_ground_truth_inputs,
+)
 
 
 RUNS_DIR = UI_DIR / "runs"
 MAX_UPLOAD_BYTES = 500 * 1024 * 1024
+MAX_GROUND_TRUTH_BYTES = 100 * 1024 * 1024
 PREVIEW_BYTES = 600_000
 _ANSI_ESCAPE = re.compile(r"\x1b(?:\[[0-?]*[ -/]*[@-~]|[@-_][0-?]*[ -/]*[@-~])")
 _SPINNER_FRAMES = frozenset("⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏")
@@ -135,7 +141,11 @@ def _stage_from_logs(lines: list[str], eval_enabled: bool) -> str:
     if re.search(r"(?:^|\n)(?:extraction|ground_truth|eval)_node:", text):
         return "results"
     markers = [
-        ("results", ("generating test ground truth", "pipeline/eval.json")),
+        ("results", (
+            "generating test ground truth", "pipeline/eval.json",
+            "manual_ground_truth: test extraction ready", "[ui] test extraction ready",
+            "[ui] finalizing manually supplied", "[ui] manual ground truth accepted",
+        )),
         (
             "extraction",
             (
@@ -325,15 +335,38 @@ def _effective_model_assignments(run: "Run") -> list[dict[str, Any]]:
             },
         ])
 
-    assignments.extend([
-        {
+    if config.get("manualGroundTruth"):
+        manual_model = (
+            (metadata.get("test_eval") or {}).get("ground_truth_model")
+            or "Awaiting user-specified model"
+        )
+        assignments.extend([
+            {
+                "id": "ground_truth",
+                "stage": "extraction",
+                "task": "Train ground truth",
+                "model": direct_model_id(reference_model),
+                "transport": "Reference · OpenRouter direct",
+            },
+            {
+                "id": "manual_ground_truth",
+                "stage": "results",
+                "task": "Held-out test ground truth",
+                "model": manual_model,
+                "transport": "Manual submission",
+            },
+        ])
+    else:
+        assignments.append({
             "id": "ground_truth",
             "stage": "results",
             "stages": ["extraction", "results"],
             "task": "Train/test ground truth",
             "model": direct_model_id(reference_model),
             "transport": "Reference · OpenRouter direct",
-        },
+        })
+
+    assignments.extend([
         {
             "id": "portable_extraction",
             "stage": "results",
@@ -400,6 +433,8 @@ def _active_model_assignment_ids(
         ],
         "results": [
             (("extraction_node:",), ["portable_extraction"]),
+            (("manual_ground_truth:", "[ui] test extraction ready",
+              "[ui] finalizing manually supplied"), ["manual_ground_truth"]),
             (("ground_truth", "generating test ground truth"), ["ground_truth"]),
             (("eval_node:", "pipeline/eval.json"), ["evaluation"]),
         ],
@@ -489,6 +524,7 @@ def _workflow_payload(run: "Run") -> dict[str, Any]:
     stage = _stage_from_logs(logs, run.eval_enabled)
     metadata = _load_json(root / "metadata.json") or {}
     cluster_selection = _load_json(root / "artifacts" / "clustering" / "selection.json")
+    manual_submission = metadata.get("manual_ground_truth") or {}
     source_start = metadata.get("source_start_page", 1)
     if not isinstance(source_start, int) or source_start < 1:
         source_start = 1
@@ -520,6 +556,15 @@ def _workflow_payload(run: "Run") -> dict[str, Any]:
         "activeModelAssignments": _active_model_assignment_ids(
             logs, stage, bool(run.config.get("noRouting", False))
         ),
+        "manualGroundTruth": {
+            "enabled": bool(run.config.get("manualGroundTruth", False)),
+            "awaiting": run.status == "awaiting_ground_truth",
+            "model": manual_submission.get("model"),
+            "skillPrompt": (
+                f"Use $twix-ground-truth for {run.run_dir}"
+                if run.config.get("manualGroundTruth", False) else None
+            ),
+        },
     }
 
 
@@ -604,6 +649,8 @@ def _build_run_command(run: Run, input_path: Path) -> list[str]:
         ])
     else:
         command.append("--no-eval")
+    if run.config.get("manualGroundTruth", False):
+        command.append("--manual-ground-truth")
 
     reference_model = str(run.config.get("referenceModel", "")).strip()
     if reference_model:
@@ -705,6 +752,47 @@ class RunManager:
             run.logs.append("[UI] Cancellation requested.")
             return True
 
+    def submit_ground_truth(self, run: Run, raw: str, model: str) -> dict[str, Any]:
+        with run.lock:
+            if run.status != "awaiting_ground_truth":
+                raise ManualGroundTruthError("This run is not waiting for manual ground truth")
+
+        # Keep the run retryable when the pasted JSON is invalid.
+        load_manual_ground_truth_inputs(run.run_dir, raw)
+        model = model.strip()
+        if not model or len(model) > 200 or any(char in model for char in "\r\n"):
+            raise ManualGroundTruthError("Model must be a single line of 1–200 characters")
+
+        with run.lock:
+            if run.status != "awaiting_ground_truth":
+                raise ManualGroundTruthError("Ground truth is already being finalized")
+            run.status = "running"
+            run.logs.append(f"[UI] Finalizing manually supplied ground truth from {model}.")
+        run.persist()
+        try:
+            evaluation = finalize_manual_ground_truth(run.run_dir, raw, model)
+            with run.lock:
+                run.logs.append("[UI] Generating plots and run statistics.")
+            try:
+                result = _generate_run_statistics(run.run_dir)
+                with run.lock:
+                    run.logs.append(f"[UI] Statistics ready ({len(result['plots'])} plots).")
+            except Exception as exc:
+                with run.lock:
+                    run.logs.append(f"[UI] Warning: statistics could not be generated: {exc}")
+            with run.lock:
+                run.status = "completed"
+                run.finished_at = _utc_now()
+                run.logs.append("[UI] Manual ground truth accepted; evaluation completed.")
+            run.persist()
+            return evaluation
+        except Exception:
+            with run.lock:
+                run.status = "awaiting_ground_truth"
+                run.logs.append("[UI] Manual ground-truth finalization failed; correct it and retry.")
+            run.persist()
+            raise
+
     def _start(self, run: Run, input_path: Path) -> None:
         command = _build_run_command(run, input_path)
         run.command = shlex.join(command)
@@ -746,7 +834,10 @@ class RunManager:
                 with run.lock:
                     run.return_code = code
                     run.process = None
-                if code == 0:
+                manual_pending = bool(
+                    code == 0 and run.eval_enabled and run.config.get("manualGroundTruth", False)
+                )
+                if code == 0 and not manual_pending:
                     with run.lock:
                         run.logs.append("[UI] Generating plots and run statistics.")
                     try:
@@ -761,12 +852,16 @@ class RunManager:
                                 f"[UI] Warning: statistics could not be generated: {exc}"
                             )
                 with run.lock:
-                    run.status = "completed" if code == 0 else "failed"
-                    run.finished_at = _utc_now()
-                    run.logs.append(
-                        f"[UI] Pipeline {'completed' if code == 0 else 'failed'} "
-                        f"(exit {code})."
-                    )
+                    if manual_pending:
+                        run.status = "awaiting_ground_truth"
+                        run.logs.append("[UI] Test extraction ready. Paste ground truth and specify its model.")
+                    else:
+                        run.status = "completed" if code == 0 else "failed"
+                        run.finished_at = _utc_now()
+                        run.logs.append(
+                            f"[UI] Pipeline {'completed' if code == 0 else 'failed'} "
+                            f"(exit {code})."
+                        )
             except Exception as exc:  # surfaced in the dashboard, never swallowed
                 with run.lock:
                     run.status = "failed"
@@ -817,7 +912,7 @@ class Handler(BaseHTTPRequestHandler):
         path = unquote(parsed.path)
         if path == "/":
             return self._send_file(UI_DIR / "index.html")
-        if path in {"/app.js", "/styles.css", "/sonar.css"}:
+        if path in {"/app.js", "/styles.css", "/sonar.css", "/manual-ground-truth.css"}:
             return self._send_file(UI_DIR / path.lstrip("/"))
         if path == "/api/runs":
             return self._send_json({"runs": MANAGER.list()})
@@ -893,7 +988,7 @@ class Handler(BaseHTTPRequestHandler):
                 payload = json.dumps({"run": snapshot, "logs": logs}, ensure_ascii=False)
                 self.wfile.write(f"data: {payload}\n\n".encode("utf-8"))
                 self.wfile.flush()
-                if snapshot["status"] in {"completed", "failed", "interrupted"}:
+                if snapshot["status"] in {"completed", "failed", "interrupted", "awaiting_ground_truth"}:
                     return
                 time.sleep(0.8)
         except (BrokenPipeError, ConnectionResetError):
@@ -993,6 +1088,34 @@ class Handler(BaseHTTPRequestHandler):
         finally:
             run.sonar_lock.release()
 
+    def _submit_ground_truth(self, run: Run) -> None:
+        try:
+            length = int(self.headers.get("Content-Length", "0"))
+        except ValueError:
+            length = 0
+        if length <= 0 or length > MAX_GROUND_TRUTH_BYTES:
+            return self._send_json(
+                {"error": "Ground-truth submission must be smaller than 100 MB."},
+                HTTPStatus.BAD_REQUEST,
+            )
+        try:
+            payload = json.loads(self.rfile.read(length).decode("utf-8"))
+            if not isinstance(payload, dict):
+                raise ManualGroundTruthError("Ground-truth submission must be an object")
+            raw = payload.get("groundTruth", "")
+            model = payload.get("model", "")
+            if not isinstance(raw, str) or not isinstance(model, str):
+                raise ManualGroundTruthError("groundTruth and model must both be strings")
+            evaluation = MANAGER.submit_ground_truth(run, raw, model)
+        except (UnicodeDecodeError, json.JSONDecodeError, ManualGroundTruthError) as exc:
+            return self._send_json({"error": str(exc)}, HTTPStatus.BAD_REQUEST)
+        except Exception as exc:
+            return self._send_json(
+                {"error": f"Could not finalize ground truth: {exc}"},
+                HTTPStatus.INTERNAL_SERVER_ERROR,
+            )
+        return self._send_json({"evaluation": evaluation})
+
     def _create_run(self, parsed: Any) -> None:
         try:
             length = int(self.headers.get("Content-Length", "0"))
@@ -1033,7 +1156,13 @@ class Handler(BaseHTTPRequestHandler):
                 "templateModel", ["openai/gpt-5.4"]
             )[0].strip()[:200],
             "noRouting": query.get("noRouting", ["false"])[0].lower() == "true",
+            "manualGroundTruth": query.get("manualGroundTruth", ["false"])[0].lower() == "true",
         }
+        if config["manualGroundTruth"] and not config["eval"]:
+            return self._send_json(
+                {"error": "Manual ground truth requires independent test evaluation."},
+                HTTPStatus.BAD_REQUEST,
+            )
         run = MANAGER.create(self.headers.get("X-Filename", "input.pdf"), data, config)
         return self._send_json(run.snapshot(), HTTPStatus.CREATED)
 

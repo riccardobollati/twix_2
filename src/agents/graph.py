@@ -81,6 +81,16 @@ def recursion_limit_for(max_repair_retries: int) -> int:
     return 32 + 4 * max_repair_retries
 
 
+def _route_after_extraction(state: dict) -> str:
+    """Generate test truth, defer it to the UI, or finish without evaluation."""
+    if not state.get("eval_mode"):
+        return "save_metadata"
+    if state.get("manual_ground_truth"):
+        print("manual_ground_truth: test extraction ready; waiting for UI submission", flush=True)
+        return "save_metadata"
+    return "ground_truth"
+
+
 def build_graph(
     llm: BaseChatModel,
     train_repair_max_retries: int = 3,
@@ -214,7 +224,8 @@ def build_graph(
     graph.add_edge("opencode_fix", "train_eval")
     graph.add_conditional_edges(
         "extraction",
-        lambda state: "ground_truth" if state.get("eval_mode") else "save_metadata",
+        _route_after_extraction,
+        {"ground_truth": "ground_truth", "save_metadata": "save_metadata"},
     )
     graph.add_edge("ground_truth", "eval")
     graph.add_edge("eval", "save_metadata")

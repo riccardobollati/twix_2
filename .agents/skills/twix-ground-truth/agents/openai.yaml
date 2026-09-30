@@ -1,0 +1,4 @@
+interface:
+  display_name: "TWIX Ground Truth"
+  short_description: "Generate held-out TWIX ground truth in Codex"
+  default_prompt: "Use $twix-ground-truth to generate ground truth for the awaiting TWIX UI run."

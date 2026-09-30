@@ -99,6 +99,10 @@ class ResolveDocumentTests(unittest.TestCase):
 
         self.assertIn("--no-eval", forwarded)
 
+    def test_batch_forwards_manual_ground_truth(self) -> None:
+        args, unknown = parse_args(["id_60", "--manual-ground-truth"])
+        self.assertIn("--manual-ground-truth", build_forwarded_args(args, unknown))
+
     def test_batch_forwards_model_overrides(self) -> None:
         args, unknown = parse_args([
             "id_60",
@@ -142,6 +146,33 @@ class ResolveDocumentTests(unittest.TestCase):
             self.assertTrue(state["eval_mode"])
             self.assertEqual(state["eval_pages"], 20)
             self.assertEqual(state["holdout_pages"], 0)
+
+    def test_manual_ground_truth_flag_is_forwarded_to_graph_state(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            pdf = root / "input.pdf"
+            pdf.write_bytes(b"%PDF-1.4\n")
+            graph = Mock()
+            with (
+                patch.object(sys, "argv", [
+                    "run.py", str(pdf), "--out-dir", str(root / "output"),
+                    "--manual-ground-truth",
+                ]),
+                patch("run.extract_ocr_full"),
+                patch("run.get_llm", return_value=Mock()),
+                patch("run.get_template_inference_llm", return_value=Mock()),
+                patch("run.get_ground_truth_llm", return_value=Mock()),
+                patch("run.build_graph", return_value=graph),
+            ):
+                main()
+            self.assertTrue(graph.invoke.call_args.args[0]["manual_ground_truth"])
+
+    def test_manual_ground_truth_requires_evaluation(self) -> None:
+        with patch.object(sys, "argv", [
+            "run.py", "sample.pdf", "--no-eval", "--manual-ground-truth",
+        ]), self.assertRaises(SystemExit) as raised:
+            main()
+        self.assertEqual(raised.exception.code, 2)
 
     def test_single_model_mode_uses_one_operational_model_and_reference(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

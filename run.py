@@ -14,14 +14,14 @@ Usage:
         template.json                  – inferred template
         pipeline/extracted.json        – flat page-local blocks from the pipeline
         pipeline/grouped.json          – deterministically grouped logical records
-        pipeline/ground_truth.json     – LLM ground truth (when evaluation is enabled)
-        pipeline/eval.json / eval.txt  – evaluation results (when enabled)
+        pipeline/ground_truth.json     – test ground truth (after automatic or manual generation)
+        pipeline/eval.json / eval.txt  – evaluation results (after ground truth is available)
 
     The graph detects and skips cover/index front matter before creating the
     train set. By default, the remaining pages are split into train and test;
     the graph builds the pipeline on train, runs it on test, generates ground
     truth via the selected reference model through OpenRouter, and scores the
-    result.
+    result. Manual mode instead waits for test ground truth to be pasted in the UI.
 
 Environment variables:
     LLM_PROVIDER       Provider name (default and only active provider: openrouter).
@@ -332,6 +332,14 @@ def main() -> None:
         help="Pages per LLM call when generating test ground truth (default: 20).",
     )
     parser.add_argument(
+        "--manual-ground-truth", action="store_true",
+        help=(
+            "Run held-out test extraction, then wait for pasted test ground truth "
+            "instead of calling the reference model for final evaluation. "
+            "Train ground truth is unchanged; requires --eval."
+        ),
+    )
+    parser.add_argument(
         "--no-routing", action="store_true",
         help=(
             "Use one model throughout all non-reference phases. The model is "
@@ -347,6 +355,8 @@ def main() -> None:
         help="Save raw OpenCode session output to <doc>/debug/ (one file per session).",
     )
     args = parser.parse_args()
+    if args.manual_ground_truth and not args.eval:
+        parser.error("--manual-ground-truth requires --eval")
 
     print(f"using kwy: {_api_key_preview()}", file=sys.stderr)
 
@@ -421,6 +431,7 @@ def main() -> None:
         "sonar_drop_percent":        args.sonar_drop_percent,
         "train_repair_max_retries":   args.train_max_retries,
         "no_routing":                 args.no_routing,
+        "manual_ground_truth":        args.manual_ground_truth,
         **({
             "detected_start_page": args.start_page,
             "beginning_confidence": "manual",
@@ -444,7 +455,9 @@ def main() -> None:
     )
     print(f"  extracted   → {os.path.join(pipeline_dir, 'extracted.json')}", file=sys.stderr)
     print(f"  grouped     → {os.path.join(pipeline_dir, 'grouped.json')}", file=sys.stderr)
-    if args.eval:
+    if args.eval and args.manual_ground_truth:
+        print("  ground truth → awaiting manual UI submission", file=sys.stderr)
+    elif args.eval:
         print(f"  ground truth → {os.path.join(pipeline_dir, 'ground_truth.json')}", file=sys.stderr)
         print(f"  grouped GT   → {os.path.join(pipeline_dir, 'ground_truth_grouped.json')}", file=sys.stderr)
 

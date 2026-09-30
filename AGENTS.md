@@ -114,6 +114,7 @@ detect_beginning (unless --start-page)
   -> [train_repair -> train_eval] repeated while the gate fails
   -> extraction
   -> [ground_truth -> eval] when evaluation is enabled (the default)
+     or directly to save_metadata with --manual-ground-truth
   -> save_metadata
 ```
 
@@ -126,6 +127,10 @@ Important implications:
   disjoint, spread-out test pages by default.
   With `--no-eval`, it runs
   on the cropped training PDF.
+- `--manual-ground-truth` requires evaluation mode and skips only final test
+  ground-truth generation and scoring. The UI waits for pasted JSON, validates
+  it against the template and test PDF, then writes grouped truth and evaluation
+  locally. Train ground truth still uses the configured reference model.
 - `--no-routing` skips difficulty-model calls and uses the selected easy model
   for every non-reference direct and OpenCode phase.
 - The graph recursion limit is derived from `--train-max-retries`; keep the
@@ -279,6 +284,10 @@ its semantics between `train_eval.py` and `ground_truth.py`.
   through OpenRouter. Final held-out/test ground truth sends images and exact
   OCR text to that same model, keeping evaluation independent of the
   operational pipeline model.
+- Manual test ground truth uses `src/manual_ground_truth.py` after extraction.
+  The `$twix-ground-truth` skill prepares the exact test OCR and page images;
+  test page numbers are split-local even when selected source pages were not
+  contiguous. Rejected submissions leave the UI run awaiting a corrected paste.
 - A window with suspiciously low value-character coverage is retried once.
 - The model emits a flat `blocks` list with an explicit page per physical block.
 - Blocks from independent windows are concatenated in page order without record
@@ -353,10 +362,10 @@ For a document artifact directory `<output>/`:
     ├── grouped.json
     ├── pipeline_health.json
     ├── train_eval/
-    ├── ground_truth.json          # eval mode
-    ├── ground_truth_grouped.json  # eval mode
-    ├── eval.json                  # eval mode
-    └── eval.txt                   # eval mode
+    ├── ground_truth.json          # after automatic GT or manual submission
+    ├── ground_truth_grouped.json  # after automatic GT or manual submission
+    ├── eval.json                  # after automatic GT or manual submission
+    └── eval.txt                   # after automatic GT or manual submission
 ```
 
 Do not assume every optional path exists. The exact `agent_space` shape differs
@@ -404,8 +413,9 @@ OpenCode service.
 
 - The pipeline learns one document family at a time. A generated bundle is not
   a generic PDF extractor.
-- Ground truth is model-generated, not human truth; low-coverage and empty-output
-  defenses reduce but do not eliminate measurement error.
+- Automatic ground truth is model-generated, not human truth; low-coverage and
+  empty-output defenses reduce but do not eliminate measurement error. Manually
+  pasted ground truth depends on the external source used to create it.
 - `single_eval.py` contains its own sequential ground-truth driver for sampled
   pages. Shared boundary helpers come from `gt_common.py`, but generation
   behavior is not identical to the graph's parallel coverage-checked path.

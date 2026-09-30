@@ -93,6 +93,12 @@ def save_metadata_node(state: dict[str, Any]) -> dict[str, Any]:
             if health.get("degenerate"):
                 test_eval["degenerate_pipeline"] = True
                 test_eval["pipeline_problems"] = health.get("problems", [])
+    elif state.get("eval_mode") and state.get("manual_ground_truth"):
+        test_eval = {
+            "status": "awaiting_manual_ground_truth",
+            "agentic_pipeline_cost": _find("extraction"),
+            "ground_truth_source": "manual_ui_submission",
+        }
 
     # ── totals ────────────────────────────────────────────────────────────────
     total_duration = sum(c.get("duration_s", 0) for c in all_costs)
@@ -150,6 +156,7 @@ def save_metadata_node(state: dict[str, Any]) -> dict[str, Any]:
             "train_accuracy_threshold": state.get("train_accuracy_threshold", 0.0),
             "train_repair_max_retries": state.get("train_repair_max_retries", 3),
             "ground_truth_test_window": state.get("gt_test_window", 20),
+            "manual_ground_truth": state.get("manual_ground_truth", False),
         },
         "pipeline_phases":  pipeline_phases,
         "train_eval":       train_eval,
