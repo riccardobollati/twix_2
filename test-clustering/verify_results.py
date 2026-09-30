@@ -10,7 +10,9 @@ from build_html import METHODS
 from run_all import HERE, ROOT, sources, valid_result
 
 
-def validate_report(report: dict, folder: Path, total: int, max_pages: int) -> list[str]:
+def validate_report(report: dict, folder: Path, total: int, max_pages: int,
+                    methods: list[str] | None = None) -> list[str]:
+    methods = methods or METHODS
     errors = []
     expected = set(range(1, min(total, max_pages) + 1))
     page_entries = report.get("pages", [])
@@ -24,7 +26,7 @@ def validate_report(report: dict, folder: Path, total: int, max_pages: int) -> l
     for name in overlays:
         if not (folder / name).is_file():
             errors.append(f"missing overlay {name}")
-    for method in METHODS:
+    for method in methods:
         outcome = report.get("algorithms", {}).get(method)
         if outcome is None:
             errors.append(f"missing method {method}")
@@ -53,18 +55,27 @@ def main() -> int:
     parser.add_argument("--data-dir", type=Path, default=ROOT / "data")
     parser.add_argument("--output-root", type=Path, default=HERE)
     parser.add_argument("--max-pages", type=int, default=500)
+    parser.add_argument("--view", type=int, choices=(1, 2), default=1)
     args = parser.parse_args()
+    if args.view == 2:
+        from cluster_pages_v2 import METHODS as V2_METHODS
+        from run_viewing_2 import valid_result as valid_v2
+        methods, validator = list(V2_METHODS), valid_v2
+        if args.output_root == HERE:
+            args.output_root = HERE / "viewing-2"
+    else:
+        methods, validator = METHODS, valid_result
     discovered = sources(args.data_dir.resolve())
     problems = []
     total_scanned = 0
     for name, pdf_path, total in discovered:
         folder = args.output_root / name
         result_path = folder / "clusters.json"
-        if not valid_result(result_path, pdf_path, total, args.max_pages):
+        if not validator(result_path, pdf_path, total, args.max_pages):
             problems.append(f"{name}: missing, stale, or incomplete clusters.json")
             continue
         report = json.loads(result_path.read_text(encoding="utf-8"))
-        problems.extend(f"{name}: {message}" for message in validate_report(report, folder, total, args.max_pages))
+        problems.extend(f"{name}: {message}" for message in validate_report(report, folder, total, args.max_pages, methods))
         total_scanned += report["page_count"]
     for filename in ("index.html", "summary.json", "report.md"):
         if not (args.output_root / filename).is_file():

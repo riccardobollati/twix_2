@@ -13,6 +13,7 @@ sys.path.insert(0, str(ROOT / "test-clustering"))
 import build_html  # noqa: E402
 import run_all  # noqa: E402
 import verify_results  # noqa: E402
+import cluster_pages_v2  # noqa: E402
 
 
 def sample_report(pdf_path: Path) -> dict:
@@ -37,6 +38,28 @@ def sample_report(pdf_path: Path) -> dict:
 
 
 class ClusteringHtmlTests(unittest.TestCase):
+    def test_second_viewer_uses_its_own_methods_and_title(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            base = Path(temporary)
+            pdf_path = base / "sample.pdf"
+            pdf_path.touch()
+            folder = base / "viewing-2" / "sample"
+            folder.mkdir(parents=True)
+            report = sample_report(pdf_path)
+            report["version"] = 2
+            report["algorithms"] = {name: next(iter(report["algorithms"].values()))
+                                    for name in cluster_pages_v2.METHODS}
+            (folder / "clusters.json").write_text(json.dumps(report), encoding="utf-8")
+            methods = list(cluster_pages_v2.METHODS)
+            build_html.build(folder.parent, [("sample", pdf_path, 3)], methods, "Clustering viewing 2")
+            page = (folder / "index.html").read_text(encoding="utf-8")
+            index = (folder.parent / "index.html").read_text(encoding="utf-8")
+            self.assertIn("Clustering viewing 2", page)
+            self.assertIn("header_strict", page)
+            self.assertIn('<option value="balanced_complete" selected>', page)
+            self.assertIn("Balanced complete clusters", index)
+            self.assertIn("Structure average clusters", index)
+
     def test_browser_shows_all_methods_page_links_and_scan_limit(self):
         with tempfile.TemporaryDirectory() as temporary:
             base = Path(temporary)
