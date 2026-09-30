@@ -1,4 +1,5 @@
 const stages = [
+  {id: "clustering", label: "Page clustering", detail: "Inspect table & KV groups"},
   {id: "template", label: "Template inference", detail: "Learn the schema"},
   {id: "blocks", label: "Block separation", detail: "Inspect unseen pages"},
   {id: "sonar", label: "Missed sonar", detail: "Find uncovered pages"},
@@ -13,6 +14,7 @@ let workflow = {};
 let selectedStage = null;
 let followLive = true;
 let selectedBlock = 0;
+let selectedCluster = null;
 let selectedRecord = 0;
 let selectedSonarPage = null;
 let hoveredSonarPage = null;
@@ -94,7 +96,7 @@ function renderStages() {
 function renderModelAssignments() {
   const assignments = workflow.modelAssignments || [];
   const container = $("#model-assignments");
-  const liveStage = activeRun?.stage || "template";
+  const liveStage = activeRun?.stage || "clustering";
   const liveLabel = stages.find((stage) => stage.id === liveStage)?.label || "Pipeline";
   const activeIds = new Set(workflow.activeModelAssignments || []);
   const activeTasks = assignments.filter((assignment) => activeIds.has(assignment.id)).map((assignment) => assignment.task);
@@ -169,6 +171,79 @@ function showResultTab(tab) {
   document.querySelectorAll("[data-result-panel]").forEach((panel) => panel.classList.toggle("hidden", panel.dataset.resultPanel !== tab));
 }
 
+function pageRanges(pages) {
+  const sorted = [...new Set(pages.map(Number))].sort((a, b) => a - b);
+  const ranges = [];
+  for (let i = 0; i < sorted.length;) {
+    let end = i;
+    while (end + 1 < sorted.length && sorted[end + 1] === sorted[end] + 1) end++;
+    ranges.push(end === i ? String(sorted[i]) : `${sorted[i]}–${sorted[end]}`);
+    i = end + 1;
+  }
+  return ranges.join(", ");
+}
+
+function renderClustering() {
+  const selection = workflow.clusterSelection;
+  const groups = workflow.clusterGroups || [];
+  const finished = ["completed", "failed", "interrupted"].includes(activeRun?.status);
+  const state = $("#cluster-state");
+  state.textContent = selection ? "Selection ready" : groups.length ? "Clusters ready" : "Waiting";
+  state.className = `artifact-state ${selection || groups.length ? "ready" : "waiting"}`;
+  $("#cluster-selection").innerHTML = selection ? [
+    `${selection.table_cluster_count} table clusters · ${selection.kv_cluster_count} KV clusters`,
+    `Scanned ${selection.scanned_pages} pages from source page ${selection.source_start_page}`,
+    `Ordering pages: ${pageRanges(selection.first_source_pages)}`,
+    `Additional cluster samples: ${pageRanges(selection.cluster_sample_pages) || "none"}`,
+    `All training pages: ${pageRanges(selection.train_source_pages)}`,
+    `Independent evaluation pages: ${pageRanges(selection.test_source_pages) || "none"}`,
+  ].map((item) => `<span>${escapeHtml(item)}</span>`).join("")
+    : finished && !groups.length ? "No saved clustering results for this run." : "Scanning table and KV layouts…";
+
+  if (!groups.some((group) => group.id === selectedCluster)) selectedCluster = groups[0]?.id || null;
+  const list = $("#cluster-list");
+  if (!groups.length) {
+    list.innerHTML = `<p class="muted">${selection ? "No table or KV page clusters were detected." : finished ? "No cluster groups are available for this run." : "Clusters will appear here when the scan finishes."}</p>`;
+  } else {
+    list.innerHTML = ["table", "kv"].map((kind) => {
+      const matching = groups.filter((group) => group.kind === kind);
+      if (!matching.length) return "";
+      return `<h4 class="cluster-group-title">${kind === "table" ? "Table structures" : "KV patterns"}</h4>` + matching.map((group) => {
+        const number = group.id.split(":")[1];
+        const training = group.samplePage == null ? "Selection pending" : `Template sample: page ${group.samplePage}`;
+        return `<button class="cluster-card ${selectedCluster === group.id ? "selected" : ""}" data-cluster-id="${escapeHtml(group.id)}" type="button"><strong>${kind === "table" ? "Table" : "KV"} cluster ${escapeHtml(number)}</strong><small>${group.pages.length} source page${group.pages.length === 1 ? "" : "s"} · representative page ${group.representative}</small><small>${escapeHtml(training)}</small></button>`;
+      }).join("");
+    }).join("");
+    list.querySelectorAll("[data-cluster-id]").forEach((button) => button.addEventListener("click", () => {
+      selectedCluster = button.dataset.clusterId;
+      renderClustering();
+    }));
+  }
+
+  const group = groups.find((item) => item.id === selectedCluster);
+  $("#cluster-preview-title").textContent = group
+    ? `${group.kind === "table" ? "Table" : "KV"} cluster ${group.id.split(":")[1]} · representative source page ${group.representative}`
+    : "Representative overlay";
+  $("#cluster-membership").textContent = group ? `Member source pages: ${pageRanges(group.pages)}` : "";
+  const image = $("#cluster-image");
+  const open = $("#cluster-open-image");
+  if (group?.overlay) {
+    const url = artifactUrl(group.overlay);
+    if (image.dataset.path !== group.overlay) { image.src = url; image.dataset.path = group.overlay; }
+    image.classList.remove("hidden");
+    $("#cluster-preview-empty").classList.add("hidden");
+    open.href = url;
+    open.classList.remove("hidden");
+  } else {
+    image.classList.add("hidden");
+    image.removeAttribute("src");
+    image.dataset.path = "";
+    open.classList.add("hidden");
+    $("#cluster-preview-empty").textContent = group ? "Representative overlay is not available yet." : "Cluster overlays appear after the scan.";
+    $("#cluster-preview-empty").classList.remove("hidden");
+  }
+}
+
 function renderStatistics() {
   const stats = workflow.statistics;
   const images = workflow.statsImages || [];
@@ -204,11 +279,8 @@ function renderStatistics() {
 
 function renderWorkflow() {
   renderModelAssignments();
+  renderClustering();
   setPdf("#template-pdf", "#template-pdf-empty", workflow.templatePdf);
-  const selection = workflow.clusterSelection;
-  $("#cluster-selection").textContent = selection
-    ? `${selection.table_cluster_count} table clusters · ${selection.kv_cluster_count} KV clusters · ordering pages ${selection.first_source_pages.join(", ")} · train source pages ${selection.train_source_pages.join(", ")} · evaluation source pages ${selection.test_source_pages.join(", ") || "none"}`
-    : "Scanning table and KV layouts…";
   $("#template-json").textContent = pretty(workflow.template, "Waiting for template inference…");
   const templateState = $("#template-state");
   templateState.textContent = workflow.template ? "Template ready" : "Waiting";
@@ -453,7 +525,7 @@ async function loadWorkflow() {
 
 async function selectRun(runId) {
   if (activeEventSource) activeEventSource.close();
-  activeEventSource = null; workflow = {}; selectedBlock = 0; selectedRecord = 0; selectedSonarPage = null; hoveredSonarPage = null; sonarThreshold = null; sonarGeneration = 0; followLive = true; selectedResultTab = "output";
+  activeEventSource = null; workflow = {}; selectedBlock = 0; selectedCluster = null; selectedRecord = 0; selectedSonarPage = null; hoveredSonarPage = null; sonarThreshold = null; sonarGeneration = 0; followLive = true; selectedResultTab = "output";
   $("#sonar-preview-image").removeAttribute("src");
   $("#sonar-range-controls").classList.add("hidden");
   const response = await fetch(`/api/runs/${encodeURIComponent(runId)}`);

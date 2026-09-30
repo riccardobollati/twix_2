@@ -65,6 +65,7 @@ def _pipeline_python() -> str:
     return str(venv_python) if venv_python.is_file() and os.access(venv_python, os.X_OK) else sys.executable
 
 STAGES = [
+    ("clustering", "Page clustering"),
     ("template", "Template inference"),
     ("blocks", "Block separation"),
     ("sonar", "Missed sonar"),
@@ -150,15 +151,18 @@ def _stage_from_logs(lines: list[str], eval_enabled: bool) -> str:
         (
             "template",
             (
-                "cluster_sampling", "template_inference", "cropped source pages", "train: source pages",
-                "structured data starts", "extracting full ocr", "ocr saved",
+                "template_inference", "environment_creation", "cropped source pages",
+                "train: source pages",
             ),
         ),
+        ("clustering", (
+            "cluster_sampling", "structured data starts", "extracting full ocr", "ocr saved",
+        )),
     ]
     for stage, phrases in markers:
         if any(phrase in text for phrase in phrases):
             return stage
-    return "template"
+    return "clustering"
 
 
 def _load_json(path: Path) -> Any | None:
@@ -244,14 +248,14 @@ def _effective_model_assignments(run: "Run") -> list[dict[str, Any]]:
     assignments: list[dict[str, Any]] = [
         {
             "id": "beginning_detection",
-            "stage": "template",
+            "stage": "clustering",
             "task": "Beginning detection",
             "model": direct_model_id(primary_model),
             "transport": "OpenRouter direct",
         },
         {
             "id": "cluster_sampling",
-            "stage": "template",
+            "stage": "clustering",
             "task": "Table and KV page clustering",
             "model": "Deterministic PDF scan",
             "transport": "No model call",
@@ -372,9 +376,11 @@ def _active_model_assignment_ids(
         "easy_extractors", "hard_extractors"
     ]
     candidates: dict[str, list[tuple[tuple[str, ...], list[str]]]] = {
-        "template": [
+        "clustering": [
             (("detect_beginning", "structured data starts"), ["beginning_detection"]),
             (("cluster_sampling",), ["cluster_sampling"]),
+        ],
+        "template": [
             (("template_inference",), ["template_inference"]),
         ],
         "blocks": [
@@ -406,7 +412,8 @@ def _active_model_assignment_ids(
     if ranked:
         return max(ranked, key=lambda item: item[0])[1]
     defaults = {
-        "template": ["beginning_detection"],
+        "clustering": ["beginning_detection"],
+        "template": ["template_inference"],
         "blocks": ["block_separation"],
         "sonar": ["excluded_blocks_sonar"],
         "record_separation": ["record_grouping"],
@@ -414,6 +421,34 @@ def _active_model_assignment_ids(
         "results": ["portable_extraction"],
     }
     return defaults.get(stage, [])
+
+
+def _cluster_groups(root: Path, selection: dict[str, Any] | None) -> list[dict[str, Any]]:
+    """Expose the chosen table and KV partitions without sending scan features."""
+    folder = root / "artifacts" / "clustering"
+    coverage = selection.get("cluster_coverage", {}) if selection else {}
+    groups: list[dict[str, Any]] = []
+    for kind, filename, method in (
+        ("table", "clusters.json", "balanced_complete"),
+        ("kv", "kv_clusters.json", "kv_balanced"),
+    ):
+        report = _load_json(folder / filename) or {}
+        outcome = report.get("algorithms", {}).get(method, {})
+        representatives = outcome.get("representatives", {})
+        for cluster_id, pages in sorted(outcome.get("clusters", {}).items(),
+                                        key=lambda item: int(item[0])):
+            representative = int(representatives[cluster_id])
+            image_name = (f"page_{representative:04d}_features.png" if kind == "table"
+                          else f"kv_page_{representative:04d}.png")
+            groups.append({
+                "id": f"{kind}:{cluster_id}",
+                "kind": kind,
+                "pages": pages,
+                "representative": representative,
+                "samplePage": coverage.get(f"{kind}:{cluster_id}"),
+                "overlay": _relative_file(root, folder / image_name),
+            })
+    return groups
 
 
 def _workflow_payload(run: "Run") -> dict[str, Any]:
@@ -453,13 +488,15 @@ def _workflow_payload(run: "Run") -> dict[str, Any]:
 
     stage = _stage_from_logs(logs, run.eval_enabled)
     metadata = _load_json(root / "metadata.json") or {}
+    cluster_selection = _load_json(root / "artifacts" / "clustering" / "selection.json")
     source_start = metadata.get("source_start_page", 1)
     if not isinstance(source_start, int) or source_start < 1:
         source_start = 1
     return {
         "stage": stage,
         "template": _load_json(root / "template.json"),
-        "clusterSelection": _load_json(root / "artifacts" / "clustering" / "selection.json"),
+        "clusterSelection": cluster_selection,
+        "clusterGroups": _cluster_groups(root, cluster_selection),
         "templatePdf": _relative_file(root, train_pdf or source_pdf),
         "testPdf": _relative_file(root, test_pdf or source_pdf),
         "blockImages": [path for path in block_images if path],

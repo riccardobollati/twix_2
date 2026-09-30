@@ -16,11 +16,15 @@ from UI.app import (
 
 
 class UiWorkflowTests(unittest.TestCase):
-    def test_ui_exposes_six_pipeline_stages(self) -> None:
+    def test_ui_exposes_seven_pipeline_stages(self) -> None:
         self.assertEqual([stage[0] for stage in STAGES], [
-            "template", "blocks", "sonar", "record_separation", "extraction", "results",
+            "clustering", "template", "blocks", "sonar", "record_separation",
+            "extraction", "results",
         ])
         html = (Path(__file__).parents[1] / "UI" / "index.html").read_text()
+        self.assertIn('data-stage-panel="clustering"', html)
+        self.assertIn('id="cluster-list"', html)
+        self.assertIn('id="cluster-image"', html)
         self.assertIn('id="model-assignments"', html)
         self.assertIn("What is running what", html)
         self.assertIn('data-stage-panel="record_separation"', html)
@@ -144,6 +148,7 @@ class UiWorkflowTests(unittest.TestCase):
             assignments = _effective_model_assignments(run)
 
         by_id = {assignment["id"]: assignment for assignment in assignments}
+        self.assertEqual(by_id["cluster_sampling"]["stage"], "clustering")
         self.assertEqual(by_id["template_inference"]["model"], "qwen/qwen3.8-flash")
         self.assertEqual(by_id["ground_truth"]["model"], "openai/gpt-5.4")
         self.assertEqual(by_id["block_separation"]["model"], "qwen/qwen3.8-flash")
@@ -183,7 +188,12 @@ class UiWorkflowTests(unittest.TestCase):
             ["hard_extractors"],
         )
 
-    def test_log_markers_advance_through_six_stages(self) -> None:
+    def test_log_markers_advance_through_seven_stages(self) -> None:
+        self.assertEqual(_stage_from_logs([], True), "clustering")
+        self.assertEqual(_stage_from_logs(["cluster_sampling: scanning pages"], True), "clustering")
+        self.assertEqual(_stage_from_logs([
+            "cluster_sampling: selected pages", "environment_creation_node: cropped source pages",
+        ], True), "template")
         self.assertEqual(_stage_from_logs(["template_inference_node: done"], True), "template")
         self.assertEqual(_stage_from_logs(["block_artifacts_node: done"], True), "blocks")
         self.assertEqual(_stage_from_logs(["excluded_blocks_sonar_node: scanning pages"], True), "sonar")
@@ -196,6 +206,41 @@ class UiWorkflowTests(unittest.TestCase):
         )
         self.assertEqual(_stage_from_logs(["train_eval_node: 0.9"], True), "extraction")
         self.assertEqual(_stage_from_logs(["eval_node: complete"], True), "results")
+
+    def test_cluster_groups_are_inspectable_in_workflow(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            folder = root / "artifacts" / "clustering"
+            folder.mkdir(parents=True)
+            (root / "input.pdf").write_bytes(b"%PDF-1.4")
+            (folder / "page_0013_features.png").write_bytes(b"png")
+            (folder / "kv_page_0009.png").write_bytes(b"png")
+            (folder / "selection.json").write_text(json.dumps({
+                "cluster_coverage": {"table:2": 13, "kv:1": 1},
+                "table_cluster_count": 1, "kv_cluster_count": 1,
+            }))
+            (folder / "clusters.json").write_text(json.dumps({"algorithms": {
+                "balanced_complete": {"clusters": {"2": [12, 13, 14]},
+                                      "representatives": {"2": 13}},
+            }}))
+            (folder / "kv_clusters.json").write_text(json.dumps({"algorithms": {
+                "kv_balanced": {"clusters": {"1": [1, 2, 9]},
+                                "representatives": {"1": 9}},
+            }}))
+            run = Run("run-test", root, "input.pdf", {"eval": True})
+            run.logs = ["cluster_sampling: selected pages"]
+
+            payload = _workflow_payload(run)
+
+        self.assertEqual(payload["stage"], "clustering")
+        by_id = {group["id"]: group for group in payload["clusterGroups"]}
+        self.assertEqual(by_id["table:2"]["pages"], [12, 13, 14])
+        self.assertEqual(by_id["table:2"]["samplePage"], 13)
+        self.assertEqual(by_id["table:2"]["overlay"],
+                         "artifacts/clustering/page_0013_features.png")
+        self.assertEqual(by_id["kv:1"]["samplePage"], 1)
+        self.assertEqual(by_id["kv:1"]["overlay"],
+                         "artifacts/clustering/kv_page_0009.png")
 
     def test_terminal_redraw_completions_are_deduplicated(self) -> None:
         line = "block_extraction_scripting | block 2  ✓  89,617 tokens"

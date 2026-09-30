@@ -7,8 +7,8 @@ python3 UI/app.py
 ```
 
 Open `http://127.0.0.1:8765`. Upload a PDF, choose the run settings, and the
-dashboard will run the existing `run.py` pipeline locally. Its six-stage view
-follows template inference, block separation, missed sonar, deterministic record separation,
+dashboard will run the existing `run.py` pipeline locally. Its seven-stage view
+follows page clustering, template inference, block separation, missed sonar, deterministic record separation,
 data extraction with train evaluation, and independent test evaluation. The
 template and final JSON are shown beside their PDFs; block and record overlays
 come from the unseen test split when evaluation is enabled. Train holdout and
@@ -40,9 +40,11 @@ run. Enable “Use one model for every non-reference phase” to pass
 block separation, every extractor, and repair. Template inference uses its
 own selected model; train and test ground truth use the reference model.
 Both default to GPT-5.4. The template selector also offers DeepSeek V4/V4.1,
-GLM 5.3 Flash, and Qwen3.8 Flash through OpenRouter. The template panel shows
-the source pages selected by deterministic table and KV clustering, including
-the first three ordering pages and later structural variants.
+GLM 5.3 Flash, and Qwen3.8 Flash through OpenRouter. The clustering stage lists
+table and KV clusters separately, their member pages, representative overlays,
+and the page selected for each cluster. It also shows the first ordering pages,
+additional cluster samples, training pages, and independent evaluation pages.
+Template inference is the following stage.
 
 With routing enabled, the selected hard model always generates the block
 separator and performs difficulty classification; it also handles hard block

@@ -69,7 +69,7 @@
 
         <section id="dashboard" class="dashboard hidden">
           <div class="stage-heading">
-            <div><p class="eyebrow">LIVE PIPELINE</p><h2>Six-stage extraction</h2></div>
+            <div><p class="eyebrow">LIVE PIPELINE</p><h2>Seven-stage extraction</h2></div>
             <div class="run-actions"><button id="follow-live" class="quiet-button hidden" type="button">Return to live stage</button><button id="cancel-run" class="quiet-button" type="button">Cancel run</button></div>
           </div>
           <nav id="stages" class="stages" aria-label="Pipeline stages"></nav>
@@ -82,9 +82,17 @@
           </section>
 
           <section class="stage-workbench">
+            <article class="workflow-panel" data-stage-panel="clustering">
+              <div class="panel-heading"><div><span class="step-kicker">STEP 01</span><h3>Page clustering</h3><p>Table and KV layouts are clustered separately before template inference. Inspect every detected structure and the pages chosen to represent it.</p></div><span id="cluster-state" class="artifact-state waiting">Waiting</span></div>
+              <div id="cluster-selection" class="cluster-selection muted">Scanning table and KV layouts…</div>
+              <div class="cluster-browser">
+                <div id="cluster-list" class="cluster-list"></div>
+                <div class="viewer-card cluster-preview"><div class="viewer-title"><span id="cluster-preview-title">Representative overlay</span><a id="cluster-open-image" class="hidden" target="_blank" rel="noopener">Open PNG</a></div><div id="cluster-preview-empty" class="cluster-preview-empty">Cluster overlays appear after the scan.</div><img id="cluster-image" class="cluster-image hidden" alt="Representative page with detected table or KV structure" /><p id="cluster-membership" class="cluster-membership"></p></div>
+              </div>
+            </article>
+
             <article class="workflow-panel" data-stage-panel="template">
-              <div class="panel-heading"><div><span class="step-kicker">STEP 01</span><h3>Page clustering and template inference</h3><p>The first structured pages establish block order; cluster samples reveal later table and KV variants.</p></div><span id="template-state" class="artifact-state waiting">Waiting</span></div>
-              <p id="cluster-selection" class="muted">Scanning table and KV layouts…</p>
+              <div class="panel-heading"><div><span class="step-kicker">STEP 02</span><h3>Template inference</h3><p>The first three structured pages establish block order; cluster samples reveal later table and KV variants.</p></div><span id="template-state" class="artifact-state waiting">Waiting</span></div>
               <div class="split-view">
                 <div class="viewer-card"><div class="viewer-title">Training PDF</div><div id="template-pdf-empty" class="empty-state">Preparing the training document…</div><iframe id="template-pdf" class="pdf-viewer hidden" title="Training PDF"></iframe></div>
                 <div class="viewer-card"><div class="viewer-title">Inferred template <span>template.json</span></div><pre id="template-json" class="json-viewer">Waiting for template inference…</pre></div>
@@ -92,7 +100,7 @@
             </article>
 
             <article class="workflow-panel hidden" data-stage-panel="blocks">
-              <div class="panel-heading"><div><span class="step-kicker">STEP 02</span><h3>Block separation</h3><p>The generated separator is applied to independent test pages that were never used to build the pipeline.</p></div><span id="block-source" class="artifact-state waiting">Waiting</span></div>
+              <div class="panel-heading"><div><span class="step-kicker">STEP 03</span><h3>Block separation</h3><p>The generated separator is applied to independent test pages that were never used to build the pipeline.</p></div><span id="block-source" class="artifact-state waiting">Waiting</span></div>
               <div class="block-browser">
                 <div class="viewer-card block-main"><div class="viewer-title"><span id="block-page-title">Block overlay</span><span id="block-counter"></span></div><div id="block-empty" class="empty-state">Block previews appear here as soon as separation finishes.</div><img id="block-image" class="block-image hidden" alt="Detected blocks overlaid on a PDF page" /></div>
                 <div id="block-thumbnails" class="thumbnail-rail"></div>
@@ -100,7 +108,7 @@
             </article>
 
             <article class="workflow-panel hidden" data-stage-panel="sonar">
-              <div class="panel-heading"><div><span class="step-kicker">STEP 03</span><h3>Missed sonar</h3><p>Pages whose block-word coverage drops relative to the average across the scanned pages.</p></div><span id="sonar-state" class="artifact-state waiting">Waiting</span></div>
+              <div class="panel-heading"><div><span class="step-kicker">STEP 04</span><h3>Missed sonar</h3><p>Pages whose block-word coverage drops relative to the average across the scanned pages.</p></div><span id="sonar-state" class="artifact-state waiting">Waiting</span></div>
               <div class="sonar-controls">
                 <label>Relative drop threshold
                   <input id="sonar-threshold-slider" type="range" min="0" max="100" step="1" value="15" />
@@ -125,7 +133,7 @@
             </article>
 
             <article class="workflow-panel hidden" data-stage-panel="record_separation">
-              <div class="panel-heading"><div><span class="step-kicker">STEP 04</span><h3>Record separation</h3><p>Deterministic template-node traversal groups the detected blocks into logical records without a model call.</p></div><span id="record-source" class="artifact-state waiting">Waiting</span></div>
+              <div class="panel-heading"><div><span class="step-kicker">STEP 05</span><h3>Record separation</h3><p>Deterministic template-node traversal groups the detected blocks into logical records without a model call.</p></div><span id="record-source" class="artifact-state waiting">Waiting</span></div>
               <div class="block-browser">
                 <div class="viewer-card block-main"><div class="viewer-title"><span id="record-page-title">Record overlay</span><span id="record-counter"></span></div><div id="record-empty" class="empty-state">Record previews appear here as soon as deterministic grouping finishes.</div><img id="record-image" class="block-image hidden" alt="Logical records overlaid on a PDF page" /></div>
                 <div id="record-thumbnails" class="thumbnail-rail"></div>
@@ -133,12 +141,12 @@
             </article>
 
             <article class="workflow-panel hidden" data-stage-panel="extraction">
-              <div class="panel-heading"><div><span class="step-kicker">STEP 05</span><h3>Data extraction & train evaluation</h3><p>OpenCode builds the node extractors, evaluates them on train pages, and repairs them when required.</p></div><span id="train-score" class="artifact-state waiting">In progress</span></div>
+              <div class="panel-heading"><div><span class="step-kicker">STEP 06</span><h3>Data extraction & train evaluation</h3><p>OpenCode builds the node extractors, evaluates them on train pages, and repairs them when required.</p></div><span id="train-score" class="artifact-state waiting">In progress</span></div>
               <div class="console-card"><div class="viewer-title">Live pipeline output <span id="log-count"></span></div><pre id="run-log" class="run-log">Waiting for pipeline output…</pre></div>
             </article>
 
             <article class="workflow-panel hidden" data-stage-panel="results">
-              <div class="panel-heading results-heading"><div><span class="step-kicker">STEP 06</span><h3>Test evaluation & final results</h3><p>The finished pipeline runs on the independent test PDF. Compare the source with its extracted JSON.</p></div><div id="result-score" class="result-score"><small>Accuracy</small><strong>—</strong></div></div>
+              <div class="panel-heading results-heading"><div><span class="step-kicker">STEP 07</span><h3>Test evaluation & final results</h3><p>The finished pipeline runs on the independent test PDF. Compare the source with its extracted JSON.</p></div><div id="result-score" class="result-score"><small>Accuracy</small><strong>—</strong></div></div>
               <div class="result-tabs" role="tablist" aria-label="Final result views">
                 <button class="result-tab active" data-result-tab="output" type="button" role="tab" aria-selected="true">Output</button>
                 <button class="result-tab" data-result-tab="stats" type="button" role="tab" aria-selected="false">Stats</button>
