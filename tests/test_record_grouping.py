@@ -7,6 +7,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from src.agents.eval import eval_node
+from src.eval.score import score
 from src.record_grouping import group_blocks_into_records
 
 
@@ -40,6 +41,81 @@ def _ids(records: list[dict]) -> list[list[str]]:
 
 
 class RecordGroupingTests(unittest.TestCase):
+    def test_xor_alternatives_score_as_complete_records(self) -> None:
+        template = [
+            {"type": "kv", "node_id": 0, "bid": [0], "complexity": {}},
+            {"type": "xor-table", "node_id": 1, "includes": [2, 3]},
+            {"type": "table", "node_id": 2, "bid": [1], "complexity": {}},
+            {"type": "table", "node_id": 3, "bid": [1], "complexity": {}},
+        ]
+
+        def blocks(first_table: int, *, candidate: bool) -> list[dict]:
+            suffix = "_0" if candidate else ""
+            return [
+                {"block_id": f"0{suffix}", "type": "kv", "page": 1,
+                 "data": {"Name": "One"}},
+                {"block_id": f"{first_table}{suffix}", "type": "table", "page": 1,
+                 "data": [{"Width" if first_table == 2 else "Diameter": "10"}]},
+                {"block_id": f"0{suffix}", "type": "kv", "page": 2,
+                 "data": {"Name": "Two"}},
+                {"block_id": f"3{suffix}", "type": "table", "page": 2,
+                 "data": [{"Diameter": "20"}]},
+            ]
+
+        gold = group_blocks_into_records(blocks(2, candidate=False), template)
+        matching = group_blocks_into_records(blocks(2, candidate=True), template)
+        wrong = group_blocks_into_records(blocks(3, candidate=True), template)
+
+        self.assertEqual(len(gold), 2)
+        self.assertEqual(score(gold, matching, reference="model_reference")["accuracy"], 1.0)
+        self.assertLess(score(gold, wrong, reference="model_reference")["accuracy"], 1.0)
+
+    def test_xor_table_alternatives_complete_each_record(self) -> None:
+        template = [
+            {"type": "kv", "node_id": 0, "bid": [0], "complexity": {}},
+            {"type": "xor-table", "node_id": 1, "includes": [2, 3]},
+            {"type": "table", "node_id": 2, "bid": [1], "complexity": {}},
+            {"type": "table", "node_id": 3, "bid": [1], "complexity": {}},
+        ]
+        blocks = [
+            _block(0), _block(2, kind="table"),
+            _block(0, page=2), _block(3, page=2, kind="table"),
+        ]
+        self.assertEqual(
+            _ids(group_blocks_into_records(blocks, template)),
+            [["0", "2"], ["0", "3"]],
+        )
+
+    def test_xor_alternative_switch_starts_new_record(self) -> None:
+        template = [
+            {"type": "xor-kv", "node_id": 0, "includes": [1, 2]},
+            {"type": "kv", "node_id": 1, "bid": [0], "complexity": {}},
+            {"type": "kv", "node_id": 2, "bid": [0], "complexity": {}},
+            {"type": "table", "node_id": 3, "bid": [1], "complexity": {}},
+        ]
+        blocks = [_block(1), _block(2), _block(3, kind="table")]
+        self.assertEqual(
+            _ids(group_blocks_into_records(blocks, template)),
+            [["1"], ["2", "3"]],
+        )
+
+    def test_xor_table_continuation_stays_in_completed_record(self) -> None:
+        template = [
+            {"type": "kv", "node_id": 0, "bid": [0], "complexity": {}},
+            {"type": "xor-table", "node_id": 1, "includes": [2, 3]},
+            {"type": "table", "node_id": 2, "bid": [1], "complexity": {}},
+            {"type": "table", "node_id": 3, "bid": [1], "complexity": {}},
+        ]
+        blocks = [
+            _block(0), _block(2, kind="table"),
+            _block(2, page=2, kind="table"),
+            _block(0, page=2), _block(3, page=2, kind="table"),
+        ]
+        self.assertEqual(
+            _ids(group_blocks_into_records(blocks, template)),
+            [["0", "2", "2"], ["0", "3"]],
+        )
+
     def test_complete_template_restart_starts_a_record(self) -> None:
         blocks = [
             _block(i, instance=j // 4)

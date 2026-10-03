@@ -43,6 +43,22 @@ PREPARE_SCRIPT = (
 
 
 class ManualGroundTruthTests(unittest.TestCase):
+    def test_xor_wrapper_is_not_a_ground_truth_block(self) -> None:
+        template = TEMPLATE + [
+            {"type": "xor-table", "node_id": 1, "includes": [2, 3]},
+            {"type": "table", "node_id": 2, "fields": ["Width"], "bid": [1], "complexity": {}},
+            {"type": "table", "node_id": 3, "fields": ["Diameter"], "bid": [1], "complexity": {}},
+        ]
+        prompt = build_prompt(template)
+        self.assertIn('"xor-table"', prompt)
+        self.assertIn("Never emit an XOR node as a block", prompt)
+        self.assertIn('"Width"', prompt)
+        raw = json.dumps({"blocks": [{
+            "page": 1, "type": "xor-table", "block_id": "1", "data": {},
+        }]})
+        with self.assertRaisesRegex(ManualGroundTruthError, "not in the inferred template"):
+            parse_manual_ground_truth(raw, template, page_count=1)
+
     def test_parse_accepts_exact_generator_shape(self) -> None:
         raw = json.dumps({
             "blocks": [{

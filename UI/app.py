@@ -486,6 +486,17 @@ def _cluster_groups(root: Path, selection: dict[str, Any] | None) -> list[dict[s
     return groups
 
 
+def _artifact_revision(paths: list[Path]) -> int:
+    latest = 0
+    for path in paths:
+        try:
+            latest = max(latest, path.stat().st_mtime_ns)
+        except OSError:
+            # An overlay may be replaced while a live workflow poll is reading it.
+            continue
+    return latest
+
+
 def _workflow_payload(run: "Run") -> dict[str, Any]:
     """Collect the user-facing artifacts for the workflow stages."""
     with run.lock:
@@ -499,10 +510,8 @@ def _workflow_payload(run: "Run") -> dict[str, Any]:
     test_blocks_dir = root / "artifacts" / "test_blocks"
     train_blocks_dir = root / "artifacts" / "blocks"
     block_dir = test_blocks_dir if any(test_blocks_dir.glob("page_*_blocks.png")) else train_blocks_dir
-    block_images = [
-        _relative_file(root, path)
-        for path in sorted(block_dir.glob("page_*_blocks.png"), key=_page_sort_key)
-    ]
+    block_paths = sorted(block_dir.glob("page_*_blocks.png"), key=_page_sort_key)
+    block_images = [_relative_file(root, path) for path in block_paths]
     test_records_dir = root / "artifacts" / "test_record_separation"
     train_records_dir = root / "artifacts" / "record_separation"
     record_dir = (
@@ -510,10 +519,8 @@ def _workflow_payload(run: "Run") -> dict[str, Any]:
         if any(test_records_dir.glob("page_*_records.png"))
         else train_records_dir
     )
-    record_images = [
-        _relative_file(root, path)
-        for path in sorted(record_dir.glob("page_*_records.png"), key=_page_sort_key)
-    ]
+    record_paths = sorted(record_dir.glob("page_*_records.png"), key=_page_sort_key)
+    record_images = [_relative_file(root, path) for path in record_paths]
     stats_dir = root / "artifacts" / "stats"
     sonar_dir = root / "artifacts" / "excluded_blocks_sonar"
     stats_images = [
@@ -536,10 +543,13 @@ def _workflow_payload(run: "Run") -> dict[str, Any]:
         "templatePdf": _relative_file(root, train_pdf or source_pdf),
         "testPdf": _relative_file(root, test_pdf or source_pdf),
         "blockImages": [path for path in block_images if path],
+        "blockRevision": _artifact_revision(block_paths),
         "blockSource": "test" if block_dir == test_blocks_dir else "train",
         "recordImages": [path for path in record_images if path],
+        "recordRevision": _artifact_revision(record_paths),
         "recordSource": "test" if record_dir == test_records_dir else "train",
         "extracted": _load_json(pipeline / "extracted.json"),
+        "grouped": _load_json(pipeline / "grouped.json"),
         "groundTruth": _load_json(pipeline / "ground_truth.json"),
         "evaluation": _load_json(pipeline / "eval.json"),
         "trainEvaluation": _load_json(pipeline / "train_eval" / "eval.json"),
@@ -1013,7 +1023,7 @@ class Handler(BaseHTTPRequestHandler):
     def _send_comparison(self, run: Run) -> None:
         pipeline = run.run_dir / "pipeline"
         payload: dict[str, Any] = {}
-        for key, filename in (("extracted", "extracted.json"), ("groundTruth", "ground_truth.json"), ("evaluation", "eval.json")):
+        for key, filename in (("extracted", "extracted.json"), ("grouped", "grouped.json"), ("groundTruth", "ground_truth.json"), ("evaluation", "eval.json")):
             path = pipeline / filename
             if path.is_file():
                 try:
@@ -1029,6 +1039,8 @@ class Handler(BaseHTTPRequestHandler):
             return self._create_run(parsed)
         parts = path.split("/")
         run = self._run_from_path(parts)
+        if run and len(parts) == 5 and parts[4] == "open-folder":
+            return self._open_run_folder(run)
         if run and len(parts) == 5 and parts[4] == "cancel":
             return self._send_json({"cancelled": MANAGER.cancel(run)})
         if run and len(parts) == 5 and parts[4] == "ground-truth":
@@ -1036,6 +1048,18 @@ class Handler(BaseHTTPRequestHandler):
         if run and len(parts) == 6 and parts[4:6] == ["sonar", "scan"]:
             return self._scan_sonar(run)
         self.send_error(HTTPStatus.NOT_FOUND)
+
+    def _open_run_folder(self, run: Run) -> None:
+        if sys.platform != "darwin":
+            return self._send_json({"error": "Finder is available only on macOS."}, HTTPStatus.NOT_IMPLEMENTED)
+        try:
+            subprocess.run(
+                ["open", "-a", "Finder", str(run.run_dir.resolve())],
+                check=True, capture_output=True, text=True, timeout=10,
+            )
+        except (OSError, subprocess.SubprocessError) as exc:
+            return self._send_json({"error": f"Could not open Finder: {exc}"}, HTTPStatus.INTERNAL_SERVER_ERROR)
+        return self._send_json({"opened": True})
 
     def _scan_sonar(self, run: Run) -> None:
         try:

@@ -1,9 +1,10 @@
 """Deterministically group document-order blocks into logical records.
 
 The generated block separator already identifies the template node for every
-physical block.  Record boundaries can therefore be inferred without another
+physical block. Record boundaries can therefore be inferred without another
 model call: traverse those node ids in document order and start a new record
-when the template restarts.
+when the template restarts. Virtual XOR nodes make alternative physical nodes
+count as one required template slot.
 """
 
 from __future__ import annotations
@@ -37,7 +38,7 @@ def group_blocks_into_records(
 
     Boundary rules are deliberately small and deterministic:
 
-    * after every template node has been visited, the next non-continuation
+    * after every required template slot has been visited, the next non-continuation
       block starts a record;
     * before completion, a second visit to a non-repeatable node starts a
       record (so ``0,1,0,1,2`` becomes ``[0,1]`` and ``[0,1,2]``);
@@ -47,6 +48,7 @@ def group_blocks_into_records(
       continuation blocks and stay in the same record;
     * a page gap forces a boundary, which keeps sampled-page evaluation honest.
 
+    An XOR slot counts as visited when any included physical node appears.
     Unknown node ids are preserved but do not count toward template completion.
     """
     if not blocks:
@@ -54,12 +56,22 @@ def group_blocks_into_records(
 
     specs: dict[str, dict] = {}
     ordered_ids: list[str] = []
+    member_to_slot: dict[str, str] = {}
     for index, node in enumerate(template):
         node_id = str(node.get("node_id", index))
-        if node_id not in specs:
+        if node.get("type") in ("xor-table", "xor-kv"):
+            for member in node.get("includes", []):
+                member_to_slot[str(member)] = node_id
+        else:
+            specs[node_id] = node
+    for index, node in enumerate(template):
+        node_id = str(node.get("node_id", index))
+        if node.get("type") in ("xor-table", "xor-kv"):
             ordered_ids.append(node_id)
-        specs[node_id] = node
-    known_ids = set(ordered_ids)
+        elif node_id not in member_to_slot:
+            ordered_ids.append(node_id)
+    known_ids = set(specs)
+    required_slots = set(ordered_ids)
 
     # Without a usable template there is no principled boundary signal. Keep
     # every block in one lossless record instead of inventing page records.
@@ -106,8 +118,9 @@ def group_blocks_into_records(
             and previous_page is not None
             and page == previous_page + 1
         )
-        repeated_visit = node_id is not None and node_id in visited
-        complete = known_ids.issubset(visited)
+        slot_id = member_to_slot.get(node_id, node_id) if node_id is not None else None
+        repeated_visit = slot_id is not None and slot_id in visited
+        complete = required_slots.issubset(visited)
 
         starts_new = bool(page_gap)
         if current and not starts_new and node_id is not None:
@@ -119,10 +132,10 @@ def group_blocks_into_records(
                     consecutive_page_table
                     or (same_node and node_id in repeatable)
                 )
-            elif repeated_visit and node_id not in repeatable:
+            elif repeated_visit and (node_id not in repeatable or node_id != previous_node_id):
                 starts_new = not consecutive_page_table
             elif (
-                node_id == first_node_id
+                slot_id == first_node_id
                 and first_node_id not in visited
                 and bool(visited)
             ):
@@ -134,11 +147,10 @@ def group_blocks_into_records(
             flush()
 
         current.append(block)
-        if node_id is not None:
-            visited.add(node_id)
+        if slot_id is not None:
+            visited.add(slot_id)
         previous_node_id = node_id
         previous_page = page
 
     flush()
     return records
-

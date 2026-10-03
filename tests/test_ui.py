@@ -33,9 +33,32 @@ class UiWorkflowTests(unittest.TestCase):
         self.assertIn("What is running what", html)
         self.assertIn('data-stage-panel="record_separation"', html)
         self.assertIn('id="record-image"', html)
+        self.assertIn('data-output-view="records"', html)
+        self.assertIn('data-output-view="blocks"', html)
         self.assertIn('data-stage-panel="sonar"', html)
         self.assertIn('id="sonar-page-list"', html)
         self.assertIn('id="sonar-run-existing"', html)
+        self.assertIn('id="open-run-folder"', html)
+
+    def test_open_folder_targets_selected_run_only(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "selected-run"
+            root.mkdir()
+            run = Run("selected-run", root, "input.pdf", {})
+            handler = object.__new__(Handler)
+            handler._send_json = Mock()
+            with patch("UI.app.sys.platform", "darwin"), patch("UI.app.subprocess.run") as open_command:
+                handler._open_run_folder(run)
+            self.assertEqual(open_command.call_args.args[0], [
+                "open", "-a", "Finder", str(root.resolve()),
+            ])
+            handler._send_json.assert_called_once_with({"opened": True})
+
+            handler.path = "/api/runs/selected-run/open-folder"
+            handler._run_from_path = Mock(return_value=run)
+            handler._open_run_folder = Mock()
+            handler.do_POST()
+            handler._open_run_folder.assert_called_once_with(run)
 
     def test_older_run_can_backfill_sonar_from_saved_pipeline(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -378,6 +401,7 @@ class UiWorkflowTests(unittest.TestCase):
             }))
             (root / "template.json").write_text(json.dumps({"template": []}))
             (root / "pipeline" / "extracted.json").write_text(json.dumps([{"page": 1}]))
+            (root / "pipeline" / "grouped.json").write_text(json.dumps([{"record_id": "0", "data": [{"page": 1}]}]))
             (root / "pipeline" / "eval.json").write_text(json.dumps({"accuracy": 0.91}))
             (root / "pipeline" / "train_eval" / "eval.json").write_text(json.dumps({"accuracy": 0.95}))
             run = Run("run-test", root, "input.pdf", {"eval": True})
@@ -397,7 +421,10 @@ class UiWorkflowTests(unittest.TestCase):
                 "artifacts/test_record_separation/page_1_records.png",
                 "artifacts/test_record_separation/page_2_records.png",
             ])
+            self.assertGreater(payload["recordRevision"], 0)
+            self.assertGreater(payload["blockRevision"], 0)
             self.assertEqual(payload["testPdf"], "agent_space/test/input.pdf")
+            self.assertEqual(payload["grouped"][0]["record_id"], "0")
             self.assertEqual(payload["evaluation"]["accuracy"], 0.91)
             self.assertEqual(payload["trainEvaluation"]["accuracy"], 0.95)
             self.assertEqual(payload["statistics"]["block_types"], 3)

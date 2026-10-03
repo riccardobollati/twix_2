@@ -185,8 +185,12 @@ generation and block samples.
 }
 ```
 
-Every node requires `type`, non-empty `fields`, `bid`, `node_id`, and
-`complexity`. Field names inside one node must be unique. Two-tier headers use
+Physical `table` and `kv` nodes require `type`, non-empty `fields`, `bid`,
+`node_id`, and `complexity`. A virtual `xor-table` or `xor-kv` node has
+`type`, `node_id`, and `includes` listing at least two physical alternatives
+of the matching type. Its slot is visited when any alternative is visited;
+it never produces a physical block or extractor. Field names inside one
+physical node must be unique. Two-tier headers use
 `"Group - Column"`; persistent duplicates receive deterministic ` (2)`, ` (3)`
 suffixes. Nodes with identical normalized field signatures are tagged with
 `signature_duplicate_of` because field matching cannot otherwise distinguish
@@ -307,6 +311,10 @@ nodes, then performs Hungarian record alignment and two-pass Hungarian node
 alignment. Table rows are aligned in order using exact anchors plus banded
 Needleman-Wunsch; weak pairs become missing/extra rows unless they share an
 exact non-empty anchor cell.
+
+XOR template nodes are grouping-only slots. Candidate and ground-truth blocks
+are grouped with the same template before final scoring; only the physical
+table/KV blocks contribute nodes and content to accuracy.
 
 Headline weights in `src/eval/score.py` are:
 

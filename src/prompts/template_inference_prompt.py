@@ -23,7 +23,7 @@ partially detected or wrapped version of the same header.
 
 ## Core Concepts
 
-- **Template**: An ordered list of nodes, each with a type (table or kv) and a set of fields. It defines the structural blueprint used to generate all documents in the set.
+- **Template**: An ordered list of physical table/kv nodes and, when needed, virtual XOR nodes describing mutually exclusive alternatives. It defines the structural blueprint used to generate all documents in the set.
 - **Field**: A phrase that serves as a column header (in tables) or a key (in key-value pairs). Fields appear in consistent positions across records. They are structural labels, not data.
 - **Value**: A data phrase that fills in a field. Values vary across records.
 - **Metadata**: Text that appears as part of the document's visual frame — titles, organization names, page headers/footers, page numbers, section labels, disclaimers — but is NOT a field and NOT a value.
@@ -94,6 +94,19 @@ From the identified blocks within one record:
 Assign each node a sequential `node_id` starting from 0, in the order established
 by the first structured-data pages. Place later conditional or alternate nodes
 next to the corresponding block position in that order.
+
+When one record has exactly one of several mutually exclusive table layouts at
+the same logical position, add a virtual `"xor-table"` node immediately before
+the physical `"table"` alternatives. Use `"includes"` to list their node IDs.
+Likewise, use `"xor-kv"` for mutually exclusive KV layouts. Keep every physical
+alternative as its own ordinary table/kv node with its own fields, bid, child,
+node_id, and complexity. The XOR node has only `type`, `node_id`, and `includes`:
+it has no fields, bid, child, or complexity and never represents a physical
+block. Give alternatives at the same logical position the same `bid` index.
+Use XOR only when the alternatives substitute for one another within a record,
+not for independent optional blocks that may coexist. For example, if records
+have a shared KV section followed by either Dimensions A or Dimensions B,
+model the shared KV normally and wrap the two dimensions tables in one XOR node.
 
 Assign each node a `bid` array containing the block indices it generates within one record. Most nodes produce a single block (e.g., `"bid": [0]`). If a node generates multiple blocks within one record (as in nested/repeated sub-tables), list all block indices (e.g., `"bid": [2, 4]`).
 
@@ -196,7 +209,7 @@ Return ONLY a single JSON object with two keys: `"template"` and `"metadata"`.
 
 ### Template Node Fields
 
-- `type`: Either `"table"` (header row + value rows in columns) or `"kv"` (field-value pairs side by side in rows).
+- `type`: `"table"` or `"kv"` for physical blocks; `"xor-table"` or `"xor-kv"` for a virtual alternative slot.
 - `fields`: Array of field name strings exactly as they appear in the document. For tables, these are the column headers. For kv blocks, these are the keys (NOT the values).
 - `bid`: Array of integer block indices this node generates within a single record. Sequential starting from 0, in top-to-bottom order.
 - `child`: The `node_id` of this node's first child, or `-1` if no children (leaf node).
@@ -204,6 +217,7 @@ Return ONLY a single JSON object with two keys: `"template"` and `"metadata"`.
 - `complexity`: An object describing the structural complexity of the block. Fields depend on `type`:
   - For `kv` nodes: `{ "repeated": <bool> }` — `true` if the block appears more than once within a single record.
   - For `table` nodes: `{ "same_row_structure": <bool>, "nested": <bool> }` — `same_row_structure` is `true` when every data row has the same layout; `nested` is `true` when cells contain structured content (sub-tables, lists, kv pairs) rather than plain values.
+- `includes`: Required only for XOR nodes. List at least two distinct `node_id` values of physical nodes with the matching type. A physical node may belong to only one XOR node. The XOR slot is considered visited when any one included node is visited.
 
 ### Metadata Array
 
@@ -313,6 +327,24 @@ Additional rules:
 }
 ```
 
+### Alternative Table Example
+
+Each record has the same KV section and exactly one dimensions layout. The
+physical table nodes share block position 1; the virtual XOR node is a grouping
+slot and has no extracted block.
+
+```json
+{
+    "template": [
+        {"type": "kv", "fields": ["Name"], "bid": [0], "child": -1, "node_id": 0, "complexity": {"repeated": false}},
+        {"type": "xor-table", "node_id": 1, "includes": [2, 3]},
+        {"type": "table", "fields": ["Width", "Height"], "bid": [1], "child": -1, "node_id": 2, "complexity": {"same_row_structure": true, "nested": false}},
+        {"type": "table", "fields": ["Diameter", "Depth"], "bid": [1], "child": -1, "node_id": 3, "complexity": {"same_row_structure": true, "nested": false}}
+    ],
+    "metadata": []
+}
+```
+
 ### Two-Tier Header Example (Trade Statistics)
 
 A table whose header spans two rows — a group row ("Balance", "Exports", "Imports") above a sub-column row ("Total", "Goods", "Services" repeated under each group), with a plain "Period" column on the left:
@@ -347,7 +379,7 @@ Note how every field name is unique: each sub-column is prefixed with the group 
 - Base your inference on visual patterns across **all** provided pages, not just those that repeat on every page.
 - **Include every structured data block (table or kv) seen on any page**, even if it appears in only one record or on only one page. A block is part of the template if it has field labels and data values in a table or key-value layout — frequency of appearance does not matter.
 - The only reason to exclude a structured-looking region is if it is clearly metadata (a title, header, footer, page number, disclaimer, or section label with no data values beneath it).
-- Every template node must have at least one field.
+- Every physical table/kv node must have at least one field; XOR nodes have no fields.
 - **Field names within a node MUST be unique.** Never output the same field name twice in one `fields` array. When a table has a group-header row spanning sub-columns (e.g. "Balance" / "Exports" / "Imports" each spanning "Total", "Goods", "Services"), prefix each sub-column with its group label joined by " - " (e.g. "Balance - Total"), assigning group labels deterministically from the header row above, left-to-right.
 - Only include field names in `fields` arrays — never include values.
 - Template node order must reflect top-to-bottom document order.
@@ -357,6 +389,6 @@ Note how every field name is unique: each sub-column is prefixed with the group 
 - If you cannot confidently determine nesting, default to `"child": -1` for all nodes.
 - If a page is mostly a continuation of a record (e.g., more value rows of the same table), do not create a new node — it belongs to the same node identified from the header.
 - If fewer than 3 pages are provided, work with what is available.
-- Every node must include a `complexity` object with the correct fields for its type. Do not omit `complexity` from any node.
+- Every physical table/kv node must include a `complexity` object with the correct fields for its type. XOR nodes do not have `complexity`.
 - Return ONLY the JSON object. No additional text, explanation, or markdown formatting.
 """

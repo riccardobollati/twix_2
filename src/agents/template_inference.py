@@ -127,15 +127,44 @@ def _validate_template(template: Any) -> list[str]:
     if not isinstance(template, list) or not template:
         return ['"template" must be a non-empty list of node objects']
     problems: list[str] = []
+    ids: dict[str, dict] = {}
+    xor_members: set[str] = set()
     for i, node in enumerate(template):
         if not isinstance(node, dict):
             problems.append(f"template node {i} is not an object")
             continue
-        missing = [k for k in _REQUIRED_NODE_KEYS if k not in node]
+        kind = node.get("type")
+        required = ("type", "node_id", "includes") if kind in ("xor-table", "xor-kv") else _REQUIRED_NODE_KEYS
+        missing = [k for k in required if k not in node]
         if missing:
             problems.append(f"template node {i} is missing key(s): {', '.join(missing)}")
-        if "fields" in node and not node.get("fields"):
+        if kind not in ("table", "kv", "xor-table", "xor-kv"):
+            problems.append(f"template node {i} has unsupported type {kind!r}")
+        if kind in ("table", "kv") and not node.get("fields"):
             problems.append(f"template node {i} has an empty \"fields\" array")
+        if kind in ("xor-table", "xor-kv"):
+            members = node.get("includes")
+            if not isinstance(members, list) or len(members) < 2 or len({str(m) for m in members}) != len(members):
+                problems.append(f"template node {i} must include at least two distinct node IDs")
+            else:
+                for member in members:
+                    key = str(member)
+                    if key in xor_members:
+                        problems.append(f"node_id {key} belongs to more than one XOR node")
+                    xor_members.add(key)
+        if "node_id" in node:
+            key = str(node["node_id"])
+            if key in ids:
+                problems.append(f"duplicate node_id {key}")
+            ids[key] = node
+    for node in template:
+        if not isinstance(node, dict) or node.get("type") not in ("xor-table", "xor-kv"):
+            continue
+        expected = node["type"].removeprefix("xor-")
+        for member in node.get("includes", []) if isinstance(node.get("includes"), list) else []:
+            target = ids.get(str(member))
+            if target is None or target.get("type") != expected:
+                problems.append(f"XOR node {node.get('node_id')} includes {member!r}, which is not a {expected} node")
     return problems
 
 
@@ -225,6 +254,8 @@ def template_inference_node(state: ExtractionState, llm: BaseChatModel) -> dict[
         "alignment. The first structured-data pages establish block order and record "
         "boundaries. Later sampled pages may reveal additional or alternate table/KV "
         "nodes; include those structures without replacing the early-page order. "
+        "If structures substitute for one another at the same record position, "
+        "mark their shared slot with an XOR node. "
         f"The deterministic scan found {state.get('table_cluster_count', 'unknown')} "
         f"table clusters and {state.get('kv_cluster_count', 'unknown')} KV clusters."
     ]
@@ -283,8 +314,9 @@ def template_inference_node(state: ExtractionState, llm: BaseChatModel) -> dict[
                     error = (
                         "The template JSON you returned is invalid:\n- "
                         + "\n- ".join(problems)
-                        + "\nEvery node must have type, fields (non-empty), bid, node_id "
-                        "and complexity. Return the corrected JSON object only."
+                        + "\nPhysical table/kv nodes need type, non-empty fields, bid, node_id "
+                        "and complexity. XOR nodes need type, node_id, and includes. "
+                        "Return the corrected JSON object only."
                     )
 
             if error is None:

@@ -131,7 +131,10 @@ def block_separation_node(state: dict[str, Any]) -> dict[str, Any]:
     Writes:
         Nothing new to state; side-effect is the script written inside agent_space.
     """
-    template_json = json.dumps(state["template"], indent=2)
+    template_json = json.dumps(
+        [node for node in state["template"] if node.get("type") in ("table", "kv")],
+        indent=2,
+    )
     metadata_json = json.dumps(state.get("metadata", []), indent=2)
     ocr_csv_path = state.get("build_ocr_csv_path") or state["ocr_csv_path"]
     train_dir = os.path.dirname(state["pdf_path"])

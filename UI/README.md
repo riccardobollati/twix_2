@@ -10,8 +10,11 @@ Open `http://127.0.0.1:8765`. Upload a PDF, choose the run settings, and the
 dashboard will run the existing `run.py` pipeline locally. Its seven-stage view
 follows page clustering, template inference, block separation, missed sonar, deterministic record separation,
 data extraction with train evaluation, and independent test evaluation. The
-template and final JSON are shown beside their PDFs; block and record overlays
-come from the unseen test split when evaluation is enabled. Train holdout and
+template and final JSON are shown beside their PDFs. Final results default to
+logical records from `pipeline/grouped.json`, with a Blocks view for the flat
+`pipeline/extracted.json`. Block and record overlays come from the unseen test
+split when evaluation is enabled and are refreshed after the finished pipeline
+runs on that split. Train holdout and
 test evaluation are separate controls:
 holdout defaults to zero, while evaluation defaults to twenty pages and enabled.
 All generated files remain available in the artifact drawer.

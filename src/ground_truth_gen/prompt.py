@@ -6,7 +6,26 @@ import json as _json
 
 
 def build_prompt(template: list[dict], *, include_images: bool = False) -> str:
-    template_json = _json.dumps(template, indent=2)
+    template_json = _json.dumps(
+        [node for node in template if node.get("type") in ("table", "kv")],
+        indent=2,
+    )
+    xor_nodes = [node for node in template if node.get("type") in ("xor-table", "xor-kv")]
+    xor_guidance = ""
+    if xor_nodes:
+        xor_guidance = (
+            "\nALTERNATIVE RECORD SLOTS\n"
+            "The following virtual XOR nodes describe mutually exclusive layouts "
+            "at one position within a logical record:\n"
+            + _json.dumps(xor_nodes, indent=2)
+            + "\nAn xor-table includes table node IDs; an xor-kv includes KV node IDs. "
+            "A record satisfies that slot when any one included physical node appears. "
+            "Use this to distinguish record boundaries and identify the correct "
+            "physical layout. Never emit an XOR node as a block, and never merge "
+            "alternative physical nodes into one block. The required output remains "
+            "the flat blocks list below; deterministic record grouping runs after "
+            "the blocks are submitted.\n"
+        )
 
     if include_images:
         input_description = (
@@ -30,6 +49,7 @@ Every block must correspond to one of these nodes. Use the node's fields as the
 exact key names; do not rename, invent, or omit fields.
 
 {template_json}
+{xor_guidance}
 
 Each template node has:
   "node_id": identifier to use verbatim as "block_id"

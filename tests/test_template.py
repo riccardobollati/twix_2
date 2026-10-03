@@ -34,6 +34,19 @@ class TemplateValidationTests(unittest.TestCase):
         self.assertEqual(template[1]["signature_duplicate_of"], 0)
         self.assertEqual(len(warnings), 1)
 
+    def test_xor_nodes_reference_distinct_matching_physical_nodes(self) -> None:
+        template = [
+            {"type": "xor-table", "node_id": 0, "includes": [1, 2]},
+            {"type": "table", "node_id": 1, "fields": ["Width"], "bid": [0], "complexity": {}},
+            {"type": "table", "node_id": 2, "fields": ["Diameter"], "bid": [0], "complexity": {}},
+        ]
+        self.assertEqual(_validate_template(template), [])
+        template[2]["type"] = "kv"
+        self.assertTrue(_validate_template(template))
+        template[2]["type"] = "table"
+        template[0]["includes"] = [1, 1]
+        self.assertTrue(_validate_template(template))
+
 
 if __name__ == "__main__":
     unittest.main()

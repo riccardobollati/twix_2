@@ -21,6 +21,7 @@ let hoveredSonarPage = null;
 let sonarThreshold = null;
 let sonarGeneration = 0;
 let selectedResultTab = "output";
+let selectedOutputView = "records";
 const $ = (selector) => document.querySelector(selector);
 
 function escapeHtml(value) {
@@ -62,10 +63,10 @@ function updateRoutingControls() {
   $("#single-model-wrap").classList.toggle("hidden", !single);
 }
 
-function artifactUrl(path) {
+function artifactUrl(path, revision = 0) {
   if (!activeRun || !path) return "";
   const encoded = path.split("/").map(encodeURIComponent).join("/");
-  return `/api/runs/${encodeURIComponent(activeRun.id)}/artifact/${encoded}`;
+  return `/api/runs/${encodeURIComponent(activeRun.id)}/artifact/${encoded}${revision ? `?v=${revision}` : ""}`;
 }
 
 function currentStageIndex() {
@@ -169,6 +170,20 @@ function showResultTab(tab) {
     button.setAttribute("aria-selected", String(active));
   });
   document.querySelectorAll("[data-result-panel]").forEach((panel) => panel.classList.toggle("hidden", panel.dataset.resultPanel !== tab));
+}
+
+function showOutputView(view) {
+  selectedOutputView = view;
+  document.querySelectorAll("[data-output-view]").forEach((button) => {
+    const active = button.dataset.outputView === view;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-selected", String(active));
+  });
+  $("#output-artifact-name").textContent = view === "records" ? "pipeline/grouped.json" : "pipeline/extracted.json";
+  $("#extracted-json").textContent = pretty(
+    view === "records" ? workflow.grouped : workflow.extracted,
+    "Waiting for test extraction…",
+  );
 }
 
 function pageRanges(pages) {
@@ -308,6 +323,7 @@ function renderWorkflow() {
   renderClustering();
   setPdf("#template-pdf", "#template-pdf-empty", workflow.templatePdf);
   $("#template-json").textContent = pretty(workflow.template, "Waiting for template inference…");
+  $("#copy-template").disabled = !workflow.template;
   const templateState = $("#template-state");
   templateState.textContent = workflow.template ? "Template ready" : "Waiting";
   templateState.className = `artifact-state ${workflow.template ? "ready" : "waiting"}`;
@@ -322,7 +338,7 @@ function renderWorkflow() {
   trainScore.className = `artifact-state ${trainAccuracy ? "ready" : "waiting"}`;
 
   setPdf("#result-pdf", "#result-pdf-empty", workflow.testPdf);
-  $("#extracted-json").textContent = pretty(workflow.extracted, "Waiting for test extraction…");
+  showOutputView(selectedOutputView);
   const evaluation = workflow.evaluation;
   $("#result-score strong").textContent = percent(evaluation?.accuracy) || "—";
   const nodeScore = percent(evaluation?.components?.NodeMatchF1?.typed_f1);
@@ -494,10 +510,10 @@ function renderBlocks() {
   $("#block-empty").classList.toggle("hidden", images.length > 0);
   $("#block-image").classList.toggle("hidden", images.length === 0);
   if (!images.length) { $("#block-thumbnails").innerHTML = ""; $("#block-counter").textContent = ""; return; }
-  $("#block-image").src = artifactUrl(images[selectedBlock]);
+  $("#block-image").src = artifactUrl(images[selectedBlock], workflow.blockRevision);
   $("#block-page-title").textContent = `Block overlay · page ${selectedBlock + 1}`;
   $("#block-counter").textContent = `${selectedBlock + 1} / ${images.length}`;
-  $("#block-thumbnails").innerHTML = images.map((path, index) => `<button class="block-thumb ${index === selectedBlock ? "selected" : ""}" data-block-index="${index}" type="button"><img src="${artifactUrl(path)}" alt="Block overlay page ${index + 1}" loading="lazy" />Page ${index + 1}</button>`).join("");
+  $("#block-thumbnails").innerHTML = images.map((path, index) => `<button class="block-thumb ${index === selectedBlock ? "selected" : ""}" data-block-index="${index}" type="button"><img src="${artifactUrl(path, workflow.blockRevision)}" alt="Block overlay page ${index + 1}" loading="lazy" />Page ${index + 1}</button>`).join("");
   document.querySelectorAll("[data-block-index]").forEach((button) => button.addEventListener("click", () => { selectedBlock = Number(button.dataset.blockIndex); renderBlocks(); }));
 }
 
@@ -510,10 +526,10 @@ function renderRecordSeparation() {
   $("#record-empty").classList.toggle("hidden", images.length > 0);
   $("#record-image").classList.toggle("hidden", images.length === 0);
   if (!images.length) { $("#record-thumbnails").innerHTML = ""; $("#record-counter").textContent = ""; return; }
-  $("#record-image").src = artifactUrl(images[selectedRecord]);
+  $("#record-image").src = artifactUrl(images[selectedRecord], workflow.recordRevision);
   $("#record-page-title").textContent = `Record overlay · page ${selectedRecord + 1}`;
   $("#record-counter").textContent = `${selectedRecord + 1} / ${images.length}`;
-  $("#record-thumbnails").innerHTML = images.map((path, index) => `<button class="block-thumb ${index === selectedRecord ? "selected" : ""}" data-record-index="${index}" type="button"><img src="${artifactUrl(path)}" alt="Record overlay page ${index + 1}" loading="lazy" />Page ${index + 1}</button>`).join("");
+  $("#record-thumbnails").innerHTML = images.map((path, index) => `<button class="block-thumb ${index === selectedRecord ? "selected" : ""}" data-record-index="${index}" type="button"><img src="${artifactUrl(path, workflow.recordRevision)}" alt="Record overlay page ${index + 1}" loading="lazy" />Page ${index + 1}</button>`).join("");
   document.querySelectorAll("[data-record-index]").forEach((button) => button.addEventListener("click", () => { selectedRecord = Number(button.dataset.recordIndex); renderRecordSeparation(); }));
 }
 
@@ -682,6 +698,7 @@ $("#sonar-replay").addEventListener("click", async () => {
   await submitSonarScan({startPage,endPage}, $("#sonar-replay"), "Replay scan");
 });
 document.querySelectorAll("[data-result-tab]").forEach((button)=>button.addEventListener("click",()=>showResultTab(button.dataset.resultTab)));
+document.querySelectorAll("[data-output-view]").forEach((button)=>button.addEventListener("click",()=>showOutputView(button.dataset.outputView)));
 $("#show-upload").addEventListener("click",()=>{$("#upload-panel").classList.remove("hidden");$("#dashboard").classList.add("hidden");$("#show-logs").classList.add("hidden");$("#run-title").textContent="Start an extraction";$("#run-status").className="status-pill idle";$("#run-status").textContent="Ready";});
 function closeLogs(){ $("#logs-modal").classList.add("hidden"); document.body.classList.remove("modal-open"); }
 $("#show-logs").addEventListener("click",()=>{renderLog();$("#logs-modal").classList.remove("hidden");document.body.classList.add("modal-open");$("#close-logs").focus();});
@@ -690,9 +707,23 @@ document.querySelector("[data-close-logs]").addEventListener("click",closeLogs);
 document.addEventListener("keydown",(event)=>{if(event.key==="Escape"&&!$("#logs-modal").classList.contains("hidden"))closeLogs();});
 $("#follow-live").addEventListener("click",()=>{followLive=true;selectedStage=activeRun.stage;renderStages();});
 $("#refresh-artifacts").addEventListener("click",loadArtifacts);
+$("#open-run-folder").addEventListener("click",async(event)=>{
+  event.preventDefault();
+  if(!activeRun)return;
+  try{
+    const response=await fetch(`/api/runs/${encodeURIComponent(activeRun.id)}/open-folder`,{method:"POST"});
+    const data=await response.json();
+    if(!response.ok)throw new Error(data.error||"Could not open the run folder.");
+  }catch(error){showToast(error.message,true);}
+});
 $("#cancel-run").addEventListener("click",async()=>{if(!activeRun)return;await fetch(`/api/runs/${activeRun.id}/cancel`,{method:"POST"});showToast("Cancellation requested.");});
 
 $("#copy-skill-prompt").addEventListener("click",async()=>{try{await navigator.clipboard.writeText($("#ground-truth-skill-prompt").textContent);showToast("Skill prompt copied.");}catch{showToast("Could not copy the skill prompt.",true);}});
+$("#copy-template").addEventListener("click",async()=>{
+  if(!workflow.template)return;
+  try{await navigator.clipboard.writeText($("#template-json").textContent);showToast("Template copied.");}
+  catch{showToast("Could not copy the template.",true);}
+});
 $("#ground-truth-form").addEventListener("submit",async(event)=>{event.preventDefault();if(!activeRun||!workflow.manualGroundTruth?.awaiting)return;const button=$("#submit-ground-truth");button.disabled=true;button.textContent="Validating…";try{const runId=activeRun.id;const response=await fetch(`/api/runs/${encodeURIComponent(runId)}/ground-truth`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({groundTruth:$("#ground-truth-json").value,model:$("#ground-truth-model").value})});const data=await response.json();if(!response.ok)throw new Error(data.error||"Could not submit ground truth.");await loadRuns();await selectRun(runId);showToast("Ground truth accepted. Evaluation and metadata are complete.");}catch(error){showToast(error.message,true);await loadWorkflow();}finally{button.innerHTML='Validate and evaluate <span>→</span>';button.disabled=!workflow.manualGroundTruth?.awaiting;}});
 
 Promise.all([loadModelOptions(),loadRuns()]).then(()=>{updateRoutingControls();updateEvalControls();}).catch(()=>showToast("Could not connect to the local dashboard server.",true));

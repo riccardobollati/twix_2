@@ -34,7 +34,10 @@ def _atomic_json(path: Path, value: Any) -> None:
 
 
 def _template_specs(template: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
-    return {str(node.get("node_id")): node for node in template}
+    return {
+        str(node.get("node_id")): node
+        for node in template if node.get("type") in ("table", "kv")
+    }
 
 
 def _validate_data(

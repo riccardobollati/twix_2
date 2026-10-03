@@ -6,6 +6,9 @@ import sys
 import time
 from typing import Any
 
+from viz_blocks import render_blocks
+from viz_record_separation import render_record_separation
+
 
 PIPELINE_TIMEOUT_S = 300
 
@@ -45,4 +48,19 @@ def extraction_node(state: dict[str, Any]) -> dict[str, Any]:
     extracted_path = os.path.join(pipeline_dir, "extracted.json")
     print(f"extraction_node: extracted.json → {extracted_path}")
     print(f"extraction_node: grouped.json → {os.path.join(pipeline_dir, 'grouped.json')}")
+    if state.get("test_pdf_path"):
+        # Earlier previews use the separator before train repair. Replace them
+        # with overlays from the final validation run's own physical blocks.
+        blocks_path = os.path.join(pipeline_dir, "block_separation.json")
+        label = f"{state.get('doc_name', 'document')} · evaluation test"
+        render_blocks(
+            pdf_path, blocks_path,
+            os.path.join(document_dir, "artifacts", "test_blocks"),
+            label=label,
+        )
+        render_record_separation(
+            pdf_path, blocks_path, state.get("template") or [],
+            os.path.join(document_dir, "artifacts", "test_record_separation"),
+            label=label,
+        )
     return {"cost": [{"phase": "extraction", "duration_s": round(duration, 3)}]}
