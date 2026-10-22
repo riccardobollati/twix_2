@@ -43,8 +43,8 @@ There are two kinds of model-driven work:
 - Direct OpenRouter calls return structured JSON for front-matter detection,
   template inference, easy/hard block routing, and ground truth.
 - The reference model defaults to GPT-5.4 and can instead use DeepSeek V4.1
-  Flash, GLM 5.3 Flash, or Qwen3.8 Flash for template inference and both
-  train/test ground truth.
+  Flash, GLM 5.3 Flash, Qwen3.8 Flash, or the paid and free Qwen3.8 27B
+  routes for template inference and both train/test ground truth.
 - OpenCode sessions use OpenRouter models to write executable Python files for
   block separation, per-block extraction, and optional
   repair.
@@ -103,10 +103,34 @@ OpenRouter calls and CLI flags, or
 It is included in the dashboard's easy, hard, single-model, template-model, and reference-model
 selectors; the existing defaults are unchanged.
 
+Template inference retries an output-length failure within its three-attempt
+limit. DeepSeek retries disable reasoning; other models retry with minimal
+reasoning. All selected training pages remain in the prompt, and failed-call
+tokens are included in the phase usage if it recovers. The cost entry records
+`length_failures` and `recovery_reasoning`, so reasoning-mode changes are visible
+when comparing experiments. Non-thinking recovery can affect template quality.
+To start DeepSeek template inference without reasoning, set
+`OPENROUTER_TEMPLATE_INFERENCE_REASONING_EFFORT=none` (only for models that support
+disabling reasoning). Alternatively, select GPT-5.4 in the template-model
+selector while keeping DeepSeek for generation. `reasoning.exclude` only hides
+reasoning text; it does not cap reasoning tokens.
+
 Authenticate OpenCode through `OPENROUTER_API_KEY`, or run `/connect` in the
 OpenCode TUI and choose OpenRouter. The repository's `opencode.json` registers
-the DeepSeek V4/V4.1, GLM 5.3 Flash, and Qwen3.8 Flash targets; use `/models`
-to verify the available IDs.
+the DeepSeek V4/V4.1, GLM 5.3 Flash, Qwen3.8 Flash, and paid/free Qwen3.8 27B
+targets; use `/models` to verify the available IDs.
+
+TWIX sets OpenCode's per-response output allowance to `131072` tokens by default,
+including reasoning; OpenCode clamps it to the selected model's output limit.
+Set `OPENCODE_MAX_OUTPUT_TOKENS` to a positive integer to override it. This uses
+OpenCode's `OPENCODE_EXPERIMENTAL_OUTPUT_TOKEN_MAX` runtime setting. Qwen3.8 27B
+(paid/free) uses `reasoning.effort=low` in `opencode.json`; Qwen3.8 Flash uses a
+`16384`-token reasoning budget. The 27B effort setting is provider-controlled,
+not a guaranteed hard reasoning cap. A final OpenCode step ending with `length`
+is treated as budget exhaustion even when the CLI exits zero. Separator and
+extractor retries receive this explanation so the next attempt can prioritize
+writing and validating its script. This feedback arrives after truncation,
+not during the running response.
 
 ## Quick start
 

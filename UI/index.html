@@ -72,7 +72,7 @@
         <section id="dashboard" class="dashboard hidden">
           <div class="stage-heading">
             <div><p class="eyebrow">LIVE PIPELINE</p><h2>Seven-stage extraction</h2></div>
-            <div class="run-actions"><button id="follow-live" class="quiet-button hidden" type="button">Return to live stage</button><button id="cancel-run" class="quiet-button" type="button">Cancel run</button></div>
+            <div class="run-actions"><button id="follow-live" class="quiet-button hidden" type="button">Return to live stage</button><button id="resume-run" class="quiet-button hidden" type="button">Resume from block separation</button><button id="cancel-run" class="quiet-button" type="button">Cancel run</button></div>
           </div>
           <nav id="stages" class="stages" aria-label="Pipeline stages"></nav>
           <section class="model-routing-panel" aria-labelledby="model-routing-title">
@@ -173,7 +173,7 @@
                   <div>
                     <p class="eyebrow">MANUAL GROUND TRUTH</p>
                     <h4>Paste the held-out test ground truth when extraction finishes.</h4>
-                    <p>Use the project skill to prepare the exact prompt, page images, and OCR, or provide your own JSON with the same template fields. Page numbers start at 1 in the held-out test PDF, even when source pages are noncontiguous. Train ground truth still uses the selected reference model.</p>
+                    <p>Use the project skill to prepare the exact prompt, page images, and OCR, or provide your own JSON with the same template fields. The skill can include justified missing tables or key-value sections in an evaluation-only template extension; missed blocks count against the score. Page numbers start at 1 in the held-out test PDF, even when source pages are noncontiguous. Train ground truth still uses the selected reference model.</p>
                   </div>
                   <span id="manual-ground-truth-state" class="artifact-state waiting">Waiting for test extraction</span>
                 </div>
@@ -182,7 +182,7 @@
                   <button id="copy-skill-prompt" class="quiet-button" type="button">Copy skill prompt</button>
                 </div>
                 <form id="ground-truth-form" class="ground-truth-form">
-                  <label>Ground-truth JSON<textarea id="ground-truth-json" spellcheck="false" placeholder='{"blocks": [...]}' required></textarea></label>
+                  <label>Ground-truth JSON<textarea id="ground-truth-json" spellcheck="false" placeholder='{"blocks": [...]} or {"records": [...]}' required></textarea><small>Paste flat blocks for automatic grouping, or records with record_id and data to preserve your grouping.</small></label>
                   <label>Model or source used<input id="ground-truth-model" type="text" maxlength="200" placeholder="e.g. gpt-6-astra" required /><small>Saved in the run metadata alongside the pasted ground truth.</small></label>
                   <button id="submit-ground-truth" class="primary-button" type="submit">Validate and evaluate <span>→</span></button>
                 </form>

@@ -11,7 +11,7 @@ DEFAULT_MODEL = DEFAULT_DIRECT_MODEL
 DEFAULT_GROUND_TRUTH_MODEL = DEFAULT_REFERENCE_MODEL
 DEFAULT_GROUND_TRUTH_MAX_TOKENS = 128_000
 DEFAULT_BASE_URL = "https://openrouter.ai/api/v1"
-_REASONING_EFFORTS = {"minimal", "low", "medium", "high", "xhigh"}
+_REASONING_EFFORTS = {"none", "minimal", "low", "medium", "high", "xhigh"}
 
 
 def _connection_kwargs() -> dict:
@@ -49,15 +49,15 @@ def get_model(
         allowed = ", ".join(sorted(_REASONING_EFFORTS))
         raise ValueError(f"OPENROUTER_REASONING_EFFORT must be one of: {allowed}")
 
+    reasoning = (
+        {"enabled": False, "exclude": True}
+        if reasoning_effort == "none"
+        else {"effort": reasoning_effort, "exclude": True}
+    )
     return ChatOpenAI(
         model=model or os.getenv("OPENROUTER_MODEL", DEFAULT_MODEL),
         **_connection_kwargs(),
-        extra_body={
-            "reasoning": {
-                "effort": reasoning_effort,
-                "exclude": True,
-            }
-        },
+        extra_body={"reasoning": reasoning},
     )
 
 

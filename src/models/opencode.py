@@ -19,6 +19,8 @@ DEFAULT_OPENCODE_MODEL = os.getenv(
 OPENCODE_TIMEOUT_S = 3600
 OPENCODE_GLOBAL_SLOTS = 2
 OPENCODE_TRANSIENT_EXIT_CODE = 75
+OPENCODE_BUDGET_EXIT_CODE = 76
+DEFAULT_OPENCODE_MAX_OUTPUT_TOKENS = 131072
 _SLOT_POLL_INTERVAL_S = 0.25
 _LOCAL_SLOT_LOCK = threading.Lock()
 _LOCAL_SLOT_IDS: set[int] = set()
@@ -133,6 +135,50 @@ def _contains_database_lock_error(stdout: str, stderr: str) -> bool:
     )
 
 
+def _response_budget_exhausted(stdout: str) -> bool:
+    """Inspect the final completed step; earlier truncations may have recovered."""
+    reason = None
+    for line in stdout.splitlines():
+        try:
+            event = json.loads(line)
+        except (json.JSONDecodeError, TypeError):
+            continue
+        if not isinstance(event, dict):
+            continue
+        part = event.get("part") if isinstance(event.get("part"), dict) else event
+        if event.get("type") == "step_finish" or part.get("type") == "step-finish":
+            reason = part.get("reason") or part.get("finish_reason")
+    return isinstance(reason, str) and reason in {"length", "max_tokens"}
+
+
+def opencode_failure_reason(returncode: int) -> str | None:
+    if returncode == OPENCODE_BUDGET_EXIT_CODE:
+        return (
+            "OpenCode exhausted its response token budget (finish_reason=length). "
+            "The previous response was cut off before completion. On this attempt, "
+            "keep reasoning and exploratory reads brief, use the available output "
+            "budget to finish writing the required script, then validate it."
+        )
+    if returncode == 124:
+        return "OpenCode timed out"
+    if returncode == OPENCODE_TRANSIENT_EXIT_CODE:
+        return "OpenCode reported a transient SQLite database error"
+    if returncode != 0:
+        return f"OpenCode exited with code {returncode}"
+    return None
+
+
+def _output_token_limit() -> int:
+    raw = os.getenv("OPENCODE_MAX_OUTPUT_TOKENS", str(DEFAULT_OPENCODE_MAX_OUTPUT_TOKENS))
+    try:
+        value = int(raw)
+    except ValueError as exc:
+        raise ValueError("OPENCODE_MAX_OUTPUT_TOKENS must be a positive integer") from exc
+    if value <= 0:
+        raise ValueError("OPENCODE_MAX_OUTPUT_TOKENS must be a positive integer")
+    return value
+
+
 def _opencode_exec(
     prompt: str,
     dir_path: str,
@@ -153,6 +199,7 @@ def _opencode_exec(
     prompt = _SCOPE_PREFIX + prompt
 
     task_dir = os.path.abspath(dir_path)
+    output_limit = _output_token_limit()
     cmd = [
         "opencode",
         "run",
@@ -175,6 +222,9 @@ def _opencode_exec(
             with tempfile.TemporaryDirectory(prefix="twix-opencode-db-") as db_dir:
                 env = os.environ.copy()
                 env["OPENCODE_DB"] = os.path.join(db_dir, "opencode.db")
+                # OpenCode otherwise caps each response at 32,000 tokens,
+                # including reasoning. Its runtime clamps this to model.limit.output.
+                env["OPENCODE_EXPERIMENTAL_OUTPUT_TOKEN_MAX"] = str(output_limit)
                 result = subprocess.run(
                     cmd,
                     cwd=task_dir,
@@ -223,6 +273,10 @@ def _opencode_exec(
         print(f"[opencode stderr]\n{stderr}", flush=True)
         print(f"[opencode stdout]\n{stdout}", flush=True)
     _write_debug_log(log_path, stdout, stderr, prompt)
+
+    if returncode == 0 and _response_budget_exhausted(stdout):
+        returncode = OPENCODE_BUDGET_EXIT_CODE
+        print(f"[opencode] task {task} exhausted its response token budget", flush=True)
 
     input_tokens, output_tokens, total_tokens = _parse_tokens(stdout)
     return returncode, input_tokens, output_tokens, total_tokens

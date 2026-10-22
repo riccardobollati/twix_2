@@ -11,6 +11,7 @@ from typing import Annotated, Any, NotRequired
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage
 from langgraph.graph.message import add_messages
+from openai import LengthFinishReasonError
 from typing_extensions import TypedDict
 
 from src.agents._ui import spinner as _spinner
@@ -273,8 +274,9 @@ def template_inference_node(state: ExtractionState, llm: BaseChatModel) -> dict[
         )
 
     stop_event = threading.Event()
+    spinner_result = {"ok": False}
     spinner_thread = threading.Thread(
-        target=_spinner, args=("template_inference", stop_event, {}), daemon=True
+        target=_spinner, args=("template_inference", stop_event, spinner_result), daemon=True
     )
     spinner_thread.start()
 
@@ -287,11 +289,53 @@ def template_inference_node(state: ExtractionState, llm: BaseChatModel) -> dict[
     dup_reasked = False
     parsed: dict[str, Any] | None = None
     last_error = ""
+    invoke_kwargs: dict[str, Any] = {}
+    length_failures = 0
+    recovery_reasoning: str | None = None
 
     t0 = time.time()
     try:
         for attempt in range(1, _MAX_ATTEMPTS + 1):
-            response = llm.invoke(messages)
+            try:
+                response = llm.invoke(messages, **invoke_kwargs)
+            except LengthFinishReasonError as exc:
+                length_failures += 1
+                usage = exc.completion.usage
+                if usage is not None:
+                    input_tokens += usage.prompt_tokens
+                    output_tokens += usage.completion_tokens
+                last_error = (
+                    "The model reached its output token limit before returning a complete "
+                    "template. Select GPT-5.4 for template inference, or set "
+                    "OPENROUTER_TEMPLATE_INFERENCE_REASONING_EFFORT=none for a model "
+                    "that supports disabling reasoning."
+                )
+                if attempt < _MAX_ATTEMPTS:
+                    # OpenRouter's exclude flag only hides reasoning; it does not
+                    # limit it. DeepSeek supports a non-thinking mode. For other
+                    # models, retain reasoning at minimal effort instead.
+                    extra_body = dict(getattr(llm, "extra_body", None) or {})
+                    model = str(getattr(llm, "model_name", ""))
+                    recovery_reasoning = "none" if model.startswith("deepseek/") else "minimal"
+                    extra_body["reasoning"] = (
+                        {"enabled": False, "exclude": True}
+                        if recovery_reasoning == "none"
+                        else {"effort": "minimal", "exclude": True}
+                    )
+                    invoke_kwargs = {"extra_body": extra_body}
+                    print(
+                        f"  template_inference: attempt {attempt}/{_MAX_ATTEMPTS} "
+                        f"hit the output limit; retrying with reasoning={recovery_reasoning}.",
+                        flush=True,
+                    )
+                    # Never feed truncated assistant JSON back as a valid answer.
+                    # Keep every original OCR page and discard repair history.
+                    messages = messages[:2] + [HumanMessage(content=(
+                        "The previous attempt exhausted the output budget. Infer only "
+                        "the structural template and metadata; do not enumerate data "
+                        "rows or values. Return the complete JSON object concisely."
+                    ))]
+                continue
             responses.append(response)
             inp, out, tot = split_tokens(response.usage_metadata or {})
             input_tokens  += inp
@@ -342,6 +386,8 @@ def template_inference_node(state: ExtractionState, llm: BaseChatModel) -> dict[
                 messages = messages + [response, HumanMessage(content=error)]
     finally:
         duration = time.time() - t0
+        spinner_result["ok"] = parsed is not None
+        spinner_result["tokens"] = input_tokens + output_tokens + total_tokens
         stop_event.set()
         spinner_thread.join(timeout=0.5)
 
@@ -359,6 +405,10 @@ def template_inference_node(state: ExtractionState, llm: BaseChatModel) -> dict[
         json.dump({"template": parsed.get("template", []), "metadata": parsed.get("metadata", [])}, f, indent=2)
 
     cost_entry: dict = {"phase": "template_inference", "duration_s": round(duration, 3)}
+    cost_entry["attempts"] = attempt
+    if length_failures:
+        cost_entry["length_failures"] = length_failures
+        cost_entry["recovery_reasoning"] = recovery_reasoning
     apply_usage(cost_entry, input_tokens, output_tokens, total_tokens)
 
     return {

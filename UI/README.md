@@ -43,11 +43,18 @@ run. Enable “Use one model for every non-reference phase” to pass
 block separation, every extractor, and repair. Template inference uses its
 own selected model; train and test ground truth use the reference model.
 Both default to GPT-5.4. The template selector also offers DeepSeek V4/V4.1,
-GLM 5.3 Flash, and Qwen3.8 Flash through OpenRouter. The clustering stage lists
-table and KV clusters separately, their member pages, representative overlays,
-and the page selected for each cluster. It also shows the first ordering pages,
-additional cluster samples, training pages, and independent evaluation pages.
-Template inference is the following stage.
+GLM 5.3 Flash, Qwen3.8 Flash, and the paid and free Qwen3.8 27B routes through
+OpenRouter. The clustering stage lists table and KV clusters separately, their
+member pages, representative overlays, and the page selected for each cluster.
+It also shows the first ordering pages, additional cluster samples, training
+pages, and independent evaluation pages. Template inference is the following
+stage.
+
+Failed runs can resume from block separation using their saved template and
+page plan. If a run stops during training evaluation (for example, because
+reference-model credits run out), **Resume** reuses its complete generated
+pipeline and retries training evaluation before continuing to test extraction.
+Existing model selections and the manual test-ground-truth setting are retained.
 
 For a UI run with evaluation enabled, select **Paste final test ground truth**
 to skip the OpenRouter call for the held-out test ground truth. After test
@@ -56,9 +63,24 @@ tab, copy the `$twix-ground-truth` prompt if you want Codex to prepare the
 held-out page images and exact OCR, then paste the resulting `{"blocks": [...]}`
 JSON and identify the model or source used. The UI validates page numbers,
 node IDs, field names, and value types before local scoring. An invalid paste
-can be corrected and retried. Train ground truth still calls the selected
+can be corrected and retried. When the skill finds a genuinely missing structured
+table/KV region, it can include an optional `template_extension` with the complete
+expanded template and page evidence for every added node. Original physical nodes
+remain unchanged. The UI saves `pipeline/evaluation_template.json` and groups both
+ground truth and raw extraction with it, so missed nodes affect evaluation and
+subsequent rescoring. The learned templates and scripts remain unchanged; held-out
+evidence is used only for evaluation. Train ground truth still calls the selected
 reference model; choose a non-GPT reference model if you also want to avoid
 GPT-5.4 for that phase. The template model remains independent.
+
+For an explicitly grouped reference, paste `{"records": [...]}` instead of
+`{"blocks": [...]}`. Each record has a unique non-empty string `record_id` and a
+non-empty `data` list of physical blocks in document order. The same page, node,
+field, and value validation applies. Include `template_extension` alongside
+`records` when the reference uses additional layouts. This format preserves the
+submitted reference boundaries and the saved TWIX candidate grouping; it records
+`manual_ground_truth.grouping = "explicit_records"` in metadata. Flat submissions
+continue to group both sides automatically with the evaluation template.
 
 With routing enabled, the selected hard model always generates the block
 separator and performs difficulty classification; it also handles hard block

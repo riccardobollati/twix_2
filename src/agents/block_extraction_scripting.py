@@ -17,6 +17,7 @@ from src.agents._ui import (
 from src.models.opencode import (
     DEFAULT_OPENCODE_MODEL,
     OPENCODE_TRANSIENT_EXIT_CODE,
+    opencode_failure_reason,
     opencode_silent,
 )
 from src.prompts.block_extraction_scripting_prompt import PROMPT_BLOCK_EXTRACTION_SCRIPTING
@@ -139,12 +140,8 @@ def _validate_extractor_script(script_path: str) -> str | None:
 
 
 def _failure_reason(returncode: int, script_path: str) -> str | None:
-    if returncode == 124:
-        return "OpenCode timed out"
-    if returncode == OPENCODE_TRANSIENT_EXIT_CODE:
-        return "OpenCode reported a transient SQLite database error"
-    if returncode != 0:
-        return f"OpenCode exited with code {returncode}"
+    if error := opencode_failure_reason(returncode):
+        return error
     if not os.path.isfile(script_path):
         return "OpenCode exited successfully but did not produce the extractor script"
     validation_error = _validate_extractor_script(script_path)

@@ -98,6 +98,8 @@ def build_graph(
     ground_truth_llm: BaseChatModel | None = None,
     template_inference_llm: BaseChatModel | None = None,
     difficulty_routing_llm: BaseChatModel | None = None,
+    resume_from_block_separation: bool = False,
+    resume_from_train_eval: bool = False,
 ):
     """Build and compile the PDF template inference graph.
 
@@ -194,13 +196,16 @@ def build_graph(
     graph.add_conditional_edges(
         START,
         lambda state: (
-            "cluster_sampling"
+            "train_eval" if resume_from_train_eval else
+            "block_separation" if resume_from_block_separation else "cluster_sampling"
             if state.get("detected_start_page") is not None
             else "detect_beginning"
         ),
         {
             "detect_beginning": "detect_beginning",
             "cluster_sampling": "cluster_sampling",
+            "block_separation": "block_separation",
+            "train_eval": "train_eval",
         },
     )
     graph.add_edge("detect_beginning", "cluster_sampling")

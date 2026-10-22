@@ -9,7 +9,7 @@ import time
 from typing import Any
 
 from src.agents._ui import spinner as _spinner
-from src.models.opencode import DEFAULT_OPENCODE_MODEL, opencode_silent
+from src.models.opencode import DEFAULT_OPENCODE_MODEL, opencode_failure_reason, opencode_silent
 from src.prompts.block_separation_prompt import PROMPT_BLOCK_SEPARATION
 
 
@@ -147,6 +147,7 @@ def block_separation_node(state: dict[str, Any]) -> dict[str, Any]:
 
     MAX_ATTEMPTS = 3
     input_t, output_t, total_t = None, None, None
+    usage_totals: list[int | None] = [None, None, None]
     duration, last_error = 0.0, ""
 
     print(
@@ -176,12 +177,15 @@ def block_separation_node(state: dict[str, Any]) -> dict[str, Any]:
             ),
             caveman=state.get("use_caveman", False), log_path=log_path,
         )
-        duration = time.time() - t0
+        duration += time.time() - t0
+        for index, value in enumerate((input_t, output_t, total_t)):
+            if value is not None:
+                usage_totals[index] = (usage_totals[index] or 0) + value
 
         # run the generated script and validate its output
         last_error = None
         if returncode != 0:
-            last_error = f"OpenCode exited {returncode}"
+            last_error = opencode_failure_reason(returncode)
         elif not os.path.isfile(script_path):
             last_error = "OpenCode did not produce block_separation.py"
         else:
@@ -206,6 +210,7 @@ def block_separation_node(state: dict[str, Any]) -> dict[str, Any]:
         raise RuntimeError(f"block_separation failed after {MAX_ATTEMPTS} attempt(s): {last_error}")
 
     cost_entry: dict = {"phase": "block_separation", "duration_s": round(duration, 3)}
+    input_t, output_t, total_t = usage_totals
     if input_t is not None:
         cost_entry["input_tokens"] = input_t
     if output_t is not None:

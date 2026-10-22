@@ -33,6 +33,55 @@ def _atomic_json(path: Path, value: Any) -> None:
     os.replace(temporary, path)
 
 
+def _manual_payload(raw: str) -> dict:
+    """Accept flat generator blocks or explicitly grouped manual records."""
+    try:
+        payload = loads_json_dedup(raw)
+    except json.JSONDecodeError as exc:
+        raise ManualGroundTruthError(f"Ground truth is not valid JSON: {exc}") from exc
+    if (not isinstance(payload, dict)
+            or ("blocks" in payload) == ("records" in payload)
+            or set(payload) - {"blocks", "records", "template_extension"}):
+        raise ManualGroundTruthError(
+            'Root requires either "blocks" or "records", with optional "template_extension"'
+        )
+    if "records" not in payload:
+        return payload
+    records = payload["records"]
+    if not isinstance(records, list) or not records:
+        raise ManualGroundTruthError('"records" must be a non-empty list')
+    blocks = []
+    seen = set()
+    for index, record in enumerate(records):
+        label = f"records[{index}]"
+        if not isinstance(record, dict) or set(record) != {"record_id", "data"}:
+            raise ManualGroundTruthError(f"{label} requires record_id and data only")
+        record_id = record["record_id"]
+        if not isinstance(record_id, str) or not record_id.strip():
+            raise ManualGroundTruthError(f"{label}.record_id must be a non-empty string")
+        if record_id in seen:
+            raise ManualGroundTruthError("Each record_id must be unique")
+        seen.add(record_id)
+        if not isinstance(record["data"], list) or not record["data"]:
+            raise ManualGroundTruthError(f"{label}.data must be a non-empty list of physical blocks")
+        for block in record["data"]:
+            if not isinstance(block, dict):
+                raise ManualGroundTruthError(f"{label}.data must contain physical block objects")
+            if "record_id" in block and block["record_id"] != record_id:
+                raise ManualGroundTruthError("Block record_id must match its containing record")
+            blocks.append({**block, "record_id": record_id})
+    return {**payload, "blocks": blocks}
+
+
+def _explicit_records(blocks: list[dict]) -> list[dict]:
+    records: list[dict] = []
+    for block in blocks:
+        if not records or records[-1]["record_id"] != block["record_id"]:
+            records.append({"record_id": block["record_id"], "data": []})
+        records[-1]["data"].append(block)
+    return records
+
+
 def _template_specs(template: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
     return {
         str(node.get("node_id")): node
@@ -81,22 +130,105 @@ def _validate_data(
             )
 
 
+def _evaluation_template(payload: dict, original: list[dict], page_count: int) -> list[dict]:
+    """Validate an additive, evaluation-only template and its page evidence."""
+    extension = payload.get("template_extension")
+    if extension is None:
+        return original
+    if not isinstance(extension, dict) or set(extension) != {"template", "evidence"}:
+        raise ManualGroundTruthError("template_extension requires template and evidence")
+    template = extension["template"]
+    if not isinstance(template, list) or not all(isinstance(n, dict) for n in template):
+        raise ManualGroundTruthError("Extended template must be a list of nodes")
+    # Reuse the inference contract, including XOR membership/type checks.
+    from src.agents.template_inference import _validate_template
+    problems = _validate_template(template)
+    if problems:
+        raise ManualGroundTruthError("Invalid extended template: " + "; ".join(problems))
+    ids = [str(n["node_id"]) for n in template]
+    original_ids = [str(n["node_id"]) for n in original]
+    if [i for i in ids if i in original_ids] != original_ids:
+        raise ManualGroundTruthError("Keep all original nodes in their original relative order")
+    by_id = dict(zip(ids, template))
+    for node in original:
+        updated = by_id[str(node["node_id"])]
+        if node.get("type") in ("xor-table", "xor-kv"):
+            if ({k: v for k, v in updated.items() if k != "includes"}
+                    != {k: v for k, v in node.items() if k != "includes"}
+                    or not set(map(str, node["includes"])).issubset(map(str, updated["includes"]))):
+                raise ManualGroundTruthError("Existing XOR slots may only gain alternatives")
+        elif updated != node:
+            raise ManualGroundTruthError("Existing physical nodes must remain unchanged")
+    additions = [n for n in template if str(n["node_id"]) not in original_ids]
+    if not additions:
+        raise ManualGroundTruthError("An extension must add a node")
+    try:
+        maximum = max(int(n["node_id"]) for n in original)
+    except (ValueError, TypeError, KeyError) as exc:
+        raise ManualGroundTruthError("Original template must have integer node IDs") from exc
+    signatures = {
+        (n["type"], frozenset(str(f).strip().casefold() for f in n.get("fields", [])))
+        for n in original if n.get("type") in ("table", "kv")
+    }
+    for node in additions:
+        if type(node["node_id"]) is not int or node["node_id"] <= maximum:
+            raise ManualGroundTruthError("New node IDs must be fresh integers above existing IDs")
+        if node["type"] in ("table", "kv"):
+            fields, bids, complexity = node["fields"], node["bid"], node["complexity"]
+            if (not isinstance(fields, list) or not fields
+                    or not all(isinstance(f, str) and f.strip() for f in fields)
+                    or len(set(fields)) != len(fields)):
+                raise ManualGroundTruthError("New nodes require unique non-empty string fields")
+            signature = (node["type"], frozenset(f.strip().casefold() for f in fields))
+            if signature in signatures:
+                raise ManualGroundTruthError("Reuse existing nodes for the same type and field signature")
+            signatures.add(signature)
+            if not isinstance(bids, list) or not bids or any(type(b) is not int or b < 0 for b in bids):
+                raise ManualGroundTruthError("New nodes require non-negative bid positions")
+            keys = ("same_row_structure", "nested") if node["type"] == "table" else ("repeated",)
+            if not isinstance(complexity, dict) or any(type(complexity.get(k)) is not bool for k in keys):
+                raise ManualGroundTruthError("New nodes require TWIX complexity booleans")
+            if type(node.get("child")) is not int or (node["child"] != -1 and str(node["child"]) not in by_id):
+                raise ManualGroundTruthError("New nodes require a valid child reference or -1")
+    evidence = extension["evidence"]
+    if not isinstance(evidence, list):
+        raise ManualGroundTruthError("Template evidence must be a list")
+    new_ids = {str(n["node_id"]) for n in additions}
+    supported = set()
+    for item in evidence:
+        if not isinstance(item, dict) or set(item) != {"node_id", "pages", "reason"}:
+            raise ManualGroundTruthError("Evidence requires node_id, pages, and reason")
+        key = str(item["node_id"])
+        pages = item["pages"]
+        if key not in new_ids or key in supported:
+            raise ManualGroundTruthError("Evidence must identify each new node exactly once")
+        if not isinstance(pages, list) or not pages or any(type(p) is not int or not 1 <= p <= page_count for p in pages):
+            raise ManualGroundTruthError("Evidence pages must be local held-out page numbers")
+        if not isinstance(item["reason"], str) or not item["reason"].strip():
+            raise ManualGroundTruthError("Evidence must explain the structured layout and record position")
+        if by_id[key]["type"] in ("table", "kv"):
+            for page in pages:
+                if not any(str(b.get("block_id")) == key and b.get("page") == page
+                           and b.get("data") for b in payload.get("blocks", []) if isinstance(b, dict)):
+                    raise ManualGroundTruthError("Physical node evidence needs a non-empty block on each cited page")
+        supported.add(key)
+    if supported != new_ids:
+        raise ManualGroundTruthError("Every new node requires evidence")
+    return template
+
+
 def parse_manual_ground_truth(
     raw: str,
     template: list[dict[str, Any]],
     page_count: int,
 ) -> list[dict[str, Any]]:
-    """Parse the exact generator response shape and validate its template contract."""
-    try:
-        payload = loads_json_dedup(raw)
-    except json.JSONDecodeError as exc:
-        raise ManualGroundTruthError(f"Ground truth is not valid JSON: {exc}") from exc
-    if not isinstance(payload, dict) or set(payload) != {"blocks"}:
-        raise ManualGroundTruthError('Root must be an object containing only "blocks"')
+    """Validate physical blocks in a flat or explicitly grouped submission."""
+    payload = _manual_payload(raw)
     blocks = payload["blocks"]
     if not isinstance(blocks, list) or not blocks:
         raise ManualGroundTruthError('"blocks" must be a non-empty list')
 
+    template = _evaluation_template(payload, template, page_count)
     specs = _template_specs(template)
     if not specs:
         raise ManualGroundTruthError("The inferred template has no nodes")
@@ -158,7 +290,8 @@ def load_manual_ground_truth_inputs(
         raise ManualGroundTruthError("Expected exactly one held-out test PDF for this run")
     with pdfplumber.open(test_pdfs[0]) as pdf:
         page_count = len(pdf.pages)
-    return parse_manual_ground_truth(raw, template, page_count), template
+    blocks = parse_manual_ground_truth(raw, template, page_count)
+    return blocks, _evaluation_template(_manual_payload(raw), template, page_count)
 
 
 def finalize_manual_ground_truth(
@@ -183,8 +316,22 @@ def finalize_manual_ground_truth(
     if not candidate_path.is_file():
         raise ManualGroundTruthError("The held-out extraction is not ready yet")
 
-    grouped_ground_truth = group_blocks_into_records(blocks, template)
-    candidate = load_json_dedup(candidate_path)
+    payload = _manual_payload(raw)
+    explicit_grouping = "records" in payload
+    grouped_ground_truth = (_explicit_records(blocks) if explicit_grouping
+                            else group_blocks_into_records(blocks, template))
+    extension = payload.get("template_extension")
+    if explicit_grouping:
+        candidate = load_json_dedup(candidate_path)
+    elif extension is not None:
+        extracted_path = pipeline / "extracted.json"
+        if not extracted_path.is_file():
+            raise ManualGroundTruthError("Template extension requires flat extracted.json for symmetric grouping")
+        candidate = group_blocks_into_records(load_json_dedup(extracted_path), template)
+    else:
+        extracted_path = pipeline / "extracted.json"
+        candidate = (group_blocks_into_records(load_json_dedup(extracted_path), template)
+                     if extracted_path.is_file() else load_json_dedup(candidate_path))
     evaluation = eval_score(
         grouped_ground_truth,
         candidate,
@@ -192,6 +339,13 @@ def finalize_manual_ground_truth(
         threshold=0.9,
     )
 
+    if extension is not None:
+        _atomic_json(pipeline / "evaluation_template.json", extension)
+        # rescore.py uses these grouped artifacts; raw extraction is untouched.
+    else:
+        (pipeline / "evaluation_template.json").unlink(missing_ok=True)
+    if not explicit_grouping:
+        _atomic_json(candidate_path, candidate)
     _atomic_json(pipeline / "ground_truth.json", blocks)
     _atomic_json(pipeline / "ground_truth_grouped.json", grouped_ground_truth)
     _atomic_json(pipeline / "eval.json", evaluation)
@@ -225,6 +379,9 @@ def finalize_manual_ground_truth(
         "status": "submitted",
         "model": model,
         "submitted_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+        "template_extended": extension is not None,
+        "evaluation_template": "pipeline/evaluation_template.json" if extension is not None else None,
+        "grouping": "explicit_records" if explicit_grouping else "template",
     }
     totals = metadata.get("totals") or {}
     totals["duration_s"] = round(

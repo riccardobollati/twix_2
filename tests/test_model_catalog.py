@@ -26,18 +26,25 @@ class ModelCatalogTests(unittest.TestCase):
             "deepseek/deepseek-v4.1-flash",
             "z-ai/glm-5.3-flash",
             "qwen/qwen3.8-flash",
+            "qwen/qwen3.8-27b",
+            "qwen/qwen3.8-27b:free",
         }
         self.assertTrue(expected <= operational)
         self.assertTrue(expected <= references)
 
-    def test_deepseek_v41_is_registered_for_opencode(self) -> None:
+    def test_catalog_models_are_registered_for_opencode(self) -> None:
         config_path = Path(__file__).parents[1] / "opencode.json"
         config = json.loads(config_path.read_text(encoding="utf-8"))
+        models = config["provider"]["openrouter"]["models"]
 
         self.assertEqual(
-            config["provider"]["openrouter"]["models"]
-            ["deepseek/deepseek-v4.1-flash"]["name"],
+            models["deepseek/deepseek-v4.1-flash"]["name"],
             "DeepSeek V4.1 Flash",
+        )
+        self.assertEqual(models["qwen/qwen3.8-27b"]["name"], "Qwen3.8 27B")
+        self.assertEqual(
+            models["qwen/qwen3.8-27b:free"]["name"],
+            "Qwen3.8 27B (free)",
         )
 
     def test_model_ids_are_normalized_for_each_client(self) -> None:

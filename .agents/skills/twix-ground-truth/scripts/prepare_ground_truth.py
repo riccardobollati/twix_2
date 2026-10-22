@@ -16,7 +16,7 @@ if str(PROJECT_DIR) not in sys.path:
     sys.path.insert(0, str(PROJECT_DIR))
 
 from src.ground_truth_gen.helpers import load_ocr_pages
-from src.ground_truth_gen.prompt import build_prompt
+from src.ground_truth_gen.prompt import build_manual_prompt
 
 
 def _awaiting_run() -> Path:
@@ -63,7 +63,7 @@ def prepare(run_dir: Path) -> Path:
     pages_dir = output_dir / "pages"
     pages_dir.mkdir(parents=True, exist_ok=True)
     (output_dir / "system_prompt.txt").write_text(
-        build_prompt(template, include_images=True), encoding="utf-8"
+        build_manual_prompt(template), encoding="utf-8"
     )
 
     manifest_pages: list[dict[str, object]] = []

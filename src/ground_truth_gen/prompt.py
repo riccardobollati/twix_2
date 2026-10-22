@@ -101,3 +101,51 @@ Rules:
 7. Use empty string "" for a field with no visible value.
 8. Output only the JSON object, without prose or markdown fences.
 """
+
+
+def build_manual_prompt(template: list[dict]) -> str:
+    """Manual audit permits evidence-backed additions without changing training."""
+    prompt = build_prompt(template, include_images=True)
+    prompt = prompt.replace(
+        "Every block must correspond to one of these nodes.",
+        "Every block must correspond to one of these nodes or a justified evaluation-only addition below.",
+    ).replace('Root has only "blocks" (list); there are no records.',
+              'Root has "blocks" (list) and optionally "template_extension"; there are no records.')
+    return prompt + """
+MANUAL TEMPLATE COMPLETENESS AUDIT
+Inspect every page for structured regions missing from the inferred template.
+Apply TWIX's template inference methodology: K headers with aligned V data rows
+form tables; self-contained label/value KV rows form KV blocks; M titles,
+footers, disclaimers, section labels and free text are metadata, never new nodes.
+Rare or conditional structured blocks count, even if visible only once. Require
+visible fields AND values. Reuse existing nodes for repeated occurrences,
+continuations, wrapped/partial headers, and different values of the same fields.
+Do not invent fields or values or create nodes from unexplained whitespace.
+Use unique fields, "Group - Column" for tiered headers and deterministic " (2)"
+suffixes for genuine duplicate columns. Preserve image layout and exact OCR.
+
+Only when necessary, add "template_extension" to the response:
+{"template_extension": {"template": [<complete expanded ordered template>],
+ "evidence": [{"node_id": <new ID>, "pages": [<local test pages>],
+ "reason": "Visible labels and aligned values; why no existing node fits;
+ natural record position; optional/repeated/alternative layout justification"}]}}
+Keep every existing physical node unchanged, including IDs, fields and bids.
+Keep original nodes in their relative order; insert additions in their natural
+record position. New IDs are fresh integers above ALL original node IDs; never
+renumber existing nodes. New physical nodes require type, fields, node_id, bid,
+child (-1 for siblings/leaves), and complexity (tables: same_row_structure and
+nested booleans; KV: repeated boolean). Derive bids from visual record position.
+If an existing node would need modification, reuse it only if its exact fields
+fit; otherwise add a genuinely distinct layout, never silently change it.
+For mutually exclusive alternatives at the same record position use a matching
+xor-table/xor-kv slot and matching bids. Existing XOR includes may only expand;
+a physical node belongs to one XOR slot at most. New XOR nodes need at least two
+physical members and evidence explaining mutual exclusion; never emit XOR blocks.
+Independent optional blocks that can coexist are not XOR alternatives.
+Provide evidence for EVERY added node, including virtual XOR slots. Every page
+cited for a physical node must contain an extracted non-empty block of that node.
+Return all physical blocks against the expanded template in the ordinary flat
+format. When no addition is justified, return only "blocks" as usual.
+The expanded template is used ONLY for held-out evaluation, symmetrically for
+truth and candidate grouping; it does not retrain or repair the learned pipeline.
+"""

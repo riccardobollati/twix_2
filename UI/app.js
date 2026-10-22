@@ -124,6 +124,9 @@ function setStatus() {
   const badge = $("#run-status");
   badge.textContent = statusLabel(activeRun?.status);
   badge.className = `status-pill ${activeRun?.status || "idle"}`;
+  $("#resume-run").classList.toggle("hidden", !activeRun?.canResume);
+  $("#resume-run").textContent = activeRun?.resumePhase === "train_eval"
+    ? "Resume training evaluation" : "Resume from block separation";
   $("#cancel-run").classList.toggle("hidden", activeRun?.status !== "running");
 }
 
@@ -727,3 +730,18 @@ $("#copy-template").addEventListener("click",async()=>{
 $("#ground-truth-form").addEventListener("submit",async(event)=>{event.preventDefault();if(!activeRun||!workflow.manualGroundTruth?.awaiting)return;const button=$("#submit-ground-truth");button.disabled=true;button.textContent="Validating…";try{const runId=activeRun.id;const response=await fetch(`/api/runs/${encodeURIComponent(runId)}/ground-truth`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({groundTruth:$("#ground-truth-json").value,model:$("#ground-truth-model").value})});const data=await response.json();if(!response.ok)throw new Error(data.error||"Could not submit ground truth.");await loadRuns();await selectRun(runId);showToast("Ground truth accepted. Evaluation and metadata are complete.");}catch(error){showToast(error.message,true);await loadWorkflow();}finally{button.innerHTML='Validate and evaluate <span>→</span>';button.disabled=!workflow.manualGroundTruth?.awaiting;}});
 
 Promise.all([loadModelOptions(),loadRuns()]).then(()=>{updateRoutingControls();updateEvalControls();}).catch(()=>showToast("Could not connect to the local dashboard server.",true));
+
+$("#resume-run").addEventListener("click", async () => {
+  if (!activeRun) return;
+  const id = activeRun.id;
+  $("#resume-run").disabled = true;
+  try {
+    const response = await fetch(`/api/runs/${id}/resume`, {method: "POST"});
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || "Could not resume run");
+    await loadRuns();
+    await selectRun(id);
+    showToast("Run resumed.");
+  } catch (error) { showToast(error.message); }
+  finally { $("#resume-run").disabled = false; }
+});

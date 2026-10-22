@@ -12,6 +12,7 @@ from unittest.mock import patch
 
 from src.models import opencode as opencode_model
 from src.models.opencode import (
+    OPENCODE_BUDGET_EXIT_CODE,
     OPENCODE_TRANSIENT_EXIT_CODE,
     opencode,
     opencode_silent,
@@ -49,6 +50,59 @@ class OpenCodeModelTests(unittest.TestCase):
         isolated_db = run_mock.call_args.kwargs["env"]["OPENCODE_DB"]
         self.assertNotEqual(isolated_db, os.getenv("OPENCODE_DB"))
         self.assertFalse(Path(isolated_db).parent.exists())
+        self.assertEqual(
+            run_mock.call_args.kwargs["env"]["OPENCODE_EXPERIMENTAL_OUTPUT_TOKEN_MAX"],
+            os.getenv("OPENCODE_MAX_OUTPUT_TOKENS", "131072"),
+        )
+
+    @patch("src.models.opencode.subprocess.run")
+    def test_explicit_output_allowance_reaches_opencode(self, run_mock) -> None:
+        run_mock.return_value = subprocess.CompletedProcess([], 0, stdout="", stderr="")
+        with patch.dict(os.environ, {"OPENCODE_MAX_OUTPUT_TOKENS": "65536"}):
+            opencode_silent("write", "/tmp/work", "test")
+        self.assertEqual(
+            run_mock.call_args.kwargs["env"]["OPENCODE_EXPERIMENTAL_OUTPUT_TOKEN_MAX"],
+            "65536",
+        )
+
+    @patch("src.models.opencode.subprocess.run")
+    def test_invalid_output_allowance_does_not_start_opencode(self, run_mock) -> None:
+        for value in ("0", "-1", "not-an-integer"):
+            with self.subTest(value=value), patch.dict(os.environ, {"OPENCODE_MAX_OUTPUT_TOKENS": value}):
+                with self.assertRaisesRegex(ValueError, "positive integer"):
+                    opencode_silent("write", "/tmp/work", "test")
+        run_mock.assert_not_called()
+
+    @patch("src.models.opencode.subprocess.run")
+    def test_truncation_is_failure_with_usage_and_original_debug_log(self, run_mock) -> None:
+        stdout = json.dumps({
+            "type": "step_finish",
+            "part": {"type": "step-finish", "reason": "length", "tokens": {"input": 40, "output": 2}},
+        })
+        run_mock.return_value = subprocess.CompletedProcess([], 0, stdout=stdout, stderr="")
+        with tempfile.TemporaryDirectory() as tmp:
+            log = Path(tmp) / "attempt.log"
+            result = opencode_silent("write", "/tmp/work", "test", log_path=str(log))
+            self.assertEqual(result, (OPENCODE_BUDGET_EXIT_CODE, 40, 2, None))
+            self.assertEqual(log.read_text(), stdout)
+
+    def test_only_final_completed_step_determines_truncation(self) -> None:
+        def event(reason):
+            return json.dumps({"type": "step_finish", "part": {"reason": reason}})
+        self.assertTrue(opencode_model._response_budget_exhausted("noise\n" + event("length")))
+        self.assertFalse(opencode_model._response_budget_exhausted(event("length") + "\n" + event("stop")))
+        self.assertFalse(opencode_model._response_budget_exhausted(event("tool-calls")))
+        self.assertFalse(opencode_model._response_budget_exhausted('{"type":"text","part":{"text":"length"}}'))
+        self.assertFalse(opencode_model._response_budget_exhausted(event([])))
+
+    def test_qwen_reasoning_settings_preserve_output_space(self) -> None:
+        config = json.loads((Path(__file__).resolve().parents[1] / "opencode.json").read_text())
+        models = config["provider"]["openrouter"]["models"]
+        self.assertEqual(models["qwen/qwen3.8-27b"]["options"]["reasoning"], {"effort": "low"})
+        self.assertEqual(models["qwen/qwen3.8-27b:free"]["options"]["reasoning"], {"effort": "low"})
+        self.assertEqual(models["qwen/qwen3.8-flash"]["options"]["reasoning"], {"max_tokens": 16384})
+        self.assertEqual(models["qwen/qwen3.8-27b"]["limit"]["output"], 131072)
+        self.assertEqual(models["qwen/qwen3.8-flash"]["limit"]["output"], 131072)
 
     @patch("src.models.opencode.subprocess.run")
     def test_jsonl_usage_sums_agent_steps_and_cached_input(self, run_mock) -> None:

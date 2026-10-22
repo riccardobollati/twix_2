@@ -19,7 +19,24 @@
           "name": "GLM 5.3 Flash"
         },
         "qwen/qwen3.8-flash": {
-          "name": "Qwen3.8 Flash"
+          "name": "Qwen3.8 Flash",
+          "limit": { "context": 1000000, "output": 131072 },
+          "options": {
+            "reasoning": { "max_tokens": 16384 }
+          }
+        },
+        "qwen/qwen3.8-27b": {
+          "name": "Qwen3.8 27B",
+          "limit": { "context": 1000000, "output": 131072 },
+          "options": {
+            "reasoning": { "effort": "low" }
+          }
+        },
+        "qwen/qwen3.8-27b:free": {
+          "name": "Qwen3.8 27B (free)",
+          "options": {
+            "reasoning": { "effort": "low" }
+          }
         }
       }
     }

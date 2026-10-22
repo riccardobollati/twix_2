@@ -9,9 +9,18 @@ from pathlib import Path
 from unittest.mock import patch
 
 from src.agents import block_extraction_scripting
+from src.models.opencode import OPENCODE_BUDGET_EXIT_CODE
 
 
 class BlockExtractionScriptingTests(unittest.TestCase):
+    def test_budget_exhaustion_is_explicit_even_if_an_extractor_exists(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            script = Path(tmp) / "0.py"
+            script.write_text("def extract(block):\n    return block\n")
+            reason = block_extraction_scripting._failure_reason(OPENCODE_BUDGET_EXIT_CODE, str(script))
+        self.assertIn("finish_reason=length", reason)
+        self.assertIn("finish writing the required script", reason)
+
     def _workspace(self, root: Path, count: int = 1) -> tuple[Path, Path, list[dict]]:
         agent_space = root / "agent_space"
         train_dir = agent_space / "train"

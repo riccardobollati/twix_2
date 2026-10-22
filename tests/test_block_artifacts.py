@@ -10,11 +10,40 @@ from PIL import Image
 
 from src.agents.block_artifacts import block_artifacts_node
 from src.agents.block_separation import block_separation_node
+from src.models.opencode import OPENCODE_BUDGET_EXIT_CODE
 from viz_blocks import _parse_targets, render_blocks, run_block_separator
 from viz_record_separation import _load_record_blocks, render_record_separation
 
 
 class BlockArtifactTests(unittest.TestCase):
+    @patch("src.agents.block_separation._spinner")
+    @patch("src.agents.block_separation._run_script", return_value=None)
+    def test_separator_budget_failure_reaches_retry_and_usage_is_accumulated(self, run_script, _spinner):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            train = root / "agent_space" / "train"
+            train.mkdir(parents=True)
+            prompts = []
+
+            def generate(prompt, *_args, **_kwargs):
+                prompts.append(prompt)
+                # A file from a truncated response must not count as success.
+                (train / "block_separation.py").touch()
+                return (OPENCODE_BUDGET_EXIT_CODE, 10, 2, None) if len(prompts) == 1 else (0, 20, 4, None)
+
+            with patch("src.agents.block_separation.opencode_silent", side_effect=generate):
+                result = block_separation_node({
+                    "template": [], "ocr_csv_path": str(train / "ocr.csv"),
+                    "pdf_path": str(train / "input.pdf"), "agent_space": str(root / "agent_space"),
+                })
+        self.assertEqual(len(prompts), 2)
+        self.assertIn("exhausted its response token budget", prompts[1])
+        self.assertIn("finish_reason=length", prompts[1])
+        self.assertIn("finish writing the required script", prompts[1])
+        run_script.assert_called_once()
+        self.assertEqual(result["cost"][0]["input_tokens"], 30)
+        self.assertEqual(result["cost"][0]["output_tokens"], 6)
+
     @patch("src.agents.block_separation._spinner")
     @patch("src.agents.block_separation._run_script", return_value=None)
     @patch("src.agents.block_separation.opencode_silent", return_value=(0, 1, 2, 3))

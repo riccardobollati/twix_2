@@ -67,6 +67,14 @@ FALLBACK_MODEL_PRICING = {
         "cache_read_per_million": 0.016,
         "cache_write_per_million": 0.20,
     },
+    "qwen/qwen3.8-27b": {
+        "input_per_million": 0.15,
+        "output_per_million": 2.00,
+    },
+    "qwen/qwen3.8-27b:free": {
+        "input_per_million": 0.0,
+        "output_per_million": 0.0,
+    },
     "openai/gpt-5.4": {
         "input_per_million": 2.50,
         "output_per_million": 15.00,

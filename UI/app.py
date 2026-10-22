@@ -596,6 +596,21 @@ def _file_tree(root: Path, maximum_entries: int = 1_500) -> list[dict[str, Any]]
     return entries
 
 
+def _resume_phase(run: Run) -> str | None:
+    root = run.run_dir
+    if not ((root / "template.json").is_file()
+            and (root / "artifacts/clustering/selection.json").is_file()):
+        return None
+    stage = _stage_from_logs(run.logs, run.eval_enabled)
+    if stage == "blocks":
+        return "block_separation"
+    if stage == "extraction" and any(line.startswith("train_eval_node:") for line in run.logs):
+        from src.resume_run import train_eval_resume_available
+        if train_eval_resume_available(root):
+            return "train_eval"
+    return None
+
+
 @dataclass
 class Run:
     run_id: str
@@ -618,6 +633,7 @@ class Run:
 
     def snapshot(self, include_logs: bool = False) -> dict[str, Any]:
         with self.lock:
+            resume_phase = _resume_phase(self) if self.status in {"failed", "interrupted"} else None
             result: dict[str, Any] = {
                 "id": self.run_id,
                 "filename": self.filename,
@@ -630,6 +646,8 @@ class Run:
                 "stage": _stage_from_logs(self.logs, self.eval_enabled),
                 "artifactCount": len(_file_tree(self.run_dir)),
                 "logCursor": len(self.logs),
+                "canResume": resume_phase is not None,
+                "resumePhase": resume_phase,
             }
             if include_logs:
                 result["logs"] = self.logs[-1_000:]
@@ -762,6 +780,24 @@ class RunManager:
             run.logs.append("[UI] Cancellation requested.")
             return True
 
+    def resume(self, run: Run) -> None:
+        from src.resume_run import load_resume_state
+
+        load_resume_state(run.run_dir)
+        with run.lock:
+            if run.status not in {"failed", "interrupted"}:
+                raise ValueError("Only failed or interrupted runs can be resumed")
+            phase = _resume_phase(run)
+            if phase is None:
+                raise ValueError("Resume requires saved block-separation or training-evaluation artifacts")
+            shutil.copy2(run.run_dir / "ui_run.json", run.run_dir / f"ui_run_before_resume_{uuid.uuid4().hex}.json")
+            run.status = "queued"
+            run.finished_at = None
+            run.return_code = None
+            run.logs.append(f"[UI] Resuming from {phase.replace('_', ' ')} with the saved template and page plan.")
+        run.persist()
+        self._start(run, run.run_dir / run.filename, resume=True)
+
     def submit_ground_truth(self, run: Run, raw: str, model: str) -> dict[str, Any]:
         with run.lock:
             if run.status != "awaiting_ground_truth":
@@ -803,8 +839,11 @@ class RunManager:
             run.persist()
             raise
 
-    def _start(self, run: Run, input_path: Path) -> None:
-        command = _build_run_command(run, input_path)
+    def _start(self, run: Run, input_path: Path, *, resume: bool = False) -> None:
+        command = ([_pipeline_python(), "-u", "-m", "src.resume_run", str(run.run_dir)]
+                   if resume else _build_run_command(run, input_path))
+        if resume and _resume_phase(run) == "train_eval":
+            command.extend(["--from-phase", "train_eval"])
         run.command = shlex.join(command)
 
         def execute() -> None:
@@ -1043,6 +1082,12 @@ class Handler(BaseHTTPRequestHandler):
             return self._open_run_folder(run)
         if run and len(parts) == 5 and parts[4] == "cancel":
             return self._send_json({"cancelled": MANAGER.cancel(run)})
+        if run and len(parts) == 5 and parts[4] == "resume":
+            try:
+                MANAGER.resume(run)
+            except (OSError, KeyError, TypeError, ValueError) as exc:
+                return self._send_json({"error": str(exc)}, HTTPStatus.CONFLICT)
+            return self._send_json(run.snapshot())
         if run and len(parts) == 5 and parts[4] == "ground-truth":
             return self._submit_ground_truth(run)
         if run and len(parts) == 6 and parts[4:6] == ["sonar", "scan"]:

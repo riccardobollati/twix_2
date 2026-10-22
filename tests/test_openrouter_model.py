@@ -110,6 +110,17 @@ class OpenRouterModelTests(unittest.TestCase):
         )
 
     @patch("src.models.openrouter.ChatOpenAI")
+    def test_template_reasoning_can_be_disabled_explicitly(self, chat_mock) -> None:
+        with patch.dict(os.environ, {
+            "OPENROUTER_API_KEY": "test-key",
+            "OPENROUTER_TEMPLATE_INFERENCE_REASONING_EFFORT": "none",
+        }, clear=True):
+            get_template_inference_llm(model="deepseek/deepseek-v4.1-flash")
+        self.assertEqual(chat_mock.call_args.kwargs["extra_body"]["reasoning"], {
+            "enabled": False, "exclude": True,
+        })
+
+    @patch("src.models.openrouter.ChatOpenAI")
     def test_ground_truth_model_uses_openrouter_and_gpt_5_4(self, chat_mock) -> None:
         with patch.dict(
             os.environ,

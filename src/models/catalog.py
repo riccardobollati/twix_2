@@ -16,6 +16,8 @@ MODEL_OPTIONS = (
     ("DeepSeek V4 Pro", "deepseek/deepseek-v4-pro"),
     ("GLM 5.3 Flash", "z-ai/glm-5.3-flash"),
     ("Qwen3.8 Flash", "qwen/qwen3.8-flash"),
+    ("Qwen3.8 27B", "qwen/qwen3.8-27b"),
+    ("Qwen3.8 27B (free)", "qwen/qwen3.8-27b:free"),
 )
 
 REFERENCE_MODEL_OPTIONS = (
@@ -23,6 +25,8 @@ REFERENCE_MODEL_OPTIONS = (
     ("DeepSeek V4.1 Flash", "deepseek/deepseek-v4.1-flash"),
     ("GLM 5.3 Flash", "z-ai/glm-5.3-flash"),
     ("Qwen3.8 Flash", "qwen/qwen3.8-flash"),
+    ("Qwen3.8 27B", "qwen/qwen3.8-27b"),
+    ("Qwen3.8 27B (free)", "qwen/qwen3.8-27b:free"),
 )
 TEMPLATE_MODEL_OPTIONS = (("GPT-5.4", DEFAULT_REFERENCE_MODEL), *MODEL_OPTIONS)
 

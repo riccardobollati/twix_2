@@ -18,6 +18,26 @@ from src.manual_ground_truth import ManualGroundTruthError
 
 
 class UiWorkflowTests(unittest.TestCase):
+    def test_model_options_include_qwen_27b_variants_in_every_selector(self) -> None:
+        handler = object.__new__(Handler)
+        handler.path = "/api/models"
+        handler._send_json = Mock()
+
+        handler.do_GET()
+
+        payload = handler._send_json.call_args.args[0]
+        expected = (
+            {"label": "Qwen3.8 27B", "value": "qwen/qwen3.8-27b"},
+            {
+                "label": "Qwen3.8 27B (free)",
+                "value": "qwen/qwen3.8-27b:free",
+            },
+        )
+        for option in expected:
+            self.assertIn(option, payload["models"])
+            self.assertIn(option, payload["referenceModels"])
+            self.assertIn(option, payload["templateModels"])
+
     def test_ui_exposes_seven_pipeline_stages(self) -> None:
         self.assertEqual([stage[0] for stage in STAGES], [
             "clustering", "template", "blocks", "sonar", "record_separation",
