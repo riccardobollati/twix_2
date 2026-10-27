@@ -182,6 +182,8 @@ class ApiConfigurationTests(unittest.TestCase):
     def test_default_configuration_is_extraction_only(self) -> None:
         config = _parse_config({})
         self.assertEqual(config["pages"], 3)
+        self.assertIsNone(config["maxTrainPages"])
+        self.assertEqual(config["firstTrainPages"], 3)
         self.assertFalse(config["noRouting"])
         self.assertEqual(config["trainThreshold"], 0.0)
 
@@ -193,6 +195,8 @@ class ApiConfigurationTests(unittest.TestCase):
             )
             config = _parse_config({
                 "pages": ["4"],
+                "maxTrainPages": ["2"],
+                "firstTrainPages": ["0"],
                 "startPage": ["2"],
                 "easyModel": ["deepseek/deepseek-v4.1-flash"],
                 "hardModel": ["deepseek/deepseek-v4-pro"],
@@ -205,6 +209,8 @@ class ApiConfigurationTests(unittest.TestCase):
         self.assertIn("--no-eval", command)
         self.assertNotIn("--eval", command)
         self.assertEqual(command[command.index("--pages") + 1], "4")
+        self.assertEqual(command[command.index("--max-train-pages") + 1], "2")
+        self.assertEqual(command[command.index("--first-train-pages") + 1], "0")
         self.assertEqual(command[command.index("--start-page") + 1], "2")
         self.assertEqual(
             command[command.index("--easy-model") + 1],
@@ -212,6 +218,13 @@ class ApiConfigurationTests(unittest.TestCase):
         )
         self.assertEqual(command[command.index("--template-model") + 1],
                          "z-ai/glm-5.3-flash")
+
+    def test_invalid_training_page_limits_are_rejected(self) -> None:
+        for query in ({"maxTrainPages": ["0"]}, {"maxTrainPages": ["-2"]},
+                      {"maxTrainPages": ["many"]}, {"firstTrainPages": ["-1"]}):
+            with self.subTest(query=query), self.assertRaises(ValueError):
+                _parse_config(query)
+        self.assertIsNone(_parse_config({"maxTrainPages": [""]})["maxTrainPages"])
 
     def test_stage_uses_latest_pipeline_marker(self) -> None:
         self.assertEqual(_stage_from_logs(["cluster_sampling: scanning 20 source pages"]),

@@ -671,6 +671,9 @@ def _build_run_command(run: Run, input_path: Path) -> list[str]:
         "--sonar-drop-percent", str(run.config.get("sonarDropPercent", 15)),
         "--save-log",
     ]
+    if run.config.get("maxTrainPages") is not None:
+        command.extend(["--max-train-pages", str(run.config["maxTrainPages"])])
+    command.extend(["--first-train-pages", str(run.config.get("firstTrainPages", 3))])
     if run.config["eval"]:
         command.extend([
             "--eval", "--eval-pages", str(run.config.get("evalPages", 20)),
@@ -1198,6 +1201,13 @@ class Handler(BaseHTTPRequestHandler):
         query = parse_qs(parsed.query)
         try:
             pages = max(1, min(int(query.get("pages", ["5"])[0]), 50))
+            max_train_raw = query.get("maxTrainPages", [""])[0].strip()
+            max_train_pages = int(max_train_raw) if max_train_raw else None
+            first_train_pages = int(query.get("firstTrainPages", ["3"])[0])
+            if max_train_pages is not None and max_train_pages < 1:
+                raise ValueError("Invalid training-page cap")
+            if first_train_pages < 0:
+                raise ValueError("Invalid initial-page count")
             threshold = max(0.0, min(float(query.get("trainThreshold", ["0"])[0]), 1.0))
             sonar_drop = float(query.get("sonarDropPercent", ["15"])[0])
             if not math.isfinite(sonar_drop) or not 0 <= sonar_drop <= 100:
@@ -1209,6 +1219,8 @@ class Handler(BaseHTTPRequestHandler):
             return self._send_json({"error": "Invalid run configuration."}, HTTPStatus.BAD_REQUEST)
         config = {
             "pages": pages,
+            "maxTrainPages": max_train_pages,
+            "firstTrainPages": first_train_pages,
             "eval": query.get("eval", ["true"])[0].lower() != "false",
             "trainThreshold": threshold,
             "sonarDropPercent": sonar_drop,

@@ -87,6 +87,17 @@ class ResolveDocumentTests(unittest.TestCase):
 
         self.assertIn("--no-routing", forwarded)
 
+    def test_batch_forwards_training_page_limits(self) -> None:
+        args, unknown = parse_args([
+            "id_60", "--max-train-pages", "5", "--first-train-pages", "0",
+        ])
+        self.assertEqual(build_forwarded_args(args, unknown), [
+            "--max-train-pages", "5", "--first-train-pages", "0",
+        ])
+        for flag, value in (("--max-train-pages", "0"), ("--first-train-pages", "-1")):
+            with self.subTest(flag=flag), self.assertRaises(SystemExit):
+                parse_args(["id_60", flag, value])
+
     def test_batch_forwards_sonar_drop_percent(self) -> None:
         args, unknown = parse_args(["id_60", "--sonar-drop-percent", "22"])
         forwarded = build_forwarded_args(args, unknown)
@@ -146,6 +157,38 @@ class ResolveDocumentTests(unittest.TestCase):
             self.assertTrue(state["eval_mode"])
             self.assertEqual(state["eval_pages"], 20)
             self.assertEqual(state["holdout_pages"], 0)
+            self.assertIsNone(state["max_train_pages"])
+            self.assertEqual(state["first_train_pages"], 3)
+
+    def test_training_page_limits_are_forwarded_to_graph(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            pdf = Path(tmp) / "input.pdf"
+            pdf.write_bytes(b"%PDF-1.4\n")
+            graph = Mock()
+            with (
+                patch.object(sys, "argv", [
+                    "run.py", str(pdf), "--out-dir", str(Path(tmp) / "output"),
+                    "--pages", "10", "--max-train-pages", "2", "--first-train-pages", "0",
+                ]),
+                patch("run.extract_ocr_full"),
+                patch("run.get_llm", return_value=Mock()),
+                patch("run.get_template_inference_llm", return_value=Mock()),
+                patch("run.get_ground_truth_llm", return_value=Mock()),
+                patch("run.build_graph", return_value=graph),
+            ):
+                main()
+            state = graph.invoke.call_args.args[0]
+            self.assertEqual(state["train_pages"], 10)
+            self.assertEqual(state["max_train_pages"], 2)
+            self.assertEqual(state["first_train_pages"], 0)
+
+    def test_cli_rejects_invalid_training_page_limits(self) -> None:
+        for flag, value in (("--max-train-pages", "0"), ("--first-train-pages", "-1")):
+            with self.subTest(flag=flag), patch.object(sys, "argv", [
+                "run.py", "unused.pdf", flag, value,
+            ]), self.assertRaises(SystemExit) as raised:
+                main()
+            self.assertEqual(raised.exception.code, 2)
 
     def test_manual_ground_truth_flag_is_forwarded_to_graph_state(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

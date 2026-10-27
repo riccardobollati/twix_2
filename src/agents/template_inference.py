@@ -47,6 +47,8 @@ class ExtractionState(TypedDict):
     template_model:    NotRequired[str]  # direct OpenRouter template-inference model
     doc_name:          str   # document folder name, used to name split PDFs
     train_pages:       int   # number of pages requested for the train set
+    max_train_pages:   NotRequired[int | None]  # hard cap (None = uncapped)
+    first_train_pages: NotRequired[int]  # initial ordering pages (default 3)
     eval_mode:         bool  # whether to create a test split
     manual_ground_truth: NotRequired[bool]  # defer final test GT for UI paste
     sonar_drop_percent: NotRequired[float]  # relative drop below mean coverage
@@ -74,6 +76,7 @@ class ExtractionState(TypedDict):
     first_source_pages: NotRequired[list[int]]
     cluster_sample_pages: NotRequired[list[int]]
     cluster_coverage: NotRequired[dict[str, int]]
+    uncovered_clusters: NotRequired[list[str]]  # clusters omitted by the cap
     table_cluster_count: NotRequired[int]
     kv_cluster_count: NotRequired[int]
 
@@ -244,17 +247,23 @@ def template_inference_node(state: ExtractionState, llm: BaseChatModel) -> dict[
         metadata            – list of fixed metadata phrase strings.
     """
     source_pages = state.get("train_source_pages") or list(range(1, state["actual_train_pages"] + 1))
-    anchor_pages = set(state.get("first_source_pages") or source_pages[:3])
+    anchor_pages = set(state.get("first_source_pages", source_pages[:3]))
     sampled_pages = set(state.get("cluster_sample_pages") or [])
     covered: dict[int, list[str]] = {}
     for cluster, page in state.get("cluster_coverage", {}).items():
         covered.setdefault(page, []).append(cluster)
+    ordering_guidance = (
+        "The pages labeled ordering anchor establish block order and record boundaries. "
+        "Later sampled pages may reveal additional or alternate table/KV nodes; "
+        "include those structures without replacing the early-page order. "
+        if anchor_pages else
+        "No initial pages were reserved. Infer block order and record boundaries "
+        "from the available layouts without assuming the document beginning is present. "
+    )
     content = [
         "Here are the selected training pages as OCR layouts. Coordinates are PDF "
         "points; use y positions for lines and x spans for columns and key/value "
-        "alignment. The first structured-data pages establish block order and record "
-        "boundaries. Later sampled pages may reveal additional or alternate table/KV "
-        "nodes; include those structures without replacing the early-page order. "
+        "alignment. " + ordering_guidance +
         "If structures substitute for one another at the same record position, "
         "mark their shared slot with an XOR node. "
         f"The deterministic scan found {state.get('table_cluster_count', 'unknown')} "

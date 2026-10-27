@@ -19,6 +19,14 @@ test evaluation are separate controls:
 holdout defaults to zero, while evaluation defaults to twenty pages and enabled.
 All generated files remain available in the artifact drawer.
 
+Minimum training pages is a floor; cluster samples may add more. Maximum
+training pages is an optional hard cap (blank means no cap). Initial training
+pages controls how many structured pages to keep from the beginning for block
+order (default three; zero disables). Initial pages take priority within the
+cap, then remaining slots maximize table/KV cluster coverage. The cap overrides
+both the minimum and initial-page count. Any uncovered clusters appear in the
+clustering stage and saved selection; evaluation pages remain disjoint.
+
 Missed sonar runs the generated separator on up to 100 source pages starting
 at the detected structured-data page. Its tab plots words inside and outside
 blocks with the coverage ratio, flags pages whose coverage is a configured

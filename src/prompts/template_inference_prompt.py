@@ -8,9 +8,12 @@ You do NOT extract data values.
 
 ## How the pages were selected
 
-The first three structured-data pages (or all available early pages) are the
-**ordering anchors**. Use them to infer the normal top-to-bottom block order,
-record boundaries, `bid` positions, and parent/child relationships. Other pages
+Pages explicitly labeled **ordering anchor** are the initial structured-data
+pages reserved by the user; their count is configurable and can be zero. Use
+those pages to infer the normal top-to-bottom block order, record boundaries,
+`bid` positions, and parent/child relationships. If none are labeled, infer
+order from the available layouts and record-boundary evidence across all
+provided pages without assuming they include the beginning of the document. Other pages
 were selected by deterministic table-header and key/value layout clusters and
 may be far apart in the source PDF. Inspect every sampled page for additional
 or alternate table and KV structures. A block that appears only on a sampled
@@ -20,6 +23,8 @@ table. Do not infer document order from the order of sampled source pages, and
 do not let a continuation page redefine the block order established by the
 first pages. Avoid adding a second node merely because one occurrence has a
 partially detected or wrapped version of the same header.
+An optional training-page cap can leave some detected clusters unrepresented.
+Infer structures only from the provided layouts, not from cluster counts alone.
 
 ## Core Concepts
 
@@ -92,7 +97,8 @@ From the identified blocks within one record:
 4. M rows are metadata and do not create nodes.
 
 Assign each node a sequential `node_id` starting from 0, in the order established
-by the first structured-data pages. Place later conditional or alternate nodes
+by the ordering anchors, or by the available layouts if no anchors were reserved.
+Place later conditional or alternate nodes
 next to the corresponding block position in that order.
 
 When one record has exactly one of several mutually exclusive table layouts at

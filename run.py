@@ -234,7 +234,15 @@ def main() -> None:
     )
     parser.add_argument(
         "--pages", type=_positive_int, default=3, metavar="N",
-        help="Minimum training pages; the first 3 and all table/KV cluster samples are always included (default: 3).",
+        help="Minimum training pages, subject to --max-train-pages; initial pages and table/KV cluster samples may add more (default: 3).",
+    )
+    parser.add_argument(
+        "--max-train-pages", type=_positive_int, default=None, metavar="N",
+        help="Hard cap on training pages, overriding --pages and --first-train-pages; cluster coverage may be partial (default: no cap).",
+    )
+    parser.add_argument(
+        "--first-train-pages", type=_nonnegative_int, default=3, metavar="N",
+        help="Initial structured-data pages kept for block order before adding cluster samples, within the cap (default: 3; 0 disables).",
     )
     parser.add_argument(
         "--start-page", type=_positive_int, default=None, metavar="N",
@@ -425,6 +433,8 @@ def main() -> None:
         "template_model":             template_model,
         "doc_name":                   doc_name,
         "train_pages":                args.pages,
+        "max_train_pages":            args.max_train_pages,
+        "first_train_pages":          args.first_train_pages,
         "eval_mode":                  args.eval,
         "eval_pages":                 args.eval_pages,
         "train_accuracy_threshold":   args.train_threshold,

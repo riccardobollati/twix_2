@@ -59,6 +59,76 @@ class ClusterSamplingPipelineTests(unittest.TestCase):
         self.assertEqual(selection["first_source_pages"], [5, 6, 7])
         self.assertEqual(selection["test_source_pages"], [8])
 
+    def test_cap_keeps_initial_pages_then_maximizes_joint_cluster_coverage(self) -> None:
+        tables = report("balanced_complete", {"1": [5], "2": [9], "3": [11]},
+                        {"1": 5, "2": 9, "3": 11})
+        kv = report("kv_balanced", {"1": [9], "2": [12]}, {"1": 9, "2": 12})
+        selection = plan_pages(tables, kv, source_start=5, total_pages=15,
+                               requested_train_pages=10, eval_mode=True, eval_pages=20,
+                               max_train_pages=2, first_train_pages=1)
+        self.assertEqual(selection["first_source_pages"], [5])
+        self.assertEqual(selection["train_source_pages"], [5, 9])
+        self.assertEqual(selection["cluster_sample_pages"], [9])
+        self.assertEqual(selection["cluster_coverage"], {"table:1": 5, "table:2": 9, "kv:1": 9})
+        self.assertEqual(selection["uncovered_clusters"], ["kv:2", "table:3"])
+        self.assertEqual(selection["test_source_pages"], [6, 7, 8, 10, 11, 12, 13, 14, 15])
+
+    def test_initial_page_count_and_cap_respect_document_and_eval_capacity(self) -> None:
+        tables = report("balanced_complete", {}, {})
+        kv = report("kv_balanced", {}, {})
+        cases = [
+            # initial count, cap, eval mode, expected train, expected test
+            (1, None, True, [5], [6, 7, 8]),
+            (6, 2, True, [5, 6], [7, 8]),
+            (20, 20, True, [5, 6, 7], [8]),
+            (20, 20, False, [5, 6, 7, 8], []),
+            (3, 1, False, [5], []),
+        ]
+        for initial, cap, eval_mode, train, test in cases:
+            with self.subTest(initial=initial, cap=cap, eval_mode=eval_mode):
+                selection = plan_pages(tables, kv, source_start=5, total_pages=8,
+                                       requested_train_pages=1, eval_mode=eval_mode,
+                                       eval_pages=20, max_train_pages=cap, first_train_pages=initial)
+                self.assertEqual(selection["first_source_pages"], train)
+                self.assertEqual(selection["train_source_pages"], train)
+                self.assertEqual(selection["test_source_pages"], test)
+
+    def test_zero_initial_pages_starts_with_cluster_representative(self) -> None:
+        tables = report("balanced_complete", {"1": [7, 8]}, {"1": 8})
+        kv = report("kv_balanced", {}, {})
+        selection = plan_pages(tables, kv, source_start=1, total_pages=10,
+                               requested_train_pages=1, eval_mode=True, eval_pages=3,
+                               max_train_pages=1, first_train_pages=0)
+        self.assertEqual(selection["first_source_pages"], [])
+        self.assertEqual(selection["train_source_pages"], [8])
+        self.assertEqual(selection["cluster_sample_pages"], [8])
+        self.assertEqual(selection["uncovered_clusters"], [])
+
+    def test_cap_is_a_maximum_and_does_not_fill_unused_budget(self) -> None:
+        tables = report("balanced_complete", {"1": [9]}, {"1": 9})
+        kv = report("kv_balanced", {}, {})
+        selection = plan_pages(tables, kv, source_start=1, total_pages=20,
+                               requested_train_pages=2, eval_mode=True, eval_pages=3,
+                               max_train_pages=10, first_train_pages=1)
+        self.assertEqual(selection["train_source_pages"], [1, 9])
+
+    def test_uncapped_selection_still_requires_complete_cluster_coverage(self) -> None:
+        tables = report("balanced_complete", {str(p): [p] for p in range(1, 5)},
+                        {str(p): p for p in range(1, 5)})
+        kv = report("kv_balanced", {}, {})
+        with self.assertRaisesRegex(RuntimeError, "Cannot represent every"):
+            plan_pages(tables, kv, source_start=1, total_pages=4,
+                       requested_train_pages=3, eval_mode=True, eval_pages=20)
+
+    def test_invalid_train_limits_are_rejected(self) -> None:
+        tables = report("balanced_complete", {}, {})
+        kv = report("kv_balanced", {}, {})
+        for options in ({"max_train_pages": 0}, {"max_train_pages": -1},
+                        {"first_train_pages": -1}):
+            with self.subTest(options=options), self.assertRaises(ValueError):
+                plan_pages(tables, kv, source_start=1, total_pages=5,
+                           requested_train_pages=3, eval_mode=True, eval_pages=20, **options)
+
     def test_table_cluster_overlay_uses_physical_source_page_after_front_matter(self) -> None:
         engine, _ = _clusterers()
         with tempfile.TemporaryDirectory() as tmp:
@@ -144,6 +214,18 @@ class ClusterSamplingPipelineTests(unittest.TestCase):
             self.assertIn("source PDF page 24; cluster sample", human)
             self.assertIn("represents clusters: table:2", human)
             self.assertIn("source PDF page 1; ordering anchor", human)
+            llm.reset_mock()
+            with patch("src.agents.template_inference.load_ocr_pages", return_value={
+                1: {"layout": "layout-1"}
+            }):
+                template_inference_node({
+                    "agent_space": str(root / "agent_space"), "ocr_csv_path": "unused",
+                    "actual_train_pages": 1, "train_source_pages": [24],
+                    "first_source_pages": [], "cluster_sample_pages": [24],
+                }, llm)
+            human = llm.invoke.call_args.args[0][1].content
+            self.assertIn("source PDF page 24; cluster sample", human)
+            self.assertNotIn("ordering anchor", human)
 
     def test_block_samples_include_a_far_cluster_page_even_beyond_random_cap(self) -> None:
         class FakeImage:

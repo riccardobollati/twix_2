@@ -42,7 +42,9 @@
               <span class="file-icon">PDF</span><strong id="file-name">Choose a PDF</strong><small>PDF only · processed locally</small>
             </label>
             <div class="form-grid">
-              <label>Minimum training pages<input id="pages" type="number" min="1" max="50" value="5" /><small>First 3 plus one or more pages covering every table and KV cluster</small></label>
+              <label>Minimum training pages<input id="pages" type="number" min="1" max="50" value="5" /><small>Initial pages plus cluster samples, within the maximum</small></label>
+              <label>Maximum training pages<input id="max-train-pages" type="number" min="1" placeholder="No cap" /><small>Optional hard cap; overrides the minimum and initial-page count</small></label>
+              <label>Initial training pages<input id="first-train-pages" type="number" min="0" value="3" /><small>Keep these first structured pages for block order; 0 disables</small></label>
               <label>Train holdout pages<input id="holdout-pages" type="number" min="0" max="48" value="0" /></label>
               <label>Evaluation pages<input id="eval-pages" type="number" min="1" max="1000" value="20" /><small>Sampled from pages outside training</small></label>
               <label>Repair threshold<input id="threshold" type="number" min="0" max="1" step="0.05" value="0" /></label>
@@ -94,7 +96,7 @@
             </article>
 
             <article class="workflow-panel" data-stage-panel="template">
-              <div class="panel-heading"><div><span class="step-kicker">STEP 02</span><h3>Template inference</h3><p>The first three structured pages establish block order; cluster samples reveal later table and KV variants.</p></div><span id="template-state" class="artifact-state waiting">Waiting</span></div>
+              <div class="panel-heading"><div><span class="step-kicker">STEP 02</span><h3>Template inference</h3><p>The selected initial structured pages establish block order; cluster samples reveal later table and KV variants.</p></div><span id="template-state" class="artifact-state waiting">Waiting</span></div>
               <div class="split-view">
                 <div class="viewer-card"><div class="viewer-title">Training PDF</div><div id="template-pdf-empty" class="empty-state">Preparing the training document…</div><iframe id="template-pdf" class="pdf-viewer hidden" title="Training PDF"></iframe></div>
                 <div class="viewer-card"><div class="viewer-title">Inferred template <div class="viewer-title-actions"><span>template.json</span><button id="copy-template" class="icon-button" type="button" disabled>Copy</button></div></div><pre id="template-json" class="json-viewer">Waiting for template inference…</pre></div>

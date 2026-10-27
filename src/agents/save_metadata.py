@@ -132,6 +132,7 @@ def save_metadata_node(state: dict[str, Any]) -> dict[str, Any]:
         "first_source_pages": state.get("first_source_pages"),
         "cluster_sample_pages": state.get("cluster_sample_pages"),
         "cluster_coverage": state.get("cluster_coverage"),
+        "uncovered_clusters": state.get("uncovered_clusters", []),
         "table_cluster_count": state.get("table_cluster_count"),
         "kv_cluster_count": state.get("kv_cluster_count"),
         "eval_mode":        state.get("eval_mode", False),
@@ -146,6 +147,8 @@ def save_metadata_node(state: dict[str, Any]) -> dict[str, Any]:
         "block_models":     state.get("block_opencode_models"),
         "run_config": {
             "requested_train_pages": state.get("train_pages"),
+            "max_train_pages": state.get("max_train_pages"),
+            "first_train_pages": state.get("first_train_pages", 3),
             "requested_eval_pages": state.get("eval_pages"),
             "holdout_pages": state.get("holdout_pages"),
             "no_routing": state.get("no_routing", False),

@@ -211,9 +211,11 @@ function renderClustering() {
   $("#cluster-selection").innerHTML = selection ? [
     `${selection.table_cluster_count} table clusters · ${selection.kv_cluster_count} KV clusters`,
     `Scanned ${selection.scanned_pages} pages from source page ${selection.source_start_page}`,
-    `Ordering pages: ${pageRanges(selection.first_source_pages)}`,
+    `Ordering pages: ${pageRanges(selection.first_source_pages) || "none"}`,
     `Additional cluster samples: ${pageRanges(selection.cluster_sample_pages) || "none"}`,
     `All training pages: ${pageRanges(selection.train_source_pages)}`,
+    `Training-page cap: ${selection.max_train_pages ?? "none"}`,
+    `Uncovered clusters: ${(selection.uncovered_clusters || []).join(", ") || "none"}`,
     `Independent evaluation pages: ${pageRanges(selection.test_source_pages) || "none"}`,
   ].map((item) => `<span>${escapeHtml(item)}</span>`).join("")
     : finished && !groups.length ? "No saved clustering results for this run." : "Scanning table and KV layouts…";
@@ -228,7 +230,9 @@ function renderClustering() {
       if (!matching.length) return "";
       return `<h4 class="cluster-group-title">${kind === "table" ? "Table structures" : "KV patterns"}</h4>` + matching.map((group) => {
         const number = group.id.split(":")[1];
-        const training = group.samplePage == null ? "Selection pending" : `Template sample: page ${group.samplePage}`;
+        const training = group.samplePage == null
+          ? selection ? "Not included in training" : "Selection pending"
+          : `Template sample: page ${group.samplePage}`;
         return `<button class="cluster-card ${selectedCluster === group.id ? "selected" : ""}" data-cluster-id="${escapeHtml(group.id)}" type="button"><strong>${kind === "table" ? "Table" : "KV"} cluster ${escapeHtml(number)}</strong><small>${group.pages.length} source page${group.pages.length === 1 ? "" : "s"} · representative page ${group.representative}</small><small>${escapeHtml(training)}</small></button>`;
       }).join("");
     }).join("");
@@ -641,7 +645,7 @@ $("#upload-form").addEventListener("submit", async (event) => {
   event.preventDefault();
   const file = $("#pdf-file").files[0];
   if (!file) return showToast("Choose a PDF first.", true);
-  const query = new URLSearchParams({pages:$("#pages").value,holdoutPages:$("#holdout-pages").value,evalPages:$("#eval-pages").value,trainThreshold:$("#threshold").value,sonarDropPercent:$("#sonar-drop-percent").value,trainMaxRetries:"3",eval:String($("#eval").checked),manualGroundTruth:String($("#manual-ground-truth").checked),noRouting:String($("#no-routing").checked),easyModel:$("#easy-model").value,hardModel:$("#hard-model").value,singleModel:$("#single-model").value,referenceModel:$("#reference-model").value,templateModel:$("#template-model").value});
+  const query = new URLSearchParams({pages:$("#pages").value,maxTrainPages:$("#max-train-pages").value,firstTrainPages:$("#first-train-pages").value,holdoutPages:$("#holdout-pages").value,evalPages:$("#eval-pages").value,trainThreshold:$("#threshold").value,sonarDropPercent:$("#sonar-drop-percent").value,trainMaxRetries:"3",eval:String($("#eval").checked),manualGroundTruth:String($("#manual-ground-truth").checked),noRouting:String($("#no-routing").checked),easyModel:$("#easy-model").value,hardModel:$("#hard-model").value,singleModel:$("#single-model").value,referenceModel:$("#reference-model").value,templateModel:$("#template-model").value});
   const button = $("#upload-form button[type=submit]"); button.disabled=true; button.textContent="Starting…";
   try {
     const response = await fetch(`/api/runs?${query}`,{method:"POST",headers:{"Content-Type":"application/pdf","X-Filename":file.name},body:file});

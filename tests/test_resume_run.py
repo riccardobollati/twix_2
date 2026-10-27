@@ -70,6 +70,19 @@ class ResumeTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "failed or interrupted"):
                 manager.resume(run)
 
+    def test_resume_retains_capped_selection_settings_and_uncovered_clusters(self):
+        with tempfile.TemporaryDirectory() as root:
+            run = self.make_run(root)
+            plan_path = run.run_dir / "artifacts/clustering/selection.json"
+            plan = json.loads(plan_path.read_text())
+            plan.update(max_train_pages=2, first_train_pages=1,
+                        uncovered_clusters=["table:2"])
+            plan_path.write_text(json.dumps(plan))
+            state = load_resume_state(run.run_dir)
+            self.assertEqual(state["max_train_pages"], 2)
+            self.assertEqual(state["first_train_pages"], 1)
+            self.assertEqual(state["uncovered_clusters"], ["table:2"])
+
     def test_resume_graph_starts_at_separator_without_prior_model_calls(self):
         from langchain_core.language_models.fake_chat_models import FakeListChatModel
         from src.agents.graph import build_graph

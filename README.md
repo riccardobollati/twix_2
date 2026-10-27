@@ -167,7 +167,9 @@ Run `python run.py --help` for the complete interface. Important options are:
 
 | Option | Meaning |
 | --- | --- |
-| `--pages N` | Minimum train pages; the first three structured pages and pages covering every detected table/KV cluster are always included; default `3` |
+| `--pages N` | Minimum train pages, subject to the cap; initial pages and cluster samples may add more; default `3` |
+| `--max-train-pages N` | Optional hard cap on train pages, overriding the minimum and initial-page count; default uncapped |
+| `--first-train-pages N` | Initial structured pages kept for block order before cluster sampling; default `3`, `0` disables |
 | `--start-page N` | Use a fixed physical first record page and skip detection |
 | `--eval` / `--no-eval` | Final independent test evaluation is enabled by default; `--no-eval` disables it |
 | `--eval-pages N` | Number of disjoint evaluation pages sampled across the remaining document; default `20` |
@@ -188,9 +190,17 @@ Run `python run.py --help` for the complete interface. Important options are:
 
 The deterministic scan covers up to 500 structured-data pages, starting at the
 detected or supplied start page. It clusters tables and KV groups independently.
-The first three pages establish block order; additional pages cover every
-detected cluster, reusing a page when it represents both a table and a KV
-cluster. The train and test PDFs contain explicitly selected source pages, each
+The first three pages (configurable with `--first-train-pages`) establish block
+order; additional pages cover every detected cluster, reusing a page when it represents both a table and a KV
+cluster. With `--max-train-pages`, initial pages take priority within the cap,
+then the remaining slots greedily maximize joint cluster coverage. The cap
+overrides `--pages` and `--first-train-pages`; uncovered clusters are listed in
+the selection artifact, metadata, logs, and dashboard. For example,
+`python run.py document.pdf --pages 5 --max-train-pages 8 --first-train-pages 2`
+keeps the first two structured pages and adds cluster samples and any minimum-page
+fillers, using at most eight training pages. Evaluation always reserves at least
+one disjoint source page. The train and test PDFs contain explicitly selected
+source pages, each
 remapped to split-local page numbers. Test pages are disjoint and sampled across
 the remaining document rather than taken as the next 20 pages. The mapping and
 cluster coverage are saved under `artifacts/clustering/selection.json` and in
@@ -244,7 +254,8 @@ the returned records.
 Before completion the result endpoint returns HTTP 202 and `Retry-After: 2`.
 Failed or interrupted jobs return HTTP 409 with their final status and error.
 
-Upload options are query parameters: `pages`, `startPage`, `trainThreshold`,
+Upload options are query parameters: `pages`, `maxTrainPages` (omit or leave empty for no cap),
+`firstTrainPages` (default `3`, `0` disables initial pages), `startPage`, `trainThreshold`,
 `trainMaxRetries`, `easyModel`, `hardModel`, `referenceModel`, `noRouting`,
 `singleModel`, and `groupRows`. API jobs run `run.py --no-eval`, so extraction
 does not create an independent test split. After training and train evaluation,

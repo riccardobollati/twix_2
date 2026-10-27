@@ -264,7 +264,15 @@ def parse_args(argv: Sequence[str]) -> tuple[argparse.Namespace, list[str]]:
         type=positive_int,
         default=argparse.SUPPRESS,
         metavar="N",
-        help="Forwarded to run.py: minimum training pages; cluster samples are added.",
+        help="Forwarded to run.py: minimum training pages, subject to the train cap.",
+    )
+    run_options.add_argument(
+        "--max-train-pages", type=positive_int, default=argparse.SUPPRESS,
+        metavar="N", help="Forwarded to run.py: hard cap on training pages.",
+    )
+    run_options.add_argument(
+        "--first-train-pages", type=nonnegative_int, default=argparse.SUPPRESS,
+        metavar="N", help="Forwarded to run.py: initial ordering pages (0 disables).",
     )
     run_options.add_argument(
         "--start-page",
@@ -397,6 +405,8 @@ def build_forwarded_args(args: argparse.Namespace, unknown_args: Sequence[str]) 
 
     for flag, attr in (
         ("--pages", "pages"),
+        ("--max-train-pages", "max_train_pages"),
+        ("--first-train-pages", "first_train_pages"),
         ("--start-page", "start_page"),
         ("--eval-pages", "eval_pages"),
         ("--train-threshold", "train_threshold"),

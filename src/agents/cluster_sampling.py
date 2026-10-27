@@ -46,7 +46,7 @@ def _memberships(table_report: dict, kv_report: dict) -> tuple[dict[int, set[str
 
 def _cover_clusters(candidates: list[int], memberships: dict[int, set[str]],
                     representatives: dict[str, int], selected: set[int],
-                    limit: int) -> tuple[set[int], dict[str, int]]:
+                    limit: int, *, allow_partial: bool = False) -> tuple[set[int], dict[str, int]]:
     """Cover both independent partitions, reusing pages that show both kinds."""
     universe = set(representatives)
     covered = set().union(*(memberships.get(page, set()) for page in selected)) if selected else set()
@@ -55,6 +55,8 @@ def _cover_clusters(candidates: list[int], memberships: dict[int, set[str]],
     while uncovered := universe - covered:
         available = [page for page in candidates if page not in selected and memberships.get(page, set()) & uncovered]
         if not available or len(selected) >= limit:
+            if allow_partial:
+                break
             raise RuntimeError(
                 "Cannot represent every table and KV cluster while keeping an independent "
                 "evaluation page; use more structured pages or disable evaluation. "
@@ -84,18 +86,32 @@ def _spread_pages(candidates: list[int], count: int) -> list[int]:
 
 def plan_pages(table_report: dict, kv_report: dict, *, source_start: int,
                total_pages: int, requested_train_pages: int, eval_mode: bool,
-               eval_pages: int | None) -> dict[str, Any]:
-    """Make disjoint physical-page lists; every detected cluster reaches train."""
+               eval_pages: int | None, max_train_pages: int | None = None,
+               first_train_pages: int = FIRST_TEMPLATE_PAGES) -> dict[str, Any]:
+    """Keep initial pages, then greedily cover clusters within the train budget.
+
+    Without a cap, every detected cluster must reach train. An explicit cap
+    takes precedence over both the requested minimum and initial-page count.
+    """
     if not 1 <= source_start <= total_pages:
         raise ValueError("structured-data start is outside the source PDF")
+    if max_train_pages is not None and max_train_pages < 1:
+        raise ValueError("max_train_pages must be greater than zero")
+    if first_train_pages < 0:
+        raise ValueError("first_train_pages must be zero or greater")
     usable = list(range(source_start, total_pages + 1))
     if eval_mode and len(usable) < 2:
         raise RuntimeError("eval_mode requires at least two structured-data pages")
     memberships, representatives = _memberships(table_report, kv_report)
     capacity = len(usable) - int(eval_mode)
-    first = usable[:min(FIRST_TEMPLATE_PAGES, capacity)]
+    if max_train_pages is not None:
+        capacity = min(capacity, max_train_pages)
+    first = usable[:min(first_train_pages, capacity)]
     selected = set(first)
-    selected, assigned = _cover_clusters(usable, memberships, representatives, selected, capacity)
+    selected, assigned = _cover_clusters(
+        usable, memberships, representatives, selected, capacity,
+        allow_partial=max_train_pages is not None,
+    )
     cluster_samples = sorted(selected - set(first))
 
     target = min(capacity, max(requested_train_pages, len(selected)))
@@ -127,16 +143,21 @@ def plan_pages(table_report: dict, kv_report: dict, *, source_start: int,
         test.sort()
 
     assert not set(train) & set(test)
-    assert set(assigned) == set(representatives)
+    uncovered = sorted(set(representatives) - set(assigned))
+    assert max_train_pages is not None or not uncovered
     return {
         "source_start_page": source_start,
         "source_total_pages": total_pages,
         "scanned_pages": table_report["page_count"],
+        "requested_train_pages": requested_train_pages,
+        "max_train_pages": max_train_pages,
+        "first_train_pages": first_train_pages,
         "first_source_pages": first,
         "cluster_sample_pages": cluster_samples,
         "train_source_pages": train,
         "test_source_pages": test,
         "cluster_coverage": assigned,
+        "uncovered_clusters": uncovered,
         "cluster_representatives": representatives,
         "table_cluster_count": table_report["algorithms"]["balanced_complete"]["cluster_count"],
         "kv_cluster_count": kv_report["algorithms"]["kv_balanced"]["cluster_count"],
@@ -167,6 +188,8 @@ def cluster_sampling_node(state: dict[str, Any]) -> dict[str, Any]:
         table, kv, source_start=start, total_pages=total_pages,
         requested_train_pages=int(state["train_pages"]),
         eval_mode=bool(state["eval_mode"]), eval_pages=state.get("eval_pages"),
+        max_train_pages=state.get("max_train_pages"),
+        first_train_pages=state.get("first_train_pages", FIRST_TEMPLATE_PAGES),
     )
     destination = artifact_root / "clustering" / "selection.json"
     destination.write_text(json.dumps(selection, indent=2) + "\n", encoding="utf-8")
@@ -176,12 +199,16 @@ def cluster_sampling_node(state: dict[str, Any]) -> dict[str, Any]:
         f"{selection['train_source_pages']}; evaluation pages {selection['test_source_pages']}",
         flush=True,
     )
+    if selection["uncovered_clusters"]:
+        print("cluster_sampling: training-page cap left clusters uncovered: "
+              + ", ".join(selection["uncovered_clusters"]), flush=True)
     return {
         "train_source_pages": selection["train_source_pages"],
         "test_source_pages": selection["test_source_pages"],
         "first_source_pages": selection["first_source_pages"],
         "cluster_sample_pages": selection["cluster_sample_pages"],
         "cluster_coverage": selection["cluster_coverage"],
+        "uncovered_clusters": selection["uncovered_clusters"],
         "table_cluster_count": selection["table_cluster_count"],
         "kv_cluster_count": selection["kv_cluster_count"],
         "cost": [{"phase": "cluster_sampling", "duration_s": round(time.time() - started, 3)}],

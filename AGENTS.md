@@ -143,15 +143,20 @@ Important implications:
 `run.py` assigns globally unique OCR word IDs and physical 1-based page numbers.
 After front-matter detection, `cluster_sampling.py` scans up to 500 structured
 source pages using independent table and KV clustering. It selects the first
-three structured pages for block order plus pages covering every detected
-cluster. `environment_creation.py` builds train and test PDFs from explicit,
+three structured pages (configurable via `--first-train-pages`, including zero)
+for block order plus pages covering every detected cluster. An optional
+`--max-train-pages` hard cap takes precedence over the initial count and the
+`--pages` minimum; remaining slots greedily maximize joint cluster coverage,
+and `uncovered_clusters` records omitted clusters in selection and metadata.
+`environment_creation.py` builds train and test PDFs from explicit,
 disjoint physical-page lists and remaps each split to local pages beginning at
 1. `artifacts/clustering/selection.json` and `metadata.json` preserve the
 local-to-source mapping. Generated scripts operate only in split-local coordinates.
 
 In eval mode, at least two usable structured pages are required. A train-page
 selection must leave at least one source page for independent evaluation;
-`--pages` is a minimum and cannot remove cluster-representative pages.
+`--pages` is a minimum and cannot remove cluster-representative pages unless an
+explicit `--max-train-pages` cap is set.
 
 The holdout is an anti-overfitting aid: template inference still sees every
 train-page OCR layout, but generated separation code and its downstream block samples

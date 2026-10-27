@@ -116,6 +116,9 @@ def _query_value(query: dict[str, list[str]], name: str, default: str) -> str:
 def _parse_config(query: dict[str, list[str]]) -> dict[str, Any]:
     try:
         pages = int(_query_value(query, "pages", "3"))
+        max_train_raw = _query_value(query, "maxTrainPages", "").strip()
+        max_train_pages = int(max_train_raw) if max_train_raw else None
+        first_train_pages = int(_query_value(query, "firstTrainPages", "3"))
         start_page_raw = _query_value(query, "startPage", "").strip()
         start_page = int(start_page_raw) if start_page_raw else None
         threshold = float(_query_value(query, "trainThreshold", "0"))
@@ -131,6 +134,10 @@ def _parse_config(query: dict[str, list[str]]) -> dict[str, Any]:
 
     if not 1 <= pages <= 50:
         raise ValueError("pages must be between 1 and 50")
+    if max_train_pages is not None and max_train_pages < 1:
+        raise ValueError("maxTrainPages must be greater than zero")
+    if first_train_pages < 0:
+        raise ValueError("firstTrainPages must be zero or greater")
     if start_page is not None and start_page < 1:
         raise ValueError("startPage must be greater than zero")
     if not 0.0 <= threshold <= 1.0:
@@ -140,6 +147,8 @@ def _parse_config(query: dict[str, list[str]]) -> dict[str, Any]:
 
     config: dict[str, Any] = {
         "pages": pages,
+        "maxTrainPages": max_train_pages,
+        "firstTrainPages": first_train_pages,
         "startPage": start_page,
         "trainThreshold": threshold,
         "trainMaxRetries": retries,
@@ -315,6 +324,9 @@ class ExtractionManager:
         ]
         if config.get("startPage") is not None:
             command.extend(["--start-page", str(config["startPage"])])
+        if config.get("maxTrainPages") is not None:
+            command.extend(["--max-train-pages", str(config["maxTrainPages"])])
+        command.extend(["--first-train-pages", str(config.get("firstTrainPages", 3))])
         if config.get("groupRows"):
             command.append("--group-rows")
         if config.get("trainThreshold", 0) > 0:

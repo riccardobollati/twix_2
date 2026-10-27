@@ -194,6 +194,43 @@ class UiWorkflowTests(unittest.TestCase):
             command = _build_run_command(run, root / "input.pdf")
         self.assertIn("--manual-ground-truth", command)
 
+    def test_ui_accepts_and_forwards_training_page_limits(self) -> None:
+        payload = b"%PDF-1.4\n"
+        for query, cap, initial in (("", None, 3),
+                                    ("?maxTrainPages=&firstTrainPages=2", None, 2),
+                                    ("?maxTrainPages=2&firstTrainPages=0", 2, 0)):
+            with self.subTest(query=query), tempfile.TemporaryDirectory() as tmp:
+                handler = object.__new__(Handler)
+                handler.headers = {"Content-Length": str(len(payload)), "X-Filename": "input.pdf"}
+                handler.rfile = BytesIO(payload)
+                handler._send_json = Mock()
+                with patch("UI.app.MANAGER.create") as create:
+                    handler._create_run(urlparse("/api/runs" + query))
+                config = create.call_args.args[2]
+                self.assertEqual(config["maxTrainPages"], cap)
+                self.assertEqual(config["firstTrainPages"], initial)
+                run = Run("run-test", Path(tmp), "input.pdf", config)
+                command = _build_run_command(run, Path(tmp) / "input.pdf")
+                self.assertEqual(command[command.index("--first-train-pages") + 1], str(initial))
+                if cap is None:
+                    self.assertNotIn("--max-train-pages", command)
+                else:
+                    self.assertEqual(command[command.index("--max-train-pages") + 1], str(cap))
+
+    def test_ui_rejects_invalid_training_page_limits(self) -> None:
+        payload = b"%PDF-1.4\n"
+        for query in ("maxTrainPages=0", "maxTrainPages=-1", "maxTrainPages=abc",
+                      "firstTrainPages=-1"):
+            with self.subTest(query=query):
+                handler = object.__new__(Handler)
+                handler.headers = {"Content-Length": str(len(payload))}
+                handler.rfile = BytesIO(payload)
+                handler._send_json = Mock()
+                with patch("UI.app.MANAGER.create") as create:
+                    handler._create_run(urlparse("/api/runs?" + query))
+                create.assert_not_called()
+                self.assertEqual(handler._send_json.call_args.args[1], 400)
+
     def test_ui_rejects_manual_ground_truth_without_test_eval(self) -> None:
         payload = b"%PDF-1.4\n"
         handler = object.__new__(Handler)
