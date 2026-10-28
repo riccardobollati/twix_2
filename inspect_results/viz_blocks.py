@@ -304,7 +304,7 @@ def main() -> None:
     if positional_pdf and args.pdf_path:
         parser.error("provide the PDF path positionally or with --pdf-path, not both")
 
-    data_root = os.path.join(os.path.dirname(__file__), "data")
+    data_root = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data")
     doc_dir   = os.path.join(data_root, args.folder)
     if not os.path.isdir(doc_dir):
         print(f"Error: folder not found: {doc_dir}", file=sys.stderr)

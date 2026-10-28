@@ -2,7 +2,7 @@
 """Run the pipeline on a PDF, generate ground truth, and score.
 
 Usage:
-    python single_eval.py <pdf_path> <name> [--pages N] [--seed S]
+    python -m inspect_results.single_eval <pdf_path> <name> [--pages N] [--seed S]
 
     pdf_path    path to the PDF, e.g. data/id_60/agent_space/test/id_60.pdf
     name        label for this eval run — outputs go to base_folder/evals/eval_<name>/
@@ -36,7 +36,8 @@ import sys
 import pdfplumber
 from langchain_core.messages import HumanMessage, SystemMessage
 
-sys.path.insert(0, os.path.dirname(__file__))
+if not __package__:
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from src.eval.convert import load_json_dedup
 from src.eval.render import render_to_file

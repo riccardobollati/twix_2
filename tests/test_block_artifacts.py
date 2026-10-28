@@ -8,6 +8,7 @@ from unittest.mock import patch
 
 from PIL import Image
 
+from inspect_results import viz_blocks, viz_record_separation
 from src.agents.block_artifacts import block_artifacts_node
 from src.agents.block_separation import block_separation_node
 from src.models.opencode import OPENCODE_BUDGET_EXIT_CODE
@@ -16,6 +17,25 @@ from inspect_results.viz_record_separation import _load_record_blocks, render_re
 
 
 class BlockArtifactTests(unittest.TestCase):
+    def test_relocated_visualizer_commands_find_repository_data(self):
+        for module, renderer in ((viz_blocks, "render_blocks"),
+                                 (viz_record_separation, "render_record_separation")):
+            with self.subTest(module=module.__name__), tempfile.TemporaryDirectory() as tmp:
+                root = Path(tmp)
+                document = root / "data" / "sample"
+                pipeline = document / "pipeline"
+                pipeline.mkdir(parents=True)
+                pdf = document / "sample.pdf"
+                pdf.touch()
+                separator = pipeline / "block_separation.py"
+                separator.touch()
+                with patch.object(module, "__file__", str(root / "inspect_results" / "tool.py")), \
+                     patch("sys.argv", ["tool", "sample", str(pdf)]), \
+                     patch.object(module, "run_block_separator", return_value="blocks.json") as run, \
+                     patch.object(module, renderer, return_value=[]):
+                    module.main()
+                self.assertEqual(run.call_args.args[:2], (str(pdf), str(separator)))
+
     @patch("src.agents.block_separation._spinner")
     @patch("src.agents.block_separation._run_script", return_value=None)
     def test_separator_budget_failure_reaches_retry_and_usage_is_accumulated(self, run_script, _spinner):

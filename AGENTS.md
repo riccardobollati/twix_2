@@ -37,7 +37,7 @@ python api.py --host 127.0.0.1 --port 8000
 python src/run_batch.py --jobs 2 --eval
 
 python -m unittest discover -s tests -v
-python -m compileall -q api.py run.py rescore.py single_eval.py src inspect_results
+python -m compileall -q api.py run.py rescore.py src inspect_results
 ```
 
 There is no configured linter. The tests are offline and must not make API
@@ -84,7 +84,7 @@ Environment selection:
 | `src/eval/` | Format conversion, alignment, content/structure scoring, report rendering |
 | `src/ground_truth_gen/` | Ground-truth prompt plus OCR/render/JSON helpers |
 | `src/run_batch.py` | Parallel benchmark runner with terminal dashboard |
-| `single_eval.py` | Evaluate a generated pipeline on another PDF or page sample |
+| `inspect_results/single_eval.py` | Evaluate a generated pipeline on another PDF or page sample |
 | `rescore.py` | Re-score saved artifacts with current `src/eval` code, without LLM calls |
 | `inspect_results/` | Block, record, and batch-result visualizations |
 | `tests/` | Offline `unittest` regressions |
@@ -401,7 +401,7 @@ When changing a contract:
   prompts, the ground-truth prompt, runtime extraction, and conversion.
 - Block ID changes: update every `rsplit("_", 1)` consumer and visualization.
 - Ground-truth changes: keep train/test behavior shared in `gt_common.py` and
-  check `single_eval.py` plus `rescore.py` for mirrored legacy logic.
+  check `inspect_results/single_eval.py` plus `rescore.py` for mirrored legacy logic.
 - Eval changes: run `rescore.py --dry-run` on representative saved artifacts
   when available, and update reports/plot assumptions if output shape changes.
 - CLI changes: forward them through `src/run_batch.py` and add parser/command
@@ -414,7 +414,7 @@ Minimum verification for source changes:
 
 ```bash
 python -m unittest discover -s tests -v
-python -m compileall -q api.py run.py rescore.py single_eval.py src inspect_results
+python -m compileall -q api.py run.py rescore.py src inspect_results
 ```
 
 Add focused offline regressions for bug fixes. Do not make tests depend on the
@@ -428,7 +428,7 @@ OpenCode service.
 - Automatic ground truth is model-generated, not human truth; low-coverage and
   empty-output defenses reduce but do not eliminate measurement error. Manually
   pasted ground truth depends on the external source used to create it.
-- `single_eval.py` contains its own sequential ground-truth driver for sampled
+- `inspect_results/single_eval.py` contains its own sequential ground-truth driver for sampled
   pages. Shared boundary helpers come from `gt_common.py`, but generation
   behavior is not identical to the graph's parallel coverage-checked path.
 - `rescore.py` can rewrite reports and metadata. Use `--dry-run` first when

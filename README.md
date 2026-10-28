@@ -1,70 +1,39 @@
 # TWIX 2
 
-TWIX 2 learns a reusable structured-data extraction pipeline from a small set
-of pages belonging to one PDF template family.
+TWIX 2 learns a reusable structured-data extractor from a small sample of a
+PDF document family. It selects representative pages, infers their tables and
+key-value sections, and generates Python programs for block separation and
+extraction. The resulting pipeline processes further PDFs with the same layout
+without model calls.
 
-Given a template-based PDF, it produces:
+**Project report:** [Riccardo Bollati — TWIX 2: a framework for reliable data
+extraction at scale from templatized documents](project_report.pdf).
+The [dataset/](dataset/) folder contains the 23 PDFs under their thesis identifiers.
 
-1. an inferred schema for the document;
-2. generated Python code for block detection and field
-   extraction;
-3. structured JSON extracted by that code;
-4. train evaluation plus optional test evaluation against a configurable
-   OpenRouter reference model (GPT-5.4 by default);
-   and
-5. a standalone, model-free `pipeline/` bundle for unseen PDFs with the same
-   layout.
+## Workflow
 
-The project is thesis research. It is designed for repeated tables and
-key-value regions in stable document families, not arbitrary one-off PDFs.
+![TWIX 2 construction, validation, and reusable execution workflow](docs/images/workflow.png)
 
-## How the system works
+*Report Figure 2.1. Models help construct the extractor; the exported bundle
+performs subsequent extraction deterministically. Test evaluation stays outside
+the construction and repair loop. Repair is optional and was disabled in the
+thesis experiments.*
 
-TWIX separates reasoning from repeatable execution. Models accessed through
-OpenRouter inspect layout-preserving OCR to identify the document's structure.
-OpenCode, also routed through OpenRouter, then writes ordinary Python programs
-specialized to that structure. Once those programs are built, the packaged
-pipeline extracts future documents using only `pdfplumber` and the Python
-standard library.
+1. Extract words and coordinates, then find the first structured-data page.
+2. Cluster table and key-value layouts independently and select training pages
+   that cover their detected variations. Reserve disjoint pages for testing.
+3. Infer an explicit template containing fields, block order, and alternative
+   layouts.
+4. Generate and validate the block separator, inspect coverage, and collect
+   samples for each physical template node.
+5. Generate one extractor per node and assemble the portable pipeline.
+6. Evaluate on training pages, optionally repair the generated code, then run
+   the finished pipeline on held-out pages and save the outputs.
 
-```mermaid
-flowchart LR
-    A["Template-family PDF"] --> B["OCR words + geometry"]
-    B --> C["OpenRouter reasoning"]
-    B --> D["OpenCode via OpenRouter"]
-    C --> D
-    D --> E["Standalone pipeline bundle"]
-    E --> F["Flat page-local blocks JSON"]
-    G["New PDF, same layout"] --> E
-```
+## Setup
 
-There are two kinds of model-driven work:
-
-- Direct OpenRouter calls return structured JSON for front-matter detection,
-  template inference, easy/hard block routing, and ground truth.
-- The reference model defaults to GPT-5.4 and can instead use DeepSeek V4.1
-  Flash, GLM 5.3 Flash, Qwen3.8 Flash, or the paid and free Qwen3.8 27B
-  routes for template inference and both train/test ground truth.
-- OpenCode sessions use OpenRouter models to write executable Python files for
-  block separation, per-block extraction, and optional
-  repair.
-
-TWIX serializes each OCR page into compact lines containing y coordinates and
-per-word x spans. This keeps row and column geometry available to operational
-models without requiring image input. DeepSeek V4.1 Flash can additionally
-consume the rendered page images sent by held-out/test ground-truth generation;
-the PNG block samples used for human debugging do not feed difficulty routing,
-which continues to use coordinate JSON.
-
-## Requirements
-
-- Python 3.14
-- OpenCode installed and available as `opencode` on `PATH` (DeepSeek recommends
-  version 1.14.24 or newer for V4 integration)
-- an OpenRouter API key; the same `OPENROUTER_API_KEY` can authenticate direct
-  calls and OpenCode's built-in OpenRouter provider
-
-Create the environment:
+Requirements: Python 3.14, the OpenCode CLI available as `opencode`, and an
+OpenRouter API key. Both direct model calls and OpenCode sessions use OpenRouter.
 
 ```bash
 python3.14 -m venv env
@@ -73,761 +42,230 @@ python -m pip install -r requirements.txt
 cp .env.example .env
 ```
 
-Configure `.env` for OpenRouter and OpenCode:
+Set `OPENROUTER_API_KEY` in `.env`. The main model settings are:
 
-```dotenv
-LLM_PROVIDER=openrouter
-OPENROUTER_API_KEY=...
-OPENROUTER_MODEL=deepseek/deepseek-v4-flash
-OPENROUTER_GROUND_TRUTH_MODEL=openai/gpt-5.4
-OPENROUTER_TEMPLATE_INFERENCE_MODEL=openai/gpt-5.4
-OPENROUTER_GROUND_TRUTH_MAX_TOKENS=128000
-OPENROUTER_REASONING_EFFORT=high
-OPENROUTER_TEMPLATE_INFERENCE_REASONING_EFFORT=low
-
-OPENCODE_MODEL=openrouter/deepseek/deepseek-v4-flash
-OPENCODE_EASY_MODEL=openrouter/deepseek/deepseek-v4-flash
-OPENCODE_HARD_MODEL=openrouter/deepseek/deepseek-v4-pro
-```
-
-Direct OpenRouter calls use catalog slugs such as
-`deepseek/deepseek-v4-flash`. OpenCode model references add OpenCode's provider
-prefix, producing `openrouter/deepseek/deepseek-v4-flash`. To benchmark one
-model everywhere, set the direct-call and OpenCode model variables to the
-corresponding Flash or Pro ID. Held-out ground truth defaults separately to
-`openai/gpt-5.4`. Never commit `.env`.
-
-DeepSeek V4.1 Flash is available as `deepseek/deepseek-v4.1-flash` for direct
-OpenRouter calls and CLI flags, or
-`openrouter/deepseek/deepseek-v4.1-flash` in OpenCode environment variables.
-It is included in the dashboard's easy, hard, single-model, template-model, and reference-model
-selectors; the existing defaults are unchanged.
-
-Template inference retries an output-length failure within its three-attempt
-limit. DeepSeek retries disable reasoning; other models retry with minimal
-reasoning. All selected training pages remain in the prompt, and failed-call
-tokens are included in the phase usage if it recovers. The cost entry records
-`length_failures` and `recovery_reasoning`, so reasoning-mode changes are visible
-when comparing experiments. Non-thinking recovery can affect template quality.
-To start DeepSeek template inference without reasoning, set
-`OPENROUTER_TEMPLATE_INFERENCE_REASONING_EFFORT=none` (only for models that support
-disabling reasoning). Alternatively, select GPT-5.4 in the template-model
-selector while keeping DeepSeek for generation. `reasoning.exclude` only hides
-reasoning text; it does not cap reasoning tokens.
-
-Authenticate OpenCode through `OPENROUTER_API_KEY`, or run `/connect` in the
-OpenCode TUI and choose OpenRouter. The repository's `opencode.json` registers
-the DeepSeek V4/V4.1, GLM 5.3 Flash, Qwen3.8 Flash, and paid/free Qwen3.8 27B
-targets; use `/models` to verify the available IDs.
-
-TWIX sets OpenCode's per-response output allowance to `131072` tokens by default,
-including reasoning; OpenCode clamps it to the selected model's output limit.
-Set `OPENCODE_MAX_OUTPUT_TOKENS` to a positive integer to override it. This uses
-OpenCode's `OPENCODE_EXPERIMENTAL_OUTPUT_TOKEN_MAX` runtime setting. Qwen3.8 27B
-(paid/free) uses `reasoning.effort=low` in `opencode.json`; Qwen3.8 Flash uses a
-`16384`-token reasoning budget. The 27B effort setting is provider-controlled,
-not a guaranteed hard reasoning cap. A final OpenCode step ending with `length`
-is treated as budget exhaustion even when the CLI exits zero. Separator and
-extractor retries receive this explanation so the next attempt can prioritize
-writing and validating its script. This feedback arrives after truncation,
-not during the running response.
-
-## Quick start
-
-Run on any PDF path:
-
-```bash
-python run.py path/to/document.pdf
-```
-
-Direct inputs write to `outputs/<pdf-stem>/`. Override that location with:
-
-```bash
-python run.py path/to/document.pdf --out-dir artifacts/document-a
-```
-
-Run a train/test evaluation and enable repair when train accuracy is below 0.9:
-
-```bash
-python run.py path/to/document.pdf \
-  --eval \
-  --pages 5 \
-  --train-threshold 0.9 \
-  --train-max-retries 3
-```
-
-For the repository's benchmark layout, a dataset name is shorthand for
-`data/<name>/<name>.pdf`, and artifacts remain in `data/<name>/`:
-
-```bash
-python run.py id_04 --eval --pages 5
-```
-
-Run `python run.py --help` for the complete interface. Important options are:
-
-| Option | Meaning |
+| Setting | Role |
 | --- | --- |
-| `--pages N` | Minimum train pages, subject to the cap; initial pages and cluster samples may add more; default `3` |
-| `--max-train-pages N` | Optional hard cap on train pages, overriding the minimum and initial-page count; default uncapped |
-| `--first-train-pages N` | Initial structured pages kept for block order before cluster sampling; default `3`, `0` disables |
-| `--start-page N` | Use a fixed physical first record page and skip detection |
-| `--eval` / `--no-eval` | Final independent test evaluation is enabled by default; `--no-eval` disables it |
-| `--eval-pages N` | Number of disjoint evaluation pages sampled across the remaining document; default `20` |
-| `--holdout-pages N` | Hide optional train pages from script generation, while preserving first/cluster pages for block samples; default `0` (off) |
-| `--easy-model MODEL` | Override the `.env` easy OpenCode model for this run |
-| `--hard-model MODEL` | Override the `.env` model used for block separation, difficulty routing, hard extractors, and repair |
-| `--template-model MODEL` | Use this direct OpenRouter model for template inference only; default GPT-5.4 |
-| `--reference-model MODEL` | Use this direct OpenRouter model for train ground truth, and test ground truth unless manual paste is selected; default GPT-5.4 |
-| `--manual-ground-truth` | With `--eval`, defer final test ground truth for UI paste; train ground truth still uses the reference model |
-| `--no-routing` | Skip difficulty classification and use the easy model throughout every non-reference phase |
-| `--train-threshold F` | Repair below this train accuracy; `0` disables repair |
-| `--train-max-retries N` | Maximum OpenCode repair rounds; default `3` |
-| `--gt-test-window N` | Pages per test-ground-truth call; default `20` |
-| `--reuse-ocr` | Reuse the existing full OCR CSV instead of regenerating it |
-| `--group-rows` | Experimental row-level OCR instead of word-level OCR |
-| `--caveman` | Prefix OpenCode prompts with `/caveman full` |
-| `--save-log` | Save OpenCode JSONL output and exact prompts for block separation, extraction, and repair under `debug/` |
+| `OPENROUTER_MODEL` | Direct operational calls, such as front-matter detection |
+| `OPENROUTER_TEMPLATE_INFERENCE_MODEL` | Template inference; defaults to GPT-5.4 |
+| `OPENCODE_EASY_MODEL` / `OPENCODE_HARD_MODEL` | Code generation and difficulty routing |
+| `OPENROUTER_GROUND_TRUTH_MODEL` | Training and held-out reference generation; defaults to GPT-5.4 |
 
-The deterministic scan covers up to 500 structured-data pages, starting at the
-detected or supplied start page. It clusters tables and KV groups independently.
-The first three pages (configurable with `--first-train-pages`) establish block
-order; additional pages cover every detected cluster, reusing a page when it represents both a table and a KV
-cluster. With `--max-train-pages`, initial pages take priority within the cap,
-then the remaining slots greedily maximize joint cluster coverage. The cap
-overrides `--pages` and `--first-train-pages`; uncovered clusters are listed in
-the selection artifact, metadata, logs, and dashboard. For example,
-`python run.py document.pdf --pages 5 --max-train-pages 8 --first-train-pages 2`
-keeps the first two structured pages and adds cluster samples and any minimum-page
-fillers, using at most eight training pages. Evaluation always reserves at least
-one disjoint source page. The train and test PDFs contain explicitly selected
-source pages, each
-remapped to split-local page numbers. Test pages are disjoint and sampled across
-the remaining document rather than taken as the next 20 pages. The mapping and
-cluster coverage are saved under `artifacts/clustering/selection.json` and in
-`metadata.json`. Cluster pages remain visible to generated block separation and
-block-sample instructions even when `--holdout-pages` is set.
+Direct-call model IDs use `publisher/model`; OpenCode IDs use
+`openrouter/publisher/model`. See [.env.example](.env.example) for the remaining
+settings. Keep credentials in the ignored `.env` file.
 
-Model flags accept either the direct OpenRouter slug (for example
-`z-ai/glm-5.3-flash`) or the OpenCode-prefixed form
-(`openrouter/z-ai/glm-5.3-flash`); TWIX normalizes it for each client. With
-`--no-routing`, `--easy-model` is the single operational model for direct
-reasoning and all OpenCode generation/repair. `--template-model` and
-`--reference-model` remain separate. Without per-run flags, the corresponding
-`.env` values are used.
+## Run the system
 
-## HTTP extraction API
-
-Start the standalone API from the repository root:
+### Local dashboard
 
 ```bash
-env/bin/python api.py --host 127.0.0.1 --port 8000
+python UI/app.py
 ```
 
-Submit a PDF as the raw request body. The API starts an asynchronous extraction
-job and returns HTTP 202 with the job ID plus status and result URLs:
+Open [http://127.0.0.1:8765](http://127.0.0.1:8765), upload a PDF, and choose the
+page budget and models. The dashboard exposes clustering, the template, block
+and record overlays, coverage diagnostics, extracted JSON, and evaluation.
+Runs are saved under `UI/runs/`. See [UI/README.md](UI/README.md) for manual
+reference submission, model selection, and resuming failed runs.
+
+### Command line
+
+Build and evaluate an extractor for one included document:
 
 ```bash
-curl --request POST \
-  --header "Content-Type: application/pdf" \
-  --header "X-Filename: document.pdf" \
-  --data-binary @document.pdf \
-  "http://127.0.0.1:8000/v1/extractions?pages=3&templateModel=z-ai/glm-5.3-flash"
+python run.py dataset/id_11.pdf --out-dir outputs/id_11 --pages 5
 ```
 
-Poll the pipeline state and current phase:
+Or supply any PDF from another template family:
 
 ```bash
-curl http://127.0.0.1:8000/v1/extractions/<job-id>/status
+python run.py path/to/document.pdf --out-dir outputs/my-document
 ```
 
-When `status` is `completed`, fetch the extraction:
+Test evaluation is enabled by default. It runs on up to 20 disjoint pages
+spread across the remaining document. Training evaluation always runs,
+including with `--no-eval`; reference generation therefore still needs model
+access in that mode.
 
-```bash
-curl http://127.0.0.1:8000/v1/extractions/<job-id>/result
-```
+| Option | Effect |
+| --- | --- |
+| `--pages N` | Minimum number of training pages; default 3 |
+| `--max-train-pages N` | Hard training-page cap; may leave detected clusters uncovered |
+| `--first-train-pages N` | Initial structured pages retained for block order; default 3 |
+| `--start-page N` | Supply the first structured page and skip its detection |
+| `--eval-pages N` | Maximum held-out evaluation pages; default 20 |
+| `--no-eval` | Skip the independent test split and final test evaluation |
+| `--no-routing` | Use the easy model for all non-reference phases except the separately selected template model |
+| `--template-model MODEL` / `--reference-model MODEL` | Override template and reference models for this run |
+| `--train-threshold 0.9 --train-max-retries 3` | Enable bounded repair when training accuracy is too low or output is degenerate |
+| `--save-log` | Retain detailed generation logs under `debug/` |
 
-The result's `data` field contains the logical records from `grouped.json`;
-`blocks` preserves the flat page-local `extracted.json` representation. The
-response also includes the inferred `template` and `pipeline_health.json`.
-`sourceStartPage` identifies which physical source page maps to local page 1 in
-the returned records.
-Before completion the result endpoint returns HTTP 202 and `Retry-After: 2`.
-Failed or interrupted jobs return HTTP 409 with their final status and error.
+Repair is disabled by default (`--train-threshold 0`). Run
+`python run.py --help` for all options, including per-run easy/hard models,
+training holdout, and manual test ground truth.
 
-Upload options are query parameters: `pages`, `maxTrainPages` (omit or leave empty for no cap),
-`firstTrainPages` (default `3`, `0` disables initial pages), `startPage`, `trainThreshold`,
-`trainMaxRetries`, `easyModel`, `hardModel`, `referenceModel`, `noRouting`,
-`singleModel`, and `groupRows`. API jobs run `run.py --no-eval`, so extraction
-does not create an independent test split. After training and train evaluation,
-the service applies the finished portable pipeline to every structured page in
-the uploaded PDF and returns that full-document extraction. Jobs and artifacts
-are persisted under `api_runs/`; jobs in progress become `interrupted` if the
-API process restarts.
+## Intermediate results
 
-The service allows two concurrent jobs by default; use `--workers N` to change
-the limit. It binds only to loopback by default and has no authentication. Put
-it behind an authenticated reverse proxy before exposing it to a network,
-because uploaded PDFs and generated artifacts may be sensitive.
+The following figures are extracted from the report. They show the evidence
+and artifacts produced during construction.
 
-## Complete orchestration pipeline
+### Representative training pages
 
-The LangGraph state machine lives in `src/agents/graph.py`.
+The deterministic scanner examines up to 500 source pages from the structured
+start. Table and key-value clustering run independently. Selection begins with
+the initial ordering pages and adds pages that cover previously unseen clusters.
+A hard page cap can limit that coverage. Each split uses local page numbers;
+the source-page mapping remains available in the saved selection.
 
-```mermaid
-flowchart TD
-    S(["Start"]) --> Q{"--start-page supplied?"}
-    Q -- No --> DB["Detect first structured page<br/>OCR-layout batches"]
-    Q -- Yes --> CL
-    DB --> CL["Cluster table and KV layouts<br/>select source pages"]
-    CL --> EC["Create sampled train/test environment<br/>remap split pages to 1..N"]
-    EC --> TI["Infer template + metadata<br/>template-model JSON"]
-    TI --> BS["Generate block_separation.py<br/>OpenCode"]
-    BS --> BSR["Run + validate block separation"]
-    BSR --> ART["Render block + record overlays<br/>artifacts/blocks/<br/>artifacts/record_separation/"]
-    ART --> SMP["Crop deterministic block samples"]
-    SMP --> ROUTE["Classify each block EASY/HARD<br/>parallel hard-model calls"]
-    ROUTE --> EXT["Generate one extractor per detected node<br/>parallel OpenCode sessions"]
-    EXT --> PACK["Assemble portable pipeline/"]
-    PACK --> TE["Run pipeline on all train pages<br/>generate/reuse train GT + score"]
-    TE --> GATE{"Threshold met and<br/>health non-degenerate?"}
-    GATE -- "No, retries remain" --> REPAIR["OpenCode repairs generated scripts"]
-    REPAIR --> TE
-    GATE -- "Yes / disabled / exhausted" --> RUN["Run pipeline on test PDF<br/>or train PDF without --eval"]
-    RUN --> EVALQ{"--eval?"}
-    EVALQ -- No --> META["Write metadata.json"]
-    EVALQ -- Yes --> MANUALQ{"Manual test ground truth?"}
-    MANUALQ -- No --> GT["Generate test ground truth"]
-    MANUALQ -- Yes --> WAIT["Await pasted JSON in UI"]
-    WAIT --> SCORE
-    GT --> SCORE["Align and score"]
-    SCORE --> META
-    META --> END(["Done"])
-```
+![Table-layout clusters and their representative source pages](docs/images/page-clustering.png)
 
-### 1. OCR and front-matter detection
+*Report Figure 2.2. Document `id_23` has three table-layout clusters across
+23 pages. Stars mark representatives; the lower panels show source pages 8,
+13, and 20 with table borders in red and header evidence in blue.*
 
-`run.py` extracts every word with:
+Inspect `artifacts/clustering/selection.json` for the train/test page lists,
+cluster coverage, and any uncovered clusters. The clustering directory also
+contains reports and representative overlays.
+
+### Template and alternative layouts
+
+The inferred `template.json` defines physical table/KV nodes and their exact
+field names. Virtual XOR nodes represent mutually exclusive layouts occupying
+the same logical slot. They group alternatives and do not have extractors.
+
+![Ordered physical template nodes and an XOR slot containing alternative tables](docs/images/template-xor.png)
+
+*Report Figure 2.4. `id_11` has four ordered physical blocks. `id_23` has a
+key-value section followed by a choice among three table schemas.*
+
+![Source excerpts corresponding to the physical nodes and alternative schemas](docs/images/layout-variants.png)
+
+*Report Figure 2.5. The source excerpts expose the header and unit differences
+that distinguish the three alternative tables.*
+
+### Physical blocks and individual extractors
+
+The generated separator assigns source words to page-local physical blocks.
+Each physical template node receives its own extractor, trained on isolated
+samples with coordinates relative to the block's top-left corner. Generation
+attempts are executed and validated before collection into the bundle.
+
+![One complaint record separated into four independently extracted blocks](docs/images/block-decomposition.png)
+
+*Report Figure 2.6. One `id_11` record separates into complaint overview,
+complainant details, complaint details, and officer details. Each region maps
+to a different extractor.*
+
+Inspect `artifacts/blocks/` and `artifacts/record_separation/` for training-page
+overlays. In evaluation mode, the matching held-out overlays are under
+`artifacts/test_blocks/` and `artifacts/test_record_separation/`.
+Block crops and their coordinate JSON are stored under the training workspace's
+`block_samples/` directory.
+
+### Coverage and missed content
+
+After the separator passes validation, sonar checks its OCR-word coverage on
+up to 100 source pages. Coverage drops identify pages worth inspecting.
+
+![Per-page word coverage with sharp drops that reveal potentially missed structures](docs/images/sonar-coverage.png)
+
+*Report Figure 2.7. On source page 90 of `id_22`, the separator assigns 83 of
+292 words to blocks (28.4%), against a scan mean of 82.3%. Inspection finds a
+table schema absent from the inferred template.*
+
+Inspect `artifacts/excluded_blocks_sonar/sonar.json` and its coverage plot.
+Coverage measures assigned words, not extraction accuracy. Sonar directs
+inspection; it does not automatically expand the template or repair the code.
+
+### Validation and structured output
+
+Training evaluation runs the assembled pipeline on all training pages.
+`pipeline/train_eval/eval.txt` describes mismatches; `pipeline_health.json`
+flags empty extraction, poor page coverage, or cross-page blocks. When repair
+is enabled, those diagnostics guide another bounded code-generation attempt.
+Held-out evaluation does not feed this loop.
+
+The runtime first writes flat physical blocks to `extracted.json`. The shared
+deterministic grouper then traverses template nodes to assemble logical records
+in `grouped.json`. Cross-page continuation blocks retain their physical identity.
+
+## Output files and reuse
+
+A run under `outputs/id_11/` produces this main structure. Some files depend on
+evaluation being enabled or on the selected ground-truth mode.
 
 ```text
-id, page, x0, top, x1, bottom, text
-```
-
-Word IDs are unique across the source document. Physical page numbers start at
-1. OCR is regenerated by default for reproducibility.
-
-Unless `--start-page` is supplied, `detect_beginning.py` sends chronological
-batches of six OCR layouts to the primary direct model and asks for the first genuine
-structured-record page. Covers, tables of contents, indexes, and narrative
-introductions are excluded. If no candidate is found, the conservative fallback
-is physical page 1.
-
-### 2. Train/test and holdout creation
-
-`environment_creation.py` crops both the PDF and OCR CSV from the detected start
-page. Every split is renumbered locally from page 1, so front matter never
-reaches the inferred or generated pipeline.
-
-```mermaid
-flowchart LR
-    A["Physical PDF pages"] --> B["Skip front matter"]
-    B --> C["Train split"]
-    B --> D["Test split<br/>only with --eval"]
-    C --> E["Build pages"]
-    C --> F["Held-out train pages"]
-    E --> G["Generate separation and extraction code"]
-    E --> H["Train evaluation"]
-    F --> H
-    D --> I["Final extraction + test evaluation"]
-```
-
-The train holdout is disabled by default. Set `--holdout-pages N` to reserve
-trailing train pages for the train-evaluation gate; at least two build pages
-are always retained. Template inference sees all train-page OCR layouts; the holdout
-specifically limits the OCR used to generate and sample the executable scripts.
-
-### 3. Template inference
-
-The selected reference model classifies structured regions as tables or key-value blocks,
-orders them top to bottom, identifies optional/nested patterns, describes block
-complexity, and emits regexes for fixed document/record metadata.
-
-A node looks like:
-
-```json
-{
-  "type": "table",
-  "fields": ["Period", "Exports - Total", "Imports - Total"],
-  "bid": [0],
-  "child": -1,
-  "node_id": 0,
-  "complexity": {
-    "same_row_structure": true,
-    "nested": false
-  }
-}
-```
-
-`template_inference.py` validates required keys, rejects empty fields, asks once
-for duplicate field-name correction, and deterministically suffixes persistent
-duplicates. Identical normalized field signatures are flagged because generated
-separation code cannot reliably distinguish them by labels alone.
-
-### 4. Generated separation code
-
-OpenCode creates `block_separation.py`. It detects each node's header band,
-removes only regex-confirmed page-frame metadata, assigns following content, and
-emits page-local continuation blocks when a table flows onto another page.
-
-Each generation phase runs its script immediately and validates its JSON. A
-failure is returned to OpenCode for up to three attempts. Generated-script runs
-time out after 300 seconds.
-
-After block separation succeeds, the artifact node reapplies the generated
-separator to the complete train PDF and `inspect_results/viz_blocks.py` renders every train
-page under `<output>/artifacts/blocks/`. `inspect_results/viz_record_separation.py` applies the
-deterministic node-sequence grouper to the same block output and renders record
-envelopes under `<output>/artifacts/record_separation/`. Eval runs also render
-the learned separator on held-out pages under `<output>/artifacts/test_blocks/`
-and `<output>/artifacts/test_record_separation/`; these images do not feed back
-into training. Re-running replaces the generated page images in those folders.
-
-The key identity rules are:
-
-```text
-block_id = <node_id>_<instance-on-page>
-template_id = block_id.rsplit("_", 1)[0]
-uid = globally unique physical-block identifier
-```
-
-A block may contain words only from its own page. Multi-page tables are emitted
-as separate physical continuation blocks and are not joined afterward.
-
-### 5. Block samples, routing, and extractors
-
-Up to ten deterministic samples per detected node are cropped from the train
-PDF. Each sample has a PNG and a JSON file whose coordinates are relative to
-the crop.
-
-Independent hard-model calls over the samples' OCR geometry classify each node:
-
-- `EASY` when layout is fixed and values are single-line;
-- `HARD` when samples show variable/repeating structure or multi-line values.
-
-The configured easy/hard OpenCode model then writes
-`extraction_scripts/<node_id>.py`. These sessions run with at most two OpenCode
-processes globally across concurrent TWIX UI, CLI, and batch runs. Every attempt
-uses an isolated temporary OpenCode database, so concurrent sessions do not
-contend for OpenCode's shared SQLite state. SQLite-lock diagnostics are treated
-as retryable failures even if the OpenCode process exits successfully.
-
-Extractor generation gets up to three attempts. TWIX removes the target before
-each attempt so a script left by an earlier run cannot be accepted, and feeds
-the failure reason back into the next prompt. The generated file must parse and
-contain exactly one synchronous, top-level function with one positional
-argument:
-
-```python
-def extract(block: dict) -> dict:
-    ...
-```
-
-Missing, syntactically invalid, or contract-invalid files fail the attempt.
-Token usage is accumulated across successful and failed attempts. The result
-preserves the template's exact field names and uses `type`, `block_id`, and
-`data` keys.
-
-### 6. Packaging and train repair
-
-The collector builds a self-contained directory containing the generated
-scripts, `src/pipeline.py`, and its minimal requirements file.
-
-The portable runner is always executed on the complete train PDF and scored
-against five-page-window ground truth. This train evaluation happens even when
-`--train-threshold` is zero; zero disables only automatic repair.
-
-When repair is enabled, the gate fails if accuracy is below the threshold or
-the health report is degenerate. OpenCode receives `train_eval/eval.txt` plus
-health violations and may edit only:
-
-- `block_separation.py`; and
-- `extraction_scripts/*.py`.
-
-The train ground truth is reused across repair attempts, while pipeline output,
-health, score, and accuracy history are regenerated.
-
-## Standalone extraction pipeline
-
-The generated bundle can be copied away from this repository:
-
-```bash
-cd <output>/pipeline
-python -m pip install -r requirements.txt
-python pipeline.py another-document.pdf --out-dir extracted-run
-```
-
-The new PDF must belong to the same template family.
-
-```mermaid
-flowchart LR
-    PDF["New PDF"] --> OCR["pdfplumber OCR"]
-    OCR --> BLK["block_separation.py"]
-    BLK --> REL["Translate each block to local coordinates"]
-    REL --> EX["extraction_scripts/<node_id>.py"]
-    EX --> RAW["extracted.json"]
-    RAW --> REC["Deterministic template-node traversal"]
-    REC --> JSON["grouped.json"]
-    EX --> HEALTH["pipeline_health.json"]
-```
-
-The runtime writes:
-
-- `ocr.csv` — runtime OCR words;
-- `block_separation.json` — physical page-local blocks;
-- `extracted.json` — lossless flat page-local block output;
-- `grouped.json` — logical records inferred deterministically from the node
-  sequence and bundled `template.json`; and
-- `pipeline_health.json` — silent-failure and invariants report.
-
-The grouper closes a record when the completed template restarts or when a
-non-repeatable node is visited twice before completion. Nodes marked
-`complexity.repeated` (and nodes with multiple `bid` positions) may repeat
-inside a record. Adjacent same-table blocks across consecutive pages are kept
-in the same record as page-local continuations. Physical blocks are never
-discarded or merged.
-
-Health is marked degenerate if there are no extracted blocks, blocks appear on
-fewer than half of input pages, or any block contains foreign-page words.
-
-## Output data contracts
-
-Block separation:
-
-```json
-{
-  "pages": [
-    {
-      "page": 1,
-      "blocks": [
-        {
-          "uid": 0,
-          "block_id": "2_0",
-          "type": "table",
-          "words": []
-        }
-      ]
-    }
-  ]
-}
-```
-
-Final extracted blocks:
-
-```json
-[
-  {
-    "type": "kv",
-    "block_id": "0_0",
-    "data": {"Invoice #": "A-104", "Date": "2026-08-13"},
-    "page": 1,
-    "uid": 0
-  },
-  {
-    "type": "table",
-    "block_id": "1_0",
-    "data": [
-      {"Item": "Service", "Amount": "100.00"}
-    ],
-    "page": 1,
-    "uid": 1
-  }
-]
-```
-
-Deterministically grouped records (`grouped.json`):
-
-```json
-[
-  {
-    "record_id": "0",
-    "data": [
-      {"type": "kv", "block_id": "0_0", "data": {}, "page": 1, "uid": 0},
-      {"type": "table", "block_id": "1_0", "data": [], "page": 1, "uid": 1}
-    ]
-  }
-]
-```
-
-## Ground truth generation
-
-Train and test use the shared generator in `src/agents/gt_common.py`. Train
-ground truth sends five-page layout-preserving OCR windows to the selected
-reference model through OpenRouter. Final held-out/test ground truth sends
-rendered page images plus exact OCR text to that same model. Calls are parallel,
-and results are restored to document order. The model returns flat, page-local
-blocks; the same deterministic template-node traversal then writes
-`ground_truth_grouped.json` for record-aware scoring. Same-node physical blocks
-are never merged. The default
-128,000-token output cap matches GPT-5.4 and the bundled Flash alternatives;
-OpenRouter requires the API key's credit limit to cover that maximum. Override
-it with `OPENROUTER_GROUND_TRUTH_MAX_TOKENS` when needed.
-
-With `--manual-ground-truth --eval`, the graph stops after held-out extraction
-and saves metadata marked as awaiting manual test ground truth. The UI accepts
-the generator's `{"blocks": [...]}` JSON, validates it against the inferred
-template and local test-page numbers, then groups and scores it without a test
-ground-truth OpenRouter call. The bundled `$twix-ground-truth` skill prepares
-the same prompt, page images, and exact OCR for an awaiting UI run. Train
-ground truth is still generated by the configured reference model.
-
-```mermaid
-flowchart TD
-    P["PDF + OCR + template"] --> W["Split pages into windows"]
-    W --> C1["Selected reference model<br/>test calls also include page images"]
-    W --> C2["Parallel window call"]
-    W --> CN["Parallel window call N"]
-    C1 --> ORDER["Restore window order"]
-    C2 --> ORDER
-    CN --> ORDER
-    ORDER --> COVER{"Enough extracted text?"}
-    COVER -- No --> RETRY["Retry deficient window once"]
-    COVER -- Yes --> EMPTY{"All blocks empty and<br/>window > 5?"}
-    RETRY --> EMPTY
-    EMPTY -- Yes --> SMALL["Retry whole document with window 5"]
-    EMPTY -- No --> GT["ground_truth.json"]
-    SMALL --> GT
-    GT --> GROUP["Deterministic record grouping"]
-    GROUP --> GTG["ground_truth_grouped.json"]
-```
-
-Suspiciously low content coverage causes one window retry. A completely empty
-large-window result retries the entire input with five-page windows; if that is
-also empty, the run fails instead of producing a misleading perfect/zero
-comparison.
-
-Ground truth is still model-generated. It is a practical experimental reference,
-not a substitute for human annotation.
-
-## Evaluation
-
-The evaluator supports grouped records, legacy page/block ground truth, flat
-`extracted.json`, and the internal records/nodes shape. Normal pipeline scoring
-uses `grouped.json` and `ground_truth_grouped.json`. Duplicate JSON keys are
-preserved during loading as `key`, `key#2`, and so on.
-
-```mermaid
-flowchart LR
-    G["Ground truth"] --> CONV["Convert to records + nodes"]
-    C["Candidate"] --> CONV
-    CONV --> RA["Hungarian record alignment"]
-    RA --> NA["Two-pass Hungarian node alignment"]
-    NA --> CT["Content scoring"]
-    NA --> ST["Structure scoring"]
-    CT --> OUT["eval.json + eval.txt"]
-    ST --> OUT
-```
-
-Record similarity combines node-content overlap, type multiset, record size,
-and order. Within matched records, node similarity combines type, content, and
-parent agreement.
-
-Table content scoring uses:
-
-- multiset header F1 with a longest-common-subsequence order penalty;
-- order-preserving row alignment, using exact row anchors and banded
-  Needleman-Wunsch for gaps; and
-- cell-level F1, including missing/extra rows and wrong-column diagnostics.
-
-Key-value blocks are scored by normalized key/value F1. Missing and extra nodes
-also contribute zero-valued content entries, so headline content does not ignore
-failed extraction.
-
-The configured headline weights are:
-
-```text
-accuracy = 0.40 * typed_node_F1
-         + 0.40 * size_weighted_content
-         + 0.20 * parent_edge_accuracy
-```
-
-The current flat artifacts are partitioned into page-level evaluation records;
-their nodes have no parent edges.
-For these normal pipeline runs, structure is not applicable and its weight is
-renormalized away:
-
-```text
-accuracy = 0.50 * typed_node_F1
-         + 0.50 * size_weighted_content
-```
-
-`RecordMatchF1`, untyped node F1, path accuracy, and note agreement are reported
-diagnostics; they do not directly enter the headline value. Evaluation reports
-use a fixed `0.9` threshold for PASS/BORDERLINE/FAIL. The repair gate instead
-uses `--train-threshold`, whose default is `0.0` (disabled); changing the repair
-threshold does not change the report threshold. Neither threshold changes the
-score formula.
-
-`eval.json` is machine-readable. `eval.txt` groups actionable reason codes such
-as missing records, extra nodes, row loss, cell differences, wrong-column
-mapping, and parent mismatches; this report is also the input to repair.
-
-## Artifact layout
-
-```text
-<output>/
-├── ocr_extraction_full.csv          # source-document OCR
-├── template.json                    # inferred schema + metadata regexes
-├── metadata.json                    # provenance, config, models, costs, scores
-├── metadata/
-│   └── cost.json                    # generation-time phase report
+outputs/id_11/
+├── template.json
+├── metadata.json
 ├── artifacts/
-│   ├── blocks/                      # annotated block-separation page PNGs
-│   ├── record_separation/           # deterministic train record overlays
-│   ├── test_blocks/                 # held-out block overlays (eval mode)
-│   └── test_record_separation/      # held-out record overlays (eval mode)
-├── debug/                           # optional partial OpenCode JSONL logs + prompts
-├── agent_space/
-│   ├── train/                       # eval mode: cropped train PDF/OCR/work files
-│   └── test/                        # eval mode: cropped test PDF/OCR
+│   ├── clustering/
+│   ├── blocks/
+│   ├── record_separation/
+│   ├── excluded_blocks_sonar/
+│   ├── test_blocks/
+│   └── test_record_separation/
+├── agent_space/                   # sampled PDFs, OCR, and generation samples
 └── pipeline/
-    ├── pipeline.py                  # standalone runtime
-    ├── record_grouping.py           # deterministic, reusable runtime logic
-    ├── requirements.txt             # only pdfplumber
-    ├── template.json                # inferred template used at runtime
-    ├── block_separation.py          # generated
-    ├── extraction_scripts/          # generated, one file per detected node
-    ├── ocr.csv
-    ├── block_separation.json
-    ├── extracted.json
-    ├── grouped.json
+    ├── pipeline.py
+    ├── record_grouping.py
+    ├── requirements.txt
+    ├── template.json
+    ├── block_separation.py
+    ├── extraction_scripts/
+    ├── extracted.json             # page-local physical blocks
+    ├── grouped.json               # logical records
     ├── pipeline_health.json
     ├── train_eval/
-    │   ├── extracted.json
-    │   ├── grouped.json
-    │   ├── ground_truth.json
-    │   ├── ground_truth_grouped.json
-    │   ├── eval.json
-    │   ├── eval.txt
-    │   ├── eval_history.json
-    │   └── pipeline_health.json
-    ├── ground_truth.json            # test eval only
-    ├── ground_truth_grouped.json    # test eval only
-    ├── eval.json                    # test eval only
-    └── eval.txt                     # test eval only
+    ├── ground_truth.json
+    ├── ground_truth_grouped.json
+    ├── eval.json
+    └── eval.txt
 ```
 
-In non-eval mode, `agent_space/` is an unsplit workspace rather than separate
-`train/` and `test/` directories.
-
-## Batch experiments
-
-The batch runner discovers folders containing `data/<name>/<name>.pdf`, launches
-isolated `run.py` subprocesses, forwards all normal run options, and shows a live
-terminal dashboard:
+Copy the complete `pipeline/` directory to reuse it independently of this
+repository. Install its requirements and process another PDF from the same
+family:
 
 ```bash
-python src/run_batch.py --jobs 2 --eval --pages 5 --train-threshold 0.9
-python src/run_batch.py id_02 id_49 --jobs 2 --eval
+python -m pip install -r outputs/id_11/pipeline/requirements.txt
+python outputs/id_11/pipeline/pipeline.py path/to/same-family.pdf \
+  --out-dir outputs/id_11/new-document
 ```
 
-Each job appends its complete output to `data/<name>/batch.log`. Ctrl-C terminates
-running children and reports cancelled jobs.
+This execution uses `pdfplumber` and generated Python code; it makes no model
+calls. A learned bundle targets one document family.
 
-## Re-evaluation and maintenance tools
+## Other entry points
 
-Re-score saved artifacts after evaluator changes, without model calls:
+| Entry point | Purpose |
+| --- | --- |
+| `python api.py --host 127.0.0.1 --port 8000` | Asynchronous PDF-upload API; see `python api.py --help` |
+| `python src/run_batch.py --help` | Batch runs over the legacy `data/<name>/<name>.pdf` layout |
+| `python rescore.py outputs --dry-run` | Preview rescoring saved artifacts without model calls |
+| `python -m inspect_results.viz_batch_results outputs` | Generate saved-run inspection plots |
+| `python -m inspect_results.single_eval --help` | Evaluate an existing learned pipeline on another PDF or page sample |
 
-```bash
-python rescore.py data --dry-run
-python rescore.py data
-python rescore.py data --doc id_04
-```
+## Repository layout and development
 
-`rescore.py` hashes `src/eval/*.py` into `eval_version`, rewrites reports, and
-patches train/test accuracy in metadata. Use `--dry-run` before rewriting
-historical experiments.
-
-Evaluate an existing generated pipeline on another PDF, optionally sampling
-pages for ground truth:
-
-```bash
-python single_eval.py path/to/new.pdf experiment_a --pages 20 --seed 7
-python single_eval.py path/to/new.pdf experiment_a --reuse
-```
-
-
-## Visual diagnostics
-
-```bash
-python -m inspect_results.viz_blocks id_04 1 2
-python -m inspect_results.viz_blocks id_04 path/to.pdf
-python -m inspect_results.viz_blocks id_04 --pdf-path path/to.pdf
-python -m inspect_results.viz_record_separation id_04 1 2
-python -m inspect_results.viz_record_separation id_04 --pdf-path path/to.pdf
-python -m inspect_results.viz_record_separation id_04 --pdf-path path/to.pdf --template-path data/id_04/template.json
-python -m inspect_results.viz_batch_results data
-```
-
-- `inspect_results/viz_blocks.py` runs `data/<name>/pipeline/block_separation.py` on the chosen
-  PDF, then draws colored detected-block bounds and lists detected block
-  IDs and types. Its current metadata lookup does not reliably display routing
-  models because routing is keyed by node ID while blocks use instance IDs.
-- `inspect_results/viz_record_separation.py` runs the same generated separator, groups its
-  document-order blocks with `src/record_grouping.py`, and draws one colored
-  record envelope per page while retaining each physical block outline. It is
-  also imported by the graph artifact phase through
-  `render_record_separation(...)`.
-- `inspect_results/viz_batch_results.py` creates accuracy, token/cost, phase, break-even, and
-  per-document charts under `data/results/`. Its reusable
-  `generate_document_results(document_dir, out_dir)` entry point renders the
-  same per-document report for a single completed run; the UI uses it to
-  populate `artifacts/stats/` and the final-results Stats tab.
-
-## Reproducibility and provenance
-
-- Python dependencies are pinned in `requirements.txt`.
-- OCR is regenerated by default.
-- Block sampling uses a deterministic seed derived from the document name.
-- `metadata.json` records the source SHA-256, detected start page, train/test
-  split sizes, requested page/holdout settings, repair threshold and retry
-  limit, test-ground-truth window, selected models, phase costs, repair history,
-  test health failures when degenerate, and train/test scores. It does not
-  currently record the resolved/clamped holdout size or the `--group-rows`,
-  `--reuse-ocr`, `--caveman`, and `--save-log` flags.
-- Generated scripts are retained, so extraction can be replayed without the
-  original model calls.
-- `--save-log` retains exact OpenCode streams and prompts for block separation,
-  extraction, and repair. Attempt-specific logs preserve partial stdout,
-  stderr, and token usage when a session times out.
-
-Remote DeepSeek and OpenCode outputs are not guaranteed to be byte-identical over
-time. Preserve the complete artifact directory when an experiment must be
-auditable.
-
-Evaluation semantics have evolved. Scores from different scorer versions may
-not be comparable even when their field names match. Re-score saved ground truth
-and candidate pairs with the current code before combining experiments.
-
-## Development checks
-
-The maintained implementation lives in `src/`. In particular,
-`src/clustering/` contains the deterministic table/KV page clustering,
-structure scanner, and PDF line detector used by training-page selection.
-`tests/` contains offline regressions for the maintained implementation.
-The visualizers in `inspect_results/` are also used by the pipeline and UI.
-
-Offline regressions:
+| Path | Contents |
+| --- | --- |
+| `dataset/` | The 23 thesis PDFs, named `id_01.pdf` through `id_23.pdf` |
+| `src/agents/` | LangGraph stages and shared state |
+| `src/clustering/` | Deterministic layout clustering, structure scanning, and line detection |
+| `src/prompts/`, `src/models/` | Generation contracts and model clients |
+| `src/pipeline.py`, `src/record_grouping.py` | Portable extraction and deterministic grouping |
+| `src/eval/` | Alignment, scoring, and reports |
+| `UI/` | Local dashboard |
+| `inspect_results/` | Visualization and standalone evaluation tools |
+| `tests/` | Offline regressions |
+| `docs/images/` | Methodology figures extracted from the project report |
+| `project_report.pdf` | Complete thesis |
 
 ```bash
 python -m unittest discover -s tests -v
-python -m compileall -q api.py run.py rescore.py single_eval.py src inspect_results
+python -m compileall -q api.py run.py rescore.py src inspect_results
 ```
 
-The test suite covers input resolution, page-remapped front-matter cropping,
-template validation, duplicate-key-safe JSON parsing, ground-truth empty-output
-fallback, page-locality health checks, batch command
-construction, and execution of a generated pipeline from a fresh directory.
-
-There is no configured linter. Keep new tests offline: they should not require
-the ignored `data/` corpus, credentials, live LLM output, or the OpenCode service.
-
-For deeper contributor guidance and cross-file invariants, see `AGENTS.md`.
+See [AGENTS.md](AGENTS.md) for contributor guidance and detailed runtime contracts.
