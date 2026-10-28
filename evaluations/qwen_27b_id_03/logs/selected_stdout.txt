@@ -1,1 +1,0 @@
-extracted 81 claims from 20 pages -> /Users/riccardo/tesi/code/twix_2/evaluations/qwen_27b_id_03/runs/selected_raw.json

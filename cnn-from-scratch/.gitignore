@@ -1,8 +1,0 @@
-runs/
-.venv/
-__pycache__/
-*.pyc
-dataset/
-dataset_full/
-review/
-review_full/
