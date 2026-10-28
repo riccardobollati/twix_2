@@ -1,0 +1,2173 @@
+{
+  "doc_name": "id_05 Qwen 27B baseline pages 6-20",
+  "reference": "model_reference",
+  "candidate": "Frozen baseline extractor with evaluation-only adapter",
+  "reference_model": "Codex local PDF image/text review",
+  "candidate_model": null,
+  "exact_match": false,
+  "accuracy": 0.999107,
+  "components": {
+    "RecordMatchF1": {
+      "typed_f1": 1.0,
+      "precision": 1.0,
+      "recall": 1.0
+    },
+    "NodeMatchF1": {
+      "typed_f1": 1.0,
+      "untyped_f1": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "untyped_precision": 1.0,
+      "untyped_recall": 1.0
+    },
+    "ContentScore": {
+      "overall": 0.998213,
+      "macro": 0.998214,
+      "by_type": {
+        "table": 0.997619,
+        "key_value": 1.0,
+        "metadata": null
+      }
+    },
+    "StructureScore": {
+      "edge_accuracy": null,
+      "path_accuracy": null,
+      "note_agreement_rate": null
+    }
+  },
+  "weights": {
+    "NodeMatchF1": 0.4,
+    "ContentScore": 0.4,
+    "StructureScore": 0.2
+  },
+  "threshold": 0.9,
+  "record_alignment": [
+    {
+      "gold_record_id": "0",
+      "candidate_record_id": "page_6_record_0",
+      "record_sim": 0.9
+    },
+    {
+      "gold_record_id": "1",
+      "candidate_record_id": "page_6_record_1",
+      "record_sim": 0.9
+    },
+    {
+      "gold_record_id": "10",
+      "candidate_record_id": "page_9_record_10",
+      "record_sim": 0.9
+    },
+    {
+      "gold_record_id": "11",
+      "candidate_record_id": "page_9_record_11",
+      "record_sim": 0.9
+    },
+    {
+      "gold_record_id": "12",
+      "candidate_record_id": "page_9_record_12",
+      "record_sim": 0.8875
+    },
+    {
+      "gold_record_id": "13",
+      "candidate_record_id": "page_10_record_13",
+      "record_sim": 0.9
+    },
+    {
+      "gold_record_id": "14",
+      "candidate_record_id": "page_10_record_14",
+      "record_sim": 0.9
+    },
+    {
+      "gold_record_id": "15",
+      "candidate_record_id": "page_10_record_15",
+      "record_sim": 0.9
+    },
+    {
+      "gold_record_id": "16",
+      "candidate_record_id": "page_10_record_16",
+      "record_sim": 0.9
+    },
+    {
+      "gold_record_id": "17",
+      "candidate_record_id": "page_11_record_17",
+      "record_sim": 0.9
+    },
+    {
+      "gold_record_id": "18",
+      "candidate_record_id": "page_11_record_18",
+      "record_sim": 0.9
+    },
+    {
+      "gold_record_id": "19",
+      "candidate_record_id": "page_11_record_19",
+      "record_sim": 0.9
+    },
+    {
+      "gold_record_id": "2",
+      "candidate_record_id": "page_6_record_2",
+      "record_sim": 0.9
+    },
+    {
+      "gold_record_id": "20",
+      "candidate_record_id": "page_11_record_20",
+      "record_sim": 0.9
+    },
+    {
+      "gold_record_id": "21",
+      "candidate_record_id": "page_12_record_21",
+      "record_sim": 0.9
+    },
+    {
+      "gold_record_id": "22",
+      "candidate_record_id": "page_12_record_22",
+      "record_sim": 0.9
+    },
+    {
+      "gold_record_id": "23",
+      "candidate_record_id": "page_12_record_23",
+      "record_sim": 0.9
+    },
+    {
+      "gold_record_id": "24",
+      "candidate_record_id": "page_13_record_24",
+      "record_sim": 0.9
+    },
+    {
+      "gold_record_id": "25",
+      "candidate_record_id": "page_13_record_25",
+      "record_sim": 0.9
+    },
+    {
+      "gold_record_id": "26",
+      "candidate_record_id": "page_13_record_26",
+      "record_sim": 0.9
+    },
+    {
+      "gold_record_id": "27",
+      "candidate_record_id": "page_13_record_27",
+      "record_sim": 0.9
+    },
+    {
+      "gold_record_id": "28",
+      "candidate_record_id": "page_14_record_28",
+      "record_sim": 0.9
+    },
+    {
+      "gold_record_id": "29",
+      "candidate_record_id": "page_14_record_29",
+      "record_sim": 0.8875
+    },
+    {
+      "gold_record_id": "3",
+      "candidate_record_id": "page_7_record_3",
+      "record_sim": 0.9
+    },
+    {
+      "gold_record_id": "30",
+      "candidate_record_id": "page_14_record_30",
+      "record_sim": 0.9
+    },
+    {
+      "gold_record_id": "31",
+      "candidate_record_id": "page_14_record_31",
+      "record_sim": 0.9
+    },
+    {
+      "gold_record_id": "32",
+      "candidate_record_id": "page_15_record_32",
+      "record_sim": 0.9
+    },
+    {
+      "gold_record_id": "33",
+      "candidate_record_id": "page_15_record_33",
+      "record_sim": 0.9
+    },
+    {
+      "gold_record_id": "34",
+      "candidate_record_id": "page_15_record_34",
+      "record_sim": 0.9
+    },
+    {
+      "gold_record_id": "35",
+      "candidate_record_id": "page_15_record_35",
+      "record_sim": 0.9
+    },
+    {
+      "gold_record_id": "36",
+      "candidate_record_id": "page_16_record_36",
+      "record_sim": 0.9
+    },
+    {
+      "gold_record_id": "37",
+      "candidate_record_id": "page_16_record_37",
+      "record_sim": 0.9
+    },
+    {
+      "gold_record_id": "38",
+      "candidate_record_id": "page_16_record_38",
+      "record_sim": 0.9
+    },
+    {
+      "gold_record_id": "39",
+      "candidate_record_id": "page_16_record_39",
+      "record_sim": 0.9
+    },
+    {
+      "gold_record_id": "4",
+      "candidate_record_id": "page_7_record_4",
+      "record_sim": 0.9
+    },
+    {
+      "gold_record_id": "40",
+      "candidate_record_id": "page_17_record_40",
+      "record_sim": 0.9
+    },
+    {
+      "gold_record_id": "41",
+      "candidate_record_id": "page_17_record_41",
+      "record_sim": 0.9
+    },
+    {
+      "gold_record_id": "42",
+      "candidate_record_id": "page_17_record_42",
+      "record_sim": 0.9
+    },
+    {
+      "gold_record_id": "43",
+      "candidate_record_id": "page_17_record_43",
+      "record_sim": 0.9
+    },
+    {
+      "gold_record_id": "44",
+      "candidate_record_id": "page_18_record_44",
+      "record_sim": 0.9
+    },
+    {
+      "gold_record_id": "45",
+      "candidate_record_id": "page_18_record_45",
+      "record_sim": 0.9
+    },
+    {
+      "gold_record_id": "46",
+      "candidate_record_id": "page_18_record_46",
+      "record_sim": 0.9
+    },
+    {
+      "gold_record_id": "47",
+      "candidate_record_id": "page_18_record_47",
+      "record_sim": 0.9
+    },
+    {
+      "gold_record_id": "48",
+      "candidate_record_id": "page_19_record_48",
+      "record_sim": 0.9
+    },
+    {
+      "gold_record_id": "49",
+      "candidate_record_id": "page_19_record_49",
+      "record_sim": 0.9
+    },
+    {
+      "gold_record_id": "5",
+      "candidate_record_id": "page_7_record_5",
+      "record_sim": 0.9
+    },
+    {
+      "gold_record_id": "50",
+      "candidate_record_id": "page_19_record_50",
+      "record_sim": 0.9
+    },
+    {
+      "gold_record_id": "51",
+      "candidate_record_id": "page_19_record_51",
+      "record_sim": 0.9
+    },
+    {
+      "gold_record_id": "52",
+      "candidate_record_id": "page_20_record_52",
+      "record_sim": 0.9
+    },
+    {
+      "gold_record_id": "53",
+      "candidate_record_id": "page_20_record_53",
+      "record_sim": 0.9
+    },
+    {
+      "gold_record_id": "54",
+      "candidate_record_id": "page_20_record_54",
+      "record_sim": 0.9
+    },
+    {
+      "gold_record_id": "55",
+      "candidate_record_id": "page_20_record_55",
+      "record_sim": 0.9
+    },
+    {
+      "gold_record_id": "6",
+      "candidate_record_id": "page_8_record_6",
+      "record_sim": 0.9
+    },
+    {
+      "gold_record_id": "7",
+      "candidate_record_id": "page_8_record_7",
+      "record_sim": 0.9
+    },
+    {
+      "gold_record_id": "8",
+      "candidate_record_id": "page_8_record_8",
+      "record_sim": 0.9
+    },
+    {
+      "gold_record_id": "9",
+      "candidate_record_id": "page_8_record_9",
+      "record_sim": 0.9
+    }
+  ],
+  "missing_gold_records": [],
+  "extra_candidate_records": [],
+  "alignment": [
+    {
+      "gold_record_id": "0",
+      "candidate_record_id": "page_6_record_0",
+      "gold_id": "0_0600",
+      "candidate_id": "0_0000",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "0",
+      "candidate_record_id": "page_6_record_0",
+      "gold_id": "1_0600",
+      "candidate_id": "1_0000",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "0",
+      "candidate_record_id": "page_6_record_0",
+      "gold_id": "2_0600",
+      "candidate_id": "2_0000",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "0",
+      "candidate_record_id": "page_6_record_0",
+      "gold_id": "3_0600",
+      "candidate_id": "3_0000",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "1",
+      "candidate_record_id": "page_6_record_1",
+      "gold_id": "0_0601",
+      "candidate_id": "0_0001",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "1",
+      "candidate_record_id": "page_6_record_1",
+      "gold_id": "1_0601",
+      "candidate_id": "1_0001",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "1",
+      "candidate_record_id": "page_6_record_1",
+      "gold_id": "2_0601",
+      "candidate_id": "2_0001",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "1",
+      "candidate_record_id": "page_6_record_1",
+      "gold_id": "3_0601",
+      "candidate_id": "3_0001",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "10",
+      "candidate_record_id": "page_9_record_10",
+      "gold_id": "0_0900",
+      "candidate_id": "0_0010",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "10",
+      "candidate_record_id": "page_9_record_10",
+      "gold_id": "1_0900",
+      "candidate_id": "1_0010",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "10",
+      "candidate_record_id": "page_9_record_10",
+      "gold_id": "2_0900",
+      "candidate_id": "2_0010",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "10",
+      "candidate_record_id": "page_9_record_10",
+      "gold_id": "3_0900",
+      "candidate_id": "3_0010",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "11",
+      "candidate_record_id": "page_9_record_11",
+      "gold_id": "0_0901",
+      "candidate_id": "0_0011",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "11",
+      "candidate_record_id": "page_9_record_11",
+      "gold_id": "1_0901",
+      "candidate_id": "1_0011",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "11",
+      "candidate_record_id": "page_9_record_11",
+      "gold_id": "2_0901",
+      "candidate_id": "2_0011",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "11",
+      "candidate_record_id": "page_9_record_11",
+      "gold_id": "3_0901",
+      "candidate_id": "3_0011",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "12",
+      "candidate_record_id": "page_9_record_12",
+      "gold_id": "0_0902",
+      "candidate_id": "0_0012",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "12",
+      "candidate_record_id": "page_9_record_12",
+      "gold_id": "1_0902",
+      "candidate_id": "1_0012",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "12",
+      "candidate_record_id": "page_9_record_12",
+      "gold_id": "2_0902",
+      "candidate_id": "2_0012",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "12",
+      "candidate_record_id": "page_9_record_12",
+      "gold_id": "3_0902",
+      "candidate_id": "3_0012",
+      "type_match": true,
+      "content_sim": 0.8
+    },
+    {
+      "gold_record_id": "13",
+      "candidate_record_id": "page_10_record_13",
+      "gold_id": "0_1000",
+      "candidate_id": "0_0013",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "13",
+      "candidate_record_id": "page_10_record_13",
+      "gold_id": "1_1000",
+      "candidate_id": "1_0013",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "13",
+      "candidate_record_id": "page_10_record_13",
+      "gold_id": "2_1000",
+      "candidate_id": "2_0013",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "13",
+      "candidate_record_id": "page_10_record_13",
+      "gold_id": "3_1000",
+      "candidate_id": "3_0013",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "14",
+      "candidate_record_id": "page_10_record_14",
+      "gold_id": "0_1001",
+      "candidate_id": "0_0014",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "14",
+      "candidate_record_id": "page_10_record_14",
+      "gold_id": "1_1001",
+      "candidate_id": "1_0014",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "14",
+      "candidate_record_id": "page_10_record_14",
+      "gold_id": "2_1001",
+      "candidate_id": "2_0014",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "14",
+      "candidate_record_id": "page_10_record_14",
+      "gold_id": "3_1001",
+      "candidate_id": "3_0014",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "15",
+      "candidate_record_id": "page_10_record_15",
+      "gold_id": "0_1002",
+      "candidate_id": "0_0015",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "15",
+      "candidate_record_id": "page_10_record_15",
+      "gold_id": "1_1002",
+      "candidate_id": "1_0015",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "15",
+      "candidate_record_id": "page_10_record_15",
+      "gold_id": "2_1002",
+      "candidate_id": "2_0015",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "15",
+      "candidate_record_id": "page_10_record_15",
+      "gold_id": "3_1002",
+      "candidate_id": "3_0015",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "16",
+      "candidate_record_id": "page_10_record_16",
+      "gold_id": "0_1003",
+      "candidate_id": "0_0016",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "16",
+      "candidate_record_id": "page_10_record_16",
+      "gold_id": "1_1003",
+      "candidate_id": "1_0016",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "16",
+      "candidate_record_id": "page_10_record_16",
+      "gold_id": "2_1003",
+      "candidate_id": "2_0016",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "16",
+      "candidate_record_id": "page_10_record_16",
+      "gold_id": "3_1003",
+      "candidate_id": "3_0016",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "17",
+      "candidate_record_id": "page_11_record_17",
+      "gold_id": "0_1100",
+      "candidate_id": "0_0017",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "17",
+      "candidate_record_id": "page_11_record_17",
+      "gold_id": "1_1100",
+      "candidate_id": "1_0017",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "17",
+      "candidate_record_id": "page_11_record_17",
+      "gold_id": "2_1100",
+      "candidate_id": "2_0017",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "17",
+      "candidate_record_id": "page_11_record_17",
+      "gold_id": "3_1100",
+      "candidate_id": "3_0017",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "18",
+      "candidate_record_id": "page_11_record_18",
+      "gold_id": "0_1101",
+      "candidate_id": "0_0018",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "18",
+      "candidate_record_id": "page_11_record_18",
+      "gold_id": "1_1101",
+      "candidate_id": "1_0018",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "18",
+      "candidate_record_id": "page_11_record_18",
+      "gold_id": "2_1101",
+      "candidate_id": "2_0018",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "18",
+      "candidate_record_id": "page_11_record_18",
+      "gold_id": "3_1101",
+      "candidate_id": "3_0018",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "19",
+      "candidate_record_id": "page_11_record_19",
+      "gold_id": "0_1102",
+      "candidate_id": "0_0019",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "19",
+      "candidate_record_id": "page_11_record_19",
+      "gold_id": "1_1102",
+      "candidate_id": "1_0019",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "19",
+      "candidate_record_id": "page_11_record_19",
+      "gold_id": "2_1102",
+      "candidate_id": "2_0019",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "19",
+      "candidate_record_id": "page_11_record_19",
+      "gold_id": "3_1102",
+      "candidate_id": "3_0019",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "2",
+      "candidate_record_id": "page_6_record_2",
+      "gold_id": "0_0602",
+      "candidate_id": "0_0002",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "2",
+      "candidate_record_id": "page_6_record_2",
+      "gold_id": "1_0602",
+      "candidate_id": "1_0002",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "2",
+      "candidate_record_id": "page_6_record_2",
+      "gold_id": "2_0602",
+      "candidate_id": "2_0002",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "2",
+      "candidate_record_id": "page_6_record_2",
+      "gold_id": "3_0602",
+      "candidate_id": "3_0002",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "20",
+      "candidate_record_id": "page_11_record_20",
+      "gold_id": "0_1103",
+      "candidate_id": "0_0020",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "20",
+      "candidate_record_id": "page_11_record_20",
+      "gold_id": "1_1103",
+      "candidate_id": "1_0020",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "20",
+      "candidate_record_id": "page_11_record_20",
+      "gold_id": "2_1103",
+      "candidate_id": "2_0020",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "20",
+      "candidate_record_id": "page_11_record_20",
+      "gold_id": "3_1103",
+      "candidate_id": "3_0020",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "21",
+      "candidate_record_id": "page_12_record_21",
+      "gold_id": "0_1200",
+      "candidate_id": "0_0021",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "21",
+      "candidate_record_id": "page_12_record_21",
+      "gold_id": "1_1200",
+      "candidate_id": "1_0021",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "21",
+      "candidate_record_id": "page_12_record_21",
+      "gold_id": "2_1200",
+      "candidate_id": "2_0021",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "21",
+      "candidate_record_id": "page_12_record_21",
+      "gold_id": "3_1200",
+      "candidate_id": "3_0021",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "22",
+      "candidate_record_id": "page_12_record_22",
+      "gold_id": "0_1201",
+      "candidate_id": "0_0022",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "22",
+      "candidate_record_id": "page_12_record_22",
+      "gold_id": "1_1201",
+      "candidate_id": "1_0022",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "22",
+      "candidate_record_id": "page_12_record_22",
+      "gold_id": "2_1201",
+      "candidate_id": "2_0022",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "22",
+      "candidate_record_id": "page_12_record_22",
+      "gold_id": "3_1201",
+      "candidate_id": "3_0022",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "23",
+      "candidate_record_id": "page_12_record_23",
+      "gold_id": "0_1202",
+      "candidate_id": "0_0023",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "23",
+      "candidate_record_id": "page_12_record_23",
+      "gold_id": "1_1202",
+      "candidate_id": "1_0023",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "23",
+      "candidate_record_id": "page_12_record_23",
+      "gold_id": "2_1202",
+      "candidate_id": "2_0023",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "23",
+      "candidate_record_id": "page_12_record_23",
+      "gold_id": "3_1202",
+      "candidate_id": "3_0023",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "24",
+      "candidate_record_id": "page_13_record_24",
+      "gold_id": "0_1300",
+      "candidate_id": "0_0024",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "24",
+      "candidate_record_id": "page_13_record_24",
+      "gold_id": "1_1300",
+      "candidate_id": "1_0024",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "24",
+      "candidate_record_id": "page_13_record_24",
+      "gold_id": "2_1300",
+      "candidate_id": "2_0024",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "24",
+      "candidate_record_id": "page_13_record_24",
+      "gold_id": "3_1300",
+      "candidate_id": "3_0024",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "25",
+      "candidate_record_id": "page_13_record_25",
+      "gold_id": "0_1301",
+      "candidate_id": "0_0025",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "25",
+      "candidate_record_id": "page_13_record_25",
+      "gold_id": "1_1301",
+      "candidate_id": "1_0025",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "25",
+      "candidate_record_id": "page_13_record_25",
+      "gold_id": "2_1301",
+      "candidate_id": "2_0025",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "25",
+      "candidate_record_id": "page_13_record_25",
+      "gold_id": "3_1301",
+      "candidate_id": "3_0025",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "26",
+      "candidate_record_id": "page_13_record_26",
+      "gold_id": "0_1302",
+      "candidate_id": "0_0026",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "26",
+      "candidate_record_id": "page_13_record_26",
+      "gold_id": "1_1302",
+      "candidate_id": "1_0026",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "26",
+      "candidate_record_id": "page_13_record_26",
+      "gold_id": "2_1302",
+      "candidate_id": "2_0026",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "26",
+      "candidate_record_id": "page_13_record_26",
+      "gold_id": "3_1302",
+      "candidate_id": "3_0026",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "27",
+      "candidate_record_id": "page_13_record_27",
+      "gold_id": "0_1303",
+      "candidate_id": "0_0027",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "27",
+      "candidate_record_id": "page_13_record_27",
+      "gold_id": "1_1303",
+      "candidate_id": "1_0027",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "27",
+      "candidate_record_id": "page_13_record_27",
+      "gold_id": "2_1303",
+      "candidate_id": "2_0027",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "27",
+      "candidate_record_id": "page_13_record_27",
+      "gold_id": "3_1303",
+      "candidate_id": "3_0027",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "28",
+      "candidate_record_id": "page_14_record_28",
+      "gold_id": "0_1400",
+      "candidate_id": "0_0028",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "28",
+      "candidate_record_id": "page_14_record_28",
+      "gold_id": "1_1400",
+      "candidate_id": "1_0028",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "28",
+      "candidate_record_id": "page_14_record_28",
+      "gold_id": "2_1400",
+      "candidate_id": "2_0028",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "28",
+      "candidate_record_id": "page_14_record_28",
+      "gold_id": "3_1400",
+      "candidate_id": "3_0028",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "29",
+      "candidate_record_id": "page_14_record_29",
+      "gold_id": "0_1401",
+      "candidate_id": "0_0029",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "29",
+      "candidate_record_id": "page_14_record_29",
+      "gold_id": "1_1401",
+      "candidate_id": "1_0029",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "29",
+      "candidate_record_id": "page_14_record_29",
+      "gold_id": "2_1401",
+      "candidate_id": "2_0029",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "29",
+      "candidate_record_id": "page_14_record_29",
+      "gold_id": "3_1401",
+      "candidate_id": "3_0029",
+      "type_match": true,
+      "content_sim": 0.8
+    },
+    {
+      "gold_record_id": "3",
+      "candidate_record_id": "page_7_record_3",
+      "gold_id": "0_0700",
+      "candidate_id": "0_0003",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "3",
+      "candidate_record_id": "page_7_record_3",
+      "gold_id": "1_0700",
+      "candidate_id": "1_0003",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "3",
+      "candidate_record_id": "page_7_record_3",
+      "gold_id": "2_0700",
+      "candidate_id": "2_0003",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "3",
+      "candidate_record_id": "page_7_record_3",
+      "gold_id": "3_0700",
+      "candidate_id": "3_0003",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "30",
+      "candidate_record_id": "page_14_record_30",
+      "gold_id": "0_1402",
+      "candidate_id": "0_0030",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "30",
+      "candidate_record_id": "page_14_record_30",
+      "gold_id": "1_1402",
+      "candidate_id": "1_0030",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "30",
+      "candidate_record_id": "page_14_record_30",
+      "gold_id": "2_1402",
+      "candidate_id": "2_0030",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "30",
+      "candidate_record_id": "page_14_record_30",
+      "gold_id": "3_1402",
+      "candidate_id": "3_0030",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "31",
+      "candidate_record_id": "page_14_record_31",
+      "gold_id": "0_1403",
+      "candidate_id": "0_0031",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "31",
+      "candidate_record_id": "page_14_record_31",
+      "gold_id": "1_1403",
+      "candidate_id": "1_0031",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "31",
+      "candidate_record_id": "page_14_record_31",
+      "gold_id": "2_1403",
+      "candidate_id": "2_0031",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "31",
+      "candidate_record_id": "page_14_record_31",
+      "gold_id": "3_1403",
+      "candidate_id": "3_0031",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "32",
+      "candidate_record_id": "page_15_record_32",
+      "gold_id": "0_1500",
+      "candidate_id": "0_0032",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "32",
+      "candidate_record_id": "page_15_record_32",
+      "gold_id": "1_1500",
+      "candidate_id": "1_0032",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "32",
+      "candidate_record_id": "page_15_record_32",
+      "gold_id": "2_1500",
+      "candidate_id": "2_0032",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "32",
+      "candidate_record_id": "page_15_record_32",
+      "gold_id": "3_1500",
+      "candidate_id": "3_0032",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "33",
+      "candidate_record_id": "page_15_record_33",
+      "gold_id": "0_1501",
+      "candidate_id": "0_0033",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "33",
+      "candidate_record_id": "page_15_record_33",
+      "gold_id": "1_1501",
+      "candidate_id": "1_0033",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "33",
+      "candidate_record_id": "page_15_record_33",
+      "gold_id": "2_1501",
+      "candidate_id": "2_0033",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "33",
+      "candidate_record_id": "page_15_record_33",
+      "gold_id": "3_1501",
+      "candidate_id": "3_0033",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "34",
+      "candidate_record_id": "page_15_record_34",
+      "gold_id": "0_1502",
+      "candidate_id": "0_0034",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "34",
+      "candidate_record_id": "page_15_record_34",
+      "gold_id": "1_1502",
+      "candidate_id": "1_0034",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "34",
+      "candidate_record_id": "page_15_record_34",
+      "gold_id": "2_1502",
+      "candidate_id": "2_0034",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "34",
+      "candidate_record_id": "page_15_record_34",
+      "gold_id": "3_1502",
+      "candidate_id": "3_0034",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "35",
+      "candidate_record_id": "page_15_record_35",
+      "gold_id": "0_1503",
+      "candidate_id": "0_0035",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "35",
+      "candidate_record_id": "page_15_record_35",
+      "gold_id": "1_1503",
+      "candidate_id": "1_0035",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "35",
+      "candidate_record_id": "page_15_record_35",
+      "gold_id": "2_1503",
+      "candidate_id": "2_0035",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "35",
+      "candidate_record_id": "page_15_record_35",
+      "gold_id": "3_1503",
+      "candidate_id": "3_0035",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "36",
+      "candidate_record_id": "page_16_record_36",
+      "gold_id": "0_1600",
+      "candidate_id": "0_0036",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "36",
+      "candidate_record_id": "page_16_record_36",
+      "gold_id": "1_1600",
+      "candidate_id": "1_0036",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "36",
+      "candidate_record_id": "page_16_record_36",
+      "gold_id": "2_1600",
+      "candidate_id": "2_0036",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "36",
+      "candidate_record_id": "page_16_record_36",
+      "gold_id": "3_1600",
+      "candidate_id": "3_0036",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "37",
+      "candidate_record_id": "page_16_record_37",
+      "gold_id": "0_1601",
+      "candidate_id": "0_0037",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "37",
+      "candidate_record_id": "page_16_record_37",
+      "gold_id": "1_1601",
+      "candidate_id": "1_0037",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "37",
+      "candidate_record_id": "page_16_record_37",
+      "gold_id": "2_1601",
+      "candidate_id": "2_0037",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "37",
+      "candidate_record_id": "page_16_record_37",
+      "gold_id": "3_1601",
+      "candidate_id": "3_0037",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "38",
+      "candidate_record_id": "page_16_record_38",
+      "gold_id": "0_1602",
+      "candidate_id": "0_0038",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "38",
+      "candidate_record_id": "page_16_record_38",
+      "gold_id": "1_1602",
+      "candidate_id": "1_0038",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "38",
+      "candidate_record_id": "page_16_record_38",
+      "gold_id": "2_1602",
+      "candidate_id": "2_0038",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "38",
+      "candidate_record_id": "page_16_record_38",
+      "gold_id": "3_1602",
+      "candidate_id": "3_0038",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "39",
+      "candidate_record_id": "page_16_record_39",
+      "gold_id": "0_1603",
+      "candidate_id": "0_0039",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "39",
+      "candidate_record_id": "page_16_record_39",
+      "gold_id": "1_1603",
+      "candidate_id": "1_0039",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "39",
+      "candidate_record_id": "page_16_record_39",
+      "gold_id": "2_1603",
+      "candidate_id": "2_0039",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "39",
+      "candidate_record_id": "page_16_record_39",
+      "gold_id": "3_1603",
+      "candidate_id": "3_0039",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "4",
+      "candidate_record_id": "page_7_record_4",
+      "gold_id": "0_0701",
+      "candidate_id": "0_0004",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "4",
+      "candidate_record_id": "page_7_record_4",
+      "gold_id": "1_0701",
+      "candidate_id": "1_0004",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "4",
+      "candidate_record_id": "page_7_record_4",
+      "gold_id": "2_0701",
+      "candidate_id": "2_0004",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "4",
+      "candidate_record_id": "page_7_record_4",
+      "gold_id": "3_0701",
+      "candidate_id": "3_0004",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "40",
+      "candidate_record_id": "page_17_record_40",
+      "gold_id": "0_1700",
+      "candidate_id": "0_0040",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "40",
+      "candidate_record_id": "page_17_record_40",
+      "gold_id": "1_1700",
+      "candidate_id": "1_0040",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "40",
+      "candidate_record_id": "page_17_record_40",
+      "gold_id": "2_1700",
+      "candidate_id": "2_0040",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "40",
+      "candidate_record_id": "page_17_record_40",
+      "gold_id": "3_1700",
+      "candidate_id": "3_0040",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "41",
+      "candidate_record_id": "page_17_record_41",
+      "gold_id": "0_1701",
+      "candidate_id": "0_0041",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "41",
+      "candidate_record_id": "page_17_record_41",
+      "gold_id": "1_1701",
+      "candidate_id": "1_0041",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "41",
+      "candidate_record_id": "page_17_record_41",
+      "gold_id": "2_1701",
+      "candidate_id": "2_0041",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "41",
+      "candidate_record_id": "page_17_record_41",
+      "gold_id": "3_1701",
+      "candidate_id": "3_0041",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "42",
+      "candidate_record_id": "page_17_record_42",
+      "gold_id": "0_1702",
+      "candidate_id": "0_0042",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "42",
+      "candidate_record_id": "page_17_record_42",
+      "gold_id": "1_1702",
+      "candidate_id": "1_0042",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "42",
+      "candidate_record_id": "page_17_record_42",
+      "gold_id": "2_1702",
+      "candidate_id": "2_0042",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "42",
+      "candidate_record_id": "page_17_record_42",
+      "gold_id": "3_1702",
+      "candidate_id": "3_0042",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "43",
+      "candidate_record_id": "page_17_record_43",
+      "gold_id": "0_1703",
+      "candidate_id": "0_0043",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "43",
+      "candidate_record_id": "page_17_record_43",
+      "gold_id": "1_1703",
+      "candidate_id": "1_0043",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "43",
+      "candidate_record_id": "page_17_record_43",
+      "gold_id": "2_1703",
+      "candidate_id": "2_0043",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "43",
+      "candidate_record_id": "page_17_record_43",
+      "gold_id": "3_1703",
+      "candidate_id": "3_0043",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "44",
+      "candidate_record_id": "page_18_record_44",
+      "gold_id": "0_1800",
+      "candidate_id": "0_0044",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "44",
+      "candidate_record_id": "page_18_record_44",
+      "gold_id": "1_1800",
+      "candidate_id": "1_0044",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "44",
+      "candidate_record_id": "page_18_record_44",
+      "gold_id": "2_1800",
+      "candidate_id": "2_0044",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "44",
+      "candidate_record_id": "page_18_record_44",
+      "gold_id": "3_1800",
+      "candidate_id": "3_0044",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "45",
+      "candidate_record_id": "page_18_record_45",
+      "gold_id": "0_1801",
+      "candidate_id": "0_0045",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "45",
+      "candidate_record_id": "page_18_record_45",
+      "gold_id": "1_1801",
+      "candidate_id": "1_0045",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "45",
+      "candidate_record_id": "page_18_record_45",
+      "gold_id": "2_1801",
+      "candidate_id": "2_0045",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "45",
+      "candidate_record_id": "page_18_record_45",
+      "gold_id": "3_1801",
+      "candidate_id": "3_0045",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "46",
+      "candidate_record_id": "page_18_record_46",
+      "gold_id": "0_1802",
+      "candidate_id": "0_0046",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "46",
+      "candidate_record_id": "page_18_record_46",
+      "gold_id": "1_1802",
+      "candidate_id": "1_0046",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "46",
+      "candidate_record_id": "page_18_record_46",
+      "gold_id": "2_1802",
+      "candidate_id": "2_0046",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "46",
+      "candidate_record_id": "page_18_record_46",
+      "gold_id": "3_1802",
+      "candidate_id": "3_0046",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "47",
+      "candidate_record_id": "page_18_record_47",
+      "gold_id": "0_1803",
+      "candidate_id": "0_0047",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "47",
+      "candidate_record_id": "page_18_record_47",
+      "gold_id": "1_1803",
+      "candidate_id": "1_0047",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "47",
+      "candidate_record_id": "page_18_record_47",
+      "gold_id": "2_1803",
+      "candidate_id": "2_0047",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "47",
+      "candidate_record_id": "page_18_record_47",
+      "gold_id": "3_1803",
+      "candidate_id": "3_0047",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "48",
+      "candidate_record_id": "page_19_record_48",
+      "gold_id": "0_1900",
+      "candidate_id": "0_0048",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "48",
+      "candidate_record_id": "page_19_record_48",
+      "gold_id": "1_1900",
+      "candidate_id": "1_0048",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "48",
+      "candidate_record_id": "page_19_record_48",
+      "gold_id": "2_1900",
+      "candidate_id": "2_0048",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "48",
+      "candidate_record_id": "page_19_record_48",
+      "gold_id": "3_1900",
+      "candidate_id": "3_0048",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "49",
+      "candidate_record_id": "page_19_record_49",
+      "gold_id": "0_1901",
+      "candidate_id": "0_0049",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "49",
+      "candidate_record_id": "page_19_record_49",
+      "gold_id": "1_1901",
+      "candidate_id": "1_0049",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "49",
+      "candidate_record_id": "page_19_record_49",
+      "gold_id": "2_1901",
+      "candidate_id": "2_0049",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "49",
+      "candidate_record_id": "page_19_record_49",
+      "gold_id": "3_1901",
+      "candidate_id": "3_0049",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "5",
+      "candidate_record_id": "page_7_record_5",
+      "gold_id": "0_0702",
+      "candidate_id": "0_0005",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "5",
+      "candidate_record_id": "page_7_record_5",
+      "gold_id": "1_0702",
+      "candidate_id": "1_0005",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "5",
+      "candidate_record_id": "page_7_record_5",
+      "gold_id": "2_0702",
+      "candidate_id": "2_0005",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "5",
+      "candidate_record_id": "page_7_record_5",
+      "gold_id": "3_0702",
+      "candidate_id": "3_0005",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "50",
+      "candidate_record_id": "page_19_record_50",
+      "gold_id": "0_1902",
+      "candidate_id": "0_0050",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "50",
+      "candidate_record_id": "page_19_record_50",
+      "gold_id": "1_1902",
+      "candidate_id": "1_0050",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "50",
+      "candidate_record_id": "page_19_record_50",
+      "gold_id": "2_1902",
+      "candidate_id": "2_0050",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "50",
+      "candidate_record_id": "page_19_record_50",
+      "gold_id": "3_1902",
+      "candidate_id": "3_0050",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "51",
+      "candidate_record_id": "page_19_record_51",
+      "gold_id": "0_1903",
+      "candidate_id": "0_0051",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "51",
+      "candidate_record_id": "page_19_record_51",
+      "gold_id": "1_1903",
+      "candidate_id": "1_0051",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "51",
+      "candidate_record_id": "page_19_record_51",
+      "gold_id": "2_1903",
+      "candidate_id": "2_0051",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "51",
+      "candidate_record_id": "page_19_record_51",
+      "gold_id": "3_1903",
+      "candidate_id": "3_0051",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "52",
+      "candidate_record_id": "page_20_record_52",
+      "gold_id": "0_2000",
+      "candidate_id": "0_0052",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "52",
+      "candidate_record_id": "page_20_record_52",
+      "gold_id": "1_2000",
+      "candidate_id": "1_0052",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "52",
+      "candidate_record_id": "page_20_record_52",
+      "gold_id": "2_2000",
+      "candidate_id": "2_0052",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "52",
+      "candidate_record_id": "page_20_record_52",
+      "gold_id": "3_2000",
+      "candidate_id": "3_0052",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "53",
+      "candidate_record_id": "page_20_record_53",
+      "gold_id": "0_2001",
+      "candidate_id": "0_0053",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "53",
+      "candidate_record_id": "page_20_record_53",
+      "gold_id": "1_2001",
+      "candidate_id": "1_0053",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "53",
+      "candidate_record_id": "page_20_record_53",
+      "gold_id": "2_2001",
+      "candidate_id": "2_0053",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "53",
+      "candidate_record_id": "page_20_record_53",
+      "gold_id": "3_2001",
+      "candidate_id": "3_0053",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "54",
+      "candidate_record_id": "page_20_record_54",
+      "gold_id": "0_2002",
+      "candidate_id": "0_0054",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "54",
+      "candidate_record_id": "page_20_record_54",
+      "gold_id": "1_2002",
+      "candidate_id": "1_0054",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "54",
+      "candidate_record_id": "page_20_record_54",
+      "gold_id": "2_2002",
+      "candidate_id": "2_0054",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "54",
+      "candidate_record_id": "page_20_record_54",
+      "gold_id": "3_2002",
+      "candidate_id": "3_0054",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "55",
+      "candidate_record_id": "page_20_record_55",
+      "gold_id": "0_2003",
+      "candidate_id": "0_0055",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "55",
+      "candidate_record_id": "page_20_record_55",
+      "gold_id": "1_2003",
+      "candidate_id": "1_0055",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "55",
+      "candidate_record_id": "page_20_record_55",
+      "gold_id": "2_2003",
+      "candidate_id": "2_0055",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "55",
+      "candidate_record_id": "page_20_record_55",
+      "gold_id": "3_2003",
+      "candidate_id": "3_0055",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "6",
+      "candidate_record_id": "page_8_record_6",
+      "gold_id": "0_0800",
+      "candidate_id": "0_0006",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "6",
+      "candidate_record_id": "page_8_record_6",
+      "gold_id": "1_0800",
+      "candidate_id": "1_0006",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "6",
+      "candidate_record_id": "page_8_record_6",
+      "gold_id": "2_0800",
+      "candidate_id": "2_0006",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "6",
+      "candidate_record_id": "page_8_record_6",
+      "gold_id": "3_0800",
+      "candidate_id": "3_0006",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "7",
+      "candidate_record_id": "page_8_record_7",
+      "gold_id": "0_0801",
+      "candidate_id": "0_0007",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "7",
+      "candidate_record_id": "page_8_record_7",
+      "gold_id": "1_0801",
+      "candidate_id": "1_0007",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "7",
+      "candidate_record_id": "page_8_record_7",
+      "gold_id": "2_0801",
+      "candidate_id": "2_0007",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "7",
+      "candidate_record_id": "page_8_record_7",
+      "gold_id": "3_0801",
+      "candidate_id": "3_0007",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "8",
+      "candidate_record_id": "page_8_record_8",
+      "gold_id": "0_0802",
+      "candidate_id": "0_0008",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "8",
+      "candidate_record_id": "page_8_record_8",
+      "gold_id": "1_0802",
+      "candidate_id": "1_0008",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "8",
+      "candidate_record_id": "page_8_record_8",
+      "gold_id": "2_0802",
+      "candidate_id": "2_0008",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "8",
+      "candidate_record_id": "page_8_record_8",
+      "gold_id": "3_0802",
+      "candidate_id": "3_0008",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "9",
+      "candidate_record_id": "page_8_record_9",
+      "gold_id": "0_0803",
+      "candidate_id": "0_0009",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "9",
+      "candidate_record_id": "page_8_record_9",
+      "gold_id": "1_0803",
+      "candidate_id": "1_0009",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "9",
+      "candidate_record_id": "page_8_record_9",
+      "gold_id": "2_0803",
+      "candidate_id": "2_0009",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "9",
+      "candidate_record_id": "page_8_record_9",
+      "gold_id": "3_0803",
+      "candidate_id": "3_0009",
+      "type_match": true,
+      "content_sim": 1.0
+    }
+  ],
+  "missing_gold_nodes": [],
+  "extra_candidate_nodes": [],
+  "type_mismatches": [],
+  "content_diffs": [
+    {
+      "gold_id": "3_0902",
+      "candidate_id": "3_0012",
+      "type": "table",
+      "field": "rows[0].Action Taken",
+      "gold": "RESIGNATION IN LIE",
+      "candidate": "RESIGNATION IN",
+      "reason": "R-CELL-DIFFERS",
+      "gold_record_id": "12",
+      "candidate_record_id": "page_9_record_12"
+    },
+    {
+      "gold_id": "3_0902",
+      "candidate_id": "3_0012",
+      "type": "table",
+      "field": "rows[0].Body Cam",
+      "gold": "No",
+      "candidate": "LIE No",
+      "reason": "R-CELL-DIFFERS",
+      "gold_record_id": "12",
+      "candidate_record_id": "page_9_record_12"
+    },
+    {
+      "gold_id": "3_1401",
+      "candidate_id": "3_0029",
+      "type": "table",
+      "field": "rows[0].Action Taken",
+      "gold": "PLACED ON ADMIN L",
+      "candidate": "PLACED ON ADMIN",
+      "reason": "R-CELL-DIFFERS",
+      "gold_record_id": "29",
+      "candidate_record_id": "page_14_record_29"
+    },
+    {
+      "gold_id": "3_1401",
+      "candidate_id": "3_0029",
+      "type": "table",
+      "field": "rows[0].Body Cam",
+      "gold": "No",
+      "candidate": "L No",
+      "reason": "R-CELL-DIFFERS",
+      "gold_record_id": "29",
+      "candidate_record_id": "page_14_record_29"
+    }
+  ],
+  "structure_diffs": [],
+  "eval_version": "twix-eval-source-sha256:944b3f08d1b7143db8297e7fe068c8032d39405a0f1efd7f613dc5ff4cdff900"
+}

@@ -1,0 +1,182 @@
+[
+  {
+    "exit_code": 0,
+    "duration_seconds": 0.12745733303017914,
+    "stdout": "/Users/riccardo/tesi/code/twix_2/evaluations/qwen_27b_id_18/page_runs/page_006.stdout.txt",
+    "stderr": "/Users/riccardo/tesi/code/twix_2/evaluations/qwen_27b_id_18/page_runs/page_006.stderr.txt",
+    "error": "",
+    "source_page": 6,
+    "rows_or_items": 14
+  },
+  {
+    "exit_code": 0,
+    "duration_seconds": 0.11392750008963048,
+    "stdout": "/Users/riccardo/tesi/code/twix_2/evaluations/qwen_27b_id_18/page_runs/page_007.stdout.txt",
+    "stderr": "/Users/riccardo/tesi/code/twix_2/evaluations/qwen_27b_id_18/page_runs/page_007.stderr.txt",
+    "error": "",
+    "source_page": 7,
+    "rows_or_items": 11
+  },
+  {
+    "exit_code": 0,
+    "duration_seconds": 0.1326216250890866,
+    "stdout": "/Users/riccardo/tesi/code/twix_2/evaluations/qwen_27b_id_18/page_runs/page_008.stdout.txt",
+    "stderr": "/Users/riccardo/tesi/code/twix_2/evaluations/qwen_27b_id_18/page_runs/page_008.stderr.txt",
+    "error": "",
+    "source_page": 8,
+    "rows_or_items": 17
+  },
+  {
+    "exit_code": 0,
+    "duration_seconds": 0.1275149160064757,
+    "stdout": "/Users/riccardo/tesi/code/twix_2/evaluations/qwen_27b_id_18/page_runs/page_009.stdout.txt",
+    "stderr": "/Users/riccardo/tesi/code/twix_2/evaluations/qwen_27b_id_18/page_runs/page_009.stderr.txt",
+    "error": "",
+    "source_page": 9,
+    "rows_or_items": 10
+  },
+  {
+    "exit_code": 0,
+    "duration_seconds": 0.15774358296766877,
+    "stdout": "/Users/riccardo/tesi/code/twix_2/evaluations/qwen_27b_id_18/page_runs/page_010.stdout.txt",
+    "stderr": "/Users/riccardo/tesi/code/twix_2/evaluations/qwen_27b_id_18/page_runs/page_010.stderr.txt",
+    "error": "",
+    "source_page": 10,
+    "rows_or_items": 18
+  },
+  {
+    "exit_code": 0,
+    "duration_seconds": 0.12217233399860561,
+    "stdout": "/Users/riccardo/tesi/code/twix_2/evaluations/qwen_27b_id_18/page_runs/page_011.stdout.txt",
+    "stderr": "/Users/riccardo/tesi/code/twix_2/evaluations/qwen_27b_id_18/page_runs/page_011.stderr.txt",
+    "error": "",
+    "source_page": 11,
+    "rows_or_items": 11
+  },
+  {
+    "exit_code": 0,
+    "duration_seconds": 0.1367382500320673,
+    "stdout": "/Users/riccardo/tesi/code/twix_2/evaluations/qwen_27b_id_18/page_runs/page_012.stdout.txt",
+    "stderr": "/Users/riccardo/tesi/code/twix_2/evaluations/qwen_27b_id_18/page_runs/page_012.stderr.txt",
+    "error": "",
+    "source_page": 12,
+    "rows_or_items": 13
+  },
+  {
+    "exit_code": 0,
+    "duration_seconds": 0.12456154194660485,
+    "stdout": "/Users/riccardo/tesi/code/twix_2/evaluations/qwen_27b_id_18/page_runs/page_013.stdout.txt",
+    "stderr": "/Users/riccardo/tesi/code/twix_2/evaluations/qwen_27b_id_18/page_runs/page_013.stderr.txt",
+    "error": "",
+    "source_page": 13,
+    "rows_or_items": 10
+  },
+  {
+    "exit_code": 0,
+    "duration_seconds": 0.15033283294178545,
+    "stdout": "/Users/riccardo/tesi/code/twix_2/evaluations/qwen_27b_id_18/page_runs/page_014.stdout.txt",
+    "stderr": "/Users/riccardo/tesi/code/twix_2/evaluations/qwen_27b_id_18/page_runs/page_014.stderr.txt",
+    "error": "",
+    "source_page": 14,
+    "rows_or_items": 17
+  },
+  {
+    "exit_code": 0,
+    "duration_seconds": 0.12382562505081296,
+    "stdout": "/Users/riccardo/tesi/code/twix_2/evaluations/qwen_27b_id_18/page_runs/page_015.stdout.txt",
+    "stderr": "/Users/riccardo/tesi/code/twix_2/evaluations/qwen_27b_id_18/page_runs/page_015.stderr.txt",
+    "error": "",
+    "source_page": 15,
+    "rows_or_items": 11
+  },
+  {
+    "exit_code": 0,
+    "duration_seconds": 0.12915749999228865,
+    "stdout": "/Users/riccardo/tesi/code/twix_2/evaluations/qwen_27b_id_18/page_runs/page_016.stdout.txt",
+    "stderr": "/Users/riccardo/tesi/code/twix_2/evaluations/qwen_27b_id_18/page_runs/page_016.stderr.txt",
+    "error": "",
+    "source_page": 16,
+    "rows_or_items": 13
+  },
+  {
+    "exit_code": 0,
+    "duration_seconds": 0.120094875106588,
+    "stdout": "/Users/riccardo/tesi/code/twix_2/evaluations/qwen_27b_id_18/page_runs/page_017.stdout.txt",
+    "stderr": "/Users/riccardo/tesi/code/twix_2/evaluations/qwen_27b_id_18/page_runs/page_017.stderr.txt",
+    "error": "",
+    "source_page": 17,
+    "rows_or_items": 10
+  },
+  {
+    "exit_code": 0,
+    "duration_seconds": 0.13709887501318008,
+    "stdout": "/Users/riccardo/tesi/code/twix_2/evaluations/qwen_27b_id_18/page_runs/page_018.stdout.txt",
+    "stderr": "/Users/riccardo/tesi/code/twix_2/evaluations/qwen_27b_id_18/page_runs/page_018.stderr.txt",
+    "error": "",
+    "source_page": 18,
+    "rows_or_items": 16
+  },
+  {
+    "exit_code": 0,
+    "duration_seconds": 0.12166266702115536,
+    "stdout": "/Users/riccardo/tesi/code/twix_2/evaluations/qwen_27b_id_18/page_runs/page_019.stdout.txt",
+    "stderr": "/Users/riccardo/tesi/code/twix_2/evaluations/qwen_27b_id_18/page_runs/page_019.stderr.txt",
+    "error": "",
+    "source_page": 19,
+    "rows_or_items": 11
+  },
+  {
+    "exit_code": 0,
+    "duration_seconds": 0.14684804098214954,
+    "stdout": "/Users/riccardo/tesi/code/twix_2/evaluations/qwen_27b_id_18/page_runs/page_020.stdout.txt",
+    "stderr": "/Users/riccardo/tesi/code/twix_2/evaluations/qwen_27b_id_18/page_runs/page_020.stderr.txt",
+    "error": "",
+    "source_page": 20,
+    "rows_or_items": 16
+  },
+  {
+    "exit_code": 0,
+    "duration_seconds": 0.1291259170975536,
+    "stdout": "/Users/riccardo/tesi/code/twix_2/evaluations/qwen_27b_id_18/page_runs/page_021.stdout.txt",
+    "stderr": "/Users/riccardo/tesi/code/twix_2/evaluations/qwen_27b_id_18/page_runs/page_021.stderr.txt",
+    "error": "",
+    "source_page": 21,
+    "rows_or_items": 11
+  },
+  {
+    "exit_code": 0,
+    "duration_seconds": 0.13274658401496708,
+    "stdout": "/Users/riccardo/tesi/code/twix_2/evaluations/qwen_27b_id_18/page_runs/page_022.stdout.txt",
+    "stderr": "/Users/riccardo/tesi/code/twix_2/evaluations/qwen_27b_id_18/page_runs/page_022.stderr.txt",
+    "error": "",
+    "source_page": 22,
+    "rows_or_items": 13
+  },
+  {
+    "exit_code": 0,
+    "duration_seconds": 0.12349516700487584,
+    "stdout": "/Users/riccardo/tesi/code/twix_2/evaluations/qwen_27b_id_18/page_runs/page_023.stdout.txt",
+    "stderr": "/Users/riccardo/tesi/code/twix_2/evaluations/qwen_27b_id_18/page_runs/page_023.stderr.txt",
+    "error": "",
+    "source_page": 23,
+    "rows_or_items": 10
+  },
+  {
+    "exit_code": 0,
+    "duration_seconds": 0.14449845801573247,
+    "stdout": "/Users/riccardo/tesi/code/twix_2/evaluations/qwen_27b_id_18/page_runs/page_024.stdout.txt",
+    "stderr": "/Users/riccardo/tesi/code/twix_2/evaluations/qwen_27b_id_18/page_runs/page_024.stderr.txt",
+    "error": "",
+    "source_page": 24,
+    "rows_or_items": 17
+  },
+  {
+    "exit_code": 0,
+    "duration_seconds": 0.12603320798370987,
+    "stdout": "/Users/riccardo/tesi/code/twix_2/evaluations/qwen_27b_id_18/page_runs/page_025.stdout.txt",
+    "stderr": "/Users/riccardo/tesi/code/twix_2/evaluations/qwen_27b_id_18/page_runs/page_025.stderr.txt",
+    "error": "",
+    "source_page": 25,
+    "rows_or_items": 11
+  }
+]

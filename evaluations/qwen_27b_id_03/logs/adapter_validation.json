@@ -1,0 +1,67 @@
+{
+  "development_rows": 21,
+  "all_fields_mapped": true,
+  "row_order_preserved": true,
+  "repeatability": true,
+  "checks": [
+    "Claim sequence number and CLAIM NO. retain separate printed cells",
+    "Integer docket/sequence serialize to decimal display",
+    "Reason true/false maps to printed X/blank",
+    "Ordered Other Filings array maps to whitespace-joined printed numbers",
+    "Comments and names unchanged; no reference-dependent correction"
+  ],
+  "example": [
+    {
+      "key": "Claim sequence number",
+      "value": "6"
+    },
+    {
+      "key": "CLAIM NO.",
+      "value": "TRO886466FTC"
+    },
+    {
+      "key": "DATE WAS FILED",
+      "value": "12/7/2015"
+    },
+    {
+      "key": "INJURED PARTY",
+      "value": "Richardson, Patricia"
+    },
+    {
+      "key": "MOTION FILER",
+      "value": "Shannon Smith"
+    },
+    {
+      "key": "Docket No.",
+      "value": "3290"
+    },
+    {
+      "key": "Filings",
+      "value": ""
+    },
+    {
+      "key": "A",
+      "value": "X"
+    },
+    {
+      "key": "B",
+      "value": "X"
+    },
+    {
+      "key": "C",
+      "value": ""
+    },
+    {
+      "key": "D",
+      "value": ""
+    },
+    {
+      "key": "E",
+      "value": ""
+    },
+    {
+      "key": "Comments and explanations for rulings",
+      "value": "Diagnosis in 1985 or so; injured party died in 1997. Rep says did not know of claim because was away for military service for a few years but does not provide dates of service or any indication that movant was in military service at the time of the 2009 bar date. Also alleges that was told could not file for a deceased relative but no details provided as to who gave such advice or when. Risks of creosote exposure and filings of claims based on the same were the subjects of widespread publicity in the relevant areas of MS starting before 2000. Alleges lack of actual knowledge but no showing as to other relevant factors (including diligence in investigation and pursuit of claims and reasons why filed so long after the bar date), not sufficient for relief based on excusable neglect. Claim also was time-barred under the applicable statute of limitations before the Tronox bankruptcy filing."
+    }
+  ]
+}

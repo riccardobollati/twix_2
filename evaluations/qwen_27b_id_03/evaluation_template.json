@@ -1,0 +1,69 @@
+{
+  "template": [
+    {
+      "type": "table",
+      "fields": [
+        "Claim sequence number",
+        "CLAIM NO.",
+        "DATE WAS FILED",
+        "INJURED PARTY",
+        "MOTION FILER",
+        "Docket No.",
+        "Filings",
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "Comments and explanations for rulings"
+      ],
+      "bid": [
+        0
+      ],
+      "child": -1,
+      "node_id": 0,
+      "complexity": {
+        "same_row_structure": true,
+        "nested": false
+      }
+    }
+  ],
+  "metadata": [
+    {
+      "pattern": "TABLE A - SORTED BY MOTION DOCKET NUMBER",
+      "type": "document_level"
+    },
+    {
+      "pattern": "REASONS FOR RULINGS",
+      "type": "document_level"
+    },
+    {
+      "pattern": "Legend",
+      "type": "document_level"
+    },
+    {
+      "pattern": "Group A Claims were barred by statute of limitations prior to Tronox bankruptcy",
+      "type": "document_level"
+    },
+    {
+      "pattern": "Group B Claimant failed to show grounds for relief as to pre-bar date claims",
+      "type": "document_level"
+    },
+    {
+      "pattern": "Group C Motion filed after 90-day deadline set by the court\\.",
+      "type": "document_level"
+    },
+    {
+      "pattern": "Group D No grounds for relief as to pre-bar date claims, Trust to resolve other issues\\.",
+      "type": "document_level"
+    },
+    {
+      "pattern": "Group E Alleges infancy, movant to have opportunity to file supplemental proof\\.",
+      "type": "document_level"
+    },
+    {
+      "pattern": "Page \\d+ of 1116",
+      "type": "document_level"
+    }
+  ]
+}

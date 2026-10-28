@@ -1,0 +1,163 @@
+{
+  "representation": "One record per physical page, separate metadata KV and physical table nodes; same representation for reference. No cross-page merging.",
+  "fields": {
+    "sections.rows.designation": {
+      "target": "Section designation",
+      "conversion": "None to empty printed cell; numbers to fixed decimal strings; strings verbatim"
+    },
+    "sections.rows.mass_per_metre": {
+      "target": "Dimensions - Mass per Metre kg/m",
+      "conversion": "None to empty printed cell; numbers to fixed decimal strings; strings verbatim"
+    },
+    "sections.rows.depth": {
+      "target": "Dimensions - Depth of Section D mm",
+      "conversion": "None to empty printed cell; numbers to fixed decimal strings; strings verbatim"
+    },
+    "sections.rows.width": {
+      "target": "Dimensions - Width of Section B mm",
+      "conversion": "None to empty printed cell; numbers to fixed decimal strings; strings verbatim"
+    },
+    "sections.rows.flange_thickness": {
+      "target": "Dimensions - Thickness Flange T mm",
+      "conversion": "None to empty printed cell; numbers to fixed decimal strings; strings verbatim"
+    },
+    "sections.rows.web_thickness": {
+      "target": "Dimensions - Thickness Web t mm",
+      "conversion": "None to empty printed cell; numbers to fixed decimal strings; strings verbatim"
+    },
+    "sections.rows.root_radius": {
+      "target": "Dimensions - Root Radius r mm",
+      "conversion": "None to empty printed cell; numbers to fixed decimal strings; strings verbatim"
+    },
+    "sections.rows.depth_between_fillet_tangencies": {
+      "target": "Dimensions - Depth between Fillets d mm",
+      "conversion": "None to empty printed cell; numbers to fixed decimal strings; strings verbatim"
+    },
+    "sections.rows.cross_section_area": {
+      "target": "Dimensions - Area of Section A cm2",
+      "conversion": "None to empty printed cell; numbers to fixed decimal strings; strings verbatim"
+    },
+    "sections.rows.ratio_b_over_t": {
+      "target": "Dimensions - Ratios for Local Buckling Flange b/T",
+      "conversion": "None to empty printed cell; numbers to fixed decimal strings; strings verbatim"
+    },
+    "sections.rows.ratio_d_over_t": {
+      "target": "Dimensions - Ratios for Local Buckling Web d/t",
+      "conversion": "None to empty printed cell; numbers to fixed decimal strings; strings verbatim"
+    },
+    "sections.rows.end_notch_clearance": {
+      "target": "Dimensions - Dimensions for Detailing End clearance C mm",
+      "conversion": "None to empty printed cell; numbers to fixed decimal strings; strings verbatim"
+    },
+    "sections.rows.buckling_detailing_width": {
+      "target": "Dimensions - Dimensions for Detailing Notch N mm",
+      "conversion": "None to empty printed cell; numbers to fixed decimal strings; strings verbatim"
+    },
+    "sections.rows.buckling_detailing_depth": {
+      "target": "Dimensions - Dimensions for Detailing Notch n mm",
+      "conversion": "None to empty printed cell; numbers to fixed decimal strings; strings verbatim"
+    },
+    "sections.rows.surface_area_per_metre": {
+      "target": "Dimensions - Surface Area Per metre m2",
+      "conversion": "None to empty printed cell; numbers to fixed decimal strings; strings verbatim"
+    },
+    "sections.rows.second_moment_of_area_x": {
+      "target": "Properties - Second Moment of Area Axis x-x cm4",
+      "conversion": "None to empty printed cell; numbers to fixed decimal strings; strings verbatim"
+    },
+    "sections.rows.second_moment_of_area_y": {
+      "target": "Properties - Second Moment of Area Axis y-y cm4",
+      "conversion": "None to empty printed cell; numbers to fixed decimal strings; strings verbatim"
+    },
+    "sections.rows.radius_of_gyration_x": {
+      "target": "Properties - Radius of Gyration Axis x-x cm",
+      "conversion": "None to empty printed cell; numbers to fixed decimal strings; strings verbatim"
+    },
+    "sections.rows.radius_of_gyration_y": {
+      "target": "Properties - Radius of Gyration Axis y-y cm",
+      "conversion": "None to empty printed cell; numbers to fixed decimal strings; strings verbatim"
+    },
+    "sections.rows.elastic_section_modulus_x": {
+      "target": "Properties - Elastic Modulus Axis x-x cm3",
+      "conversion": "None to empty printed cell; numbers to fixed decimal strings; strings verbatim"
+    },
+    "sections.rows.elastic_section_modulus_y": {
+      "target": "Properties - Elastic Modulus Axis y-y cm3",
+      "conversion": "None to empty printed cell; numbers to fixed decimal strings; strings verbatim"
+    },
+    "sections.rows.plastic_section_modulus_x": {
+      "target": "Properties - Plastic Modulus Axis x-x cm3",
+      "conversion": "None to empty printed cell; numbers to fixed decimal strings; strings verbatim"
+    },
+    "sections.rows.plastic_section_modulus_y": {
+      "target": "Properties - Plastic Modulus Axis y-y cm3",
+      "conversion": "None to empty printed cell; numbers to fixed decimal strings; strings verbatim"
+    },
+    "sections.rows.buckling_parameter": {
+      "target": "Properties - Buckling Parameter u",
+      "conversion": "None to empty printed cell; numbers to fixed decimal strings; strings verbatim"
+    },
+    "sections.rows.torsional_index": {
+      "target": "Properties - Torsional Index x",
+      "conversion": "None to empty printed cell; numbers to fixed decimal strings; strings verbatim"
+    },
+    "sections.rows.warping_constant": {
+      "target": "Properties - Warping Constant H dm6",
+      "conversion": "None to empty printed cell; numbers to fixed decimal strings; strings verbatim"
+    },
+    "sections.rows.torsional_constant": {
+      "target": "Properties - Torsional Constant J cm4",
+      "conversion": "None to empty printed cell; numbers to fixed decimal strings; strings verbatim"
+    },
+    "sections.standard": {
+      "target": "Dimensions",
+      "conversion": "verbatim; omit absent values"
+    },
+    "sections.material_specification": {
+      "target": "Specification",
+      "conversion": "verbatim; omit absent values"
+    },
+    "sections.size_range": {
+      "target": "Size Range",
+      "conversion": "verbatim; omit absent values"
+    },
+    "source.file": {
+      "disposition": "excluded provenance/schema metadata",
+      "reason": "Input filename"
+    },
+    "source.page_count": {
+      "disposition": "excluded provenance/schema metadata",
+      "reason": "Input PDF count"
+    },
+    "sections.pages": {
+      "disposition": "excluded provenance/schema metadata",
+      "reason": "Page provenance, supplied by isolated page wrapper"
+    },
+    "sections.section_number": {
+      "disposition": "excluded provenance/schema metadata",
+      "reason": "Running section heading number, document-level metadata"
+    },
+    "sections.title": {
+      "disposition": "excluded provenance/schema metadata",
+      "reason": "Running chapter heading, document-level metadata"
+    },
+    "sections.columns.key": {
+      "disposition": "excluded provenance/schema metadata",
+      "reason": "Schema description already represented by mapped fields"
+    },
+    "sections.columns.symbol": {
+      "disposition": "excluded provenance/schema metadata",
+      "reason": "Schema description"
+    },
+    "sections.columns.label": {
+      "disposition": "excluded provenance/schema metadata",
+      "reason": "Schema description"
+    },
+    "sections.columns.unit": {
+      "disposition": "excluded provenance/schema metadata",
+      "reason": "Schema description, units represented in headers"
+    }
+  },
+  "unknown_row_fields": "Preserved verbatim as extra prediction columns",
+  "development_validation": "27 columns in reading order; null blank mass cell; decimals including warping constants preserve numeric values. Source field names mapped by semantics despite erroneous symbols D/h/b in baseline schema; printed development header and benchmark node 2 authoritative."
+}

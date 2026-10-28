@@ -1,0 +1,52 @@
+New Order
+Agency: Assurance Media Station: WDAY-D3 Flight Start: 10/30/2018
+Office: Alexandria Order Type: Normal Flight End: 11/05/2018
+Client: 412 - Missouri Senate - McCaskill Cancel Date: Hiatus:
+Product: 328 - Political
+Piggyback Product:
+Estimate: 6952 - McCaskill Wk#1 10.30-11.05 Received in ePort: 10/30/2018 3:31:56 PM Airtime Dollars: $25,025.00
+Interactive Dollars: $0.00
+Primary Demo: Local/National: Local Non-Airtime Dollars: $0.00
+Demo 2: Rep Office: WDAY-D3 Total Dollars: $25,025.00
+Demo 3: AE: Alicia Munez Total Spots: 120
+GRP: 0.00 Phone:
+CPP: $0.00 OrderID: 7442062
+GIMP: 0 Status: Confirmed
+CPM: $0.00 MarketShare:
+Comments: Separation: 30
+Daily Airtime Lines
+Line Daypart DPT Total
+No (Program) Code Rate C/T Len 10/30 10/31 11/1 11/2 11/3 11/4 11/5 Spots Rtg CPP Imp CPM
+M 7P-9P
+1 PT $890.00 C 30 0 0 0 0 0 2 0 2
+DWTS
+Su 5:30P-6P
+2 EN $370.00 C 30 0 0 0 0 0 1 0 1
+Sunday Early News
+F 9P-10P
+3 PT $360.00 C 30 0 0 0 0 0 1 0 1
+20/20
+TuWThFM 9A-5P
+4 DT $50.00 C 30 3 3 3 3 0 0 3 15
+Daytime Rotator
+Sa 7A-8:30A
+5 EM $50.00 C 30 0 0 0 0 0 1 0 1
+First News Saturday
+M 9P-10P
+6 PT $822.00 C 30 0 0 0 0 1 0 0 1
+The Good Doctor
+Sa 7A-8:30A
+7 EM $53.00 C 30 0 0 0 0 0 2 0 2
+First News Saturday
+Su 5:30P-6P
+8 EN $339.00 C 30 0 0 0 0 0 2 0 2
+Sunday Early News
+TuWThFM 3P-4P
+9 EF $50.00 C 30 1 1 1 1 0 0 1 5
+The Dr. Oz Show
+F 9P-10P
+10 PT $360.00 C 30 0 0 0 0 0 2 0 2
+20/20
+TuWThFM 7A-8A
+11 EM $320.00 C 30 1 1 1 1 0 0 1 5
+Good Morning America Hour 1

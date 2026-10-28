@@ -1,0 +1,254 @@
+{
+  "source": "Codex-generated, model-assisted local PDF image and text reference; not human-verified truth",
+  "reviewed_pages": [
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20
+  ],
+  "independence": "Reference transcription reads PDF geometry/text only; no candidate, adapted output, scores or saved reference used as transcription input.",
+  "structures": "Every record: yellow complaint header, complainant KV row, complaints table, officers table. All fit existing benchmark nodes 0-3.",
+  "coverage": [
+    {
+      "source_page": 6,
+      "records": 3,
+      "complaint_rows": 9,
+      "officer_rows": 3,
+      "image_reviewed": true,
+      "text_reviewed": true,
+      "new_structures": [],
+      "record_numbers": [
+        "08-14",
+        "08-15",
+        "08-16"
+      ]
+    },
+    {
+      "source_page": 7,
+      "records": 3,
+      "complaint_rows": 4,
+      "officer_rows": 3,
+      "image_reviewed": true,
+      "text_reviewed": true,
+      "new_structures": [],
+      "record_numbers": [
+        "08-II03",
+        "08-17",
+        "08-II04"
+      ]
+    },
+    {
+      "source_page": 8,
+      "records": 4,
+      "complaint_rows": 6,
+      "officer_rows": 5,
+      "image_reviewed": true,
+      "text_reviewed": true,
+      "new_structures": [],
+      "record_numbers": [
+        "08-20",
+        "08-18",
+        "08-19",
+        "08-II06"
+      ]
+    },
+    {
+      "source_page": 9,
+      "records": 3,
+      "complaint_rows": 7,
+      "officer_rows": 3,
+      "image_reviewed": true,
+      "text_reviewed": true,
+      "new_structures": [],
+      "record_numbers": [
+        "08-II05",
+        "08-21",
+        "08-II07"
+      ]
+    },
+    {
+      "source_page": 10,
+      "records": 4,
+      "complaint_rows": 5,
+      "officer_rows": 5,
+      "image_reviewed": true,
+      "text_reviewed": true,
+      "new_structures": [],
+      "record_numbers": [
+        "08-22",
+        "08-23",
+        "09-01",
+        "09-II02"
+      ]
+    },
+    {
+      "source_page": 11,
+      "records": 4,
+      "complaint_rows": 6,
+      "officer_rows": 4,
+      "image_reviewed": true,
+      "text_reviewed": true,
+      "new_structures": [],
+      "record_numbers": [
+        "09-02",
+        "09-03",
+        "09-04A",
+        "09-04B"
+      ]
+    },
+    {
+      "source_page": 12,
+      "records": 3,
+      "complaint_rows": 6,
+      "officer_rows": 4,
+      "image_reviewed": true,
+      "text_reviewed": true,
+      "new_structures": [],
+      "record_numbers": [
+        "09-06",
+        "09-05",
+        "09-07"
+      ]
+    },
+    {
+      "source_page": 13,
+      "records": 4,
+      "complaint_rows": 8,
+      "officer_rows": 4,
+      "image_reviewed": true,
+      "text_reviewed": true,
+      "new_structures": [],
+      "record_numbers": [
+        "09-08",
+        "09-09",
+        "09-10",
+        "09-11"
+      ]
+    },
+    {
+      "source_page": 14,
+      "records": 4,
+      "complaint_rows": 5,
+      "officer_rows": 5,
+      "image_reviewed": true,
+      "text_reviewed": true,
+      "new_structures": [],
+      "record_numbers": [
+        "09-II03",
+        "09-II04",
+        "09-13",
+        "09-12"
+      ]
+    },
+    {
+      "source_page": 15,
+      "records": 4,
+      "complaint_rows": 7,
+      "officer_rows": 5,
+      "image_reviewed": true,
+      "text_reviewed": true,
+      "new_structures": [],
+      "record_numbers": [
+        "09-14",
+        "09-15",
+        "09-16",
+        "09-17"
+      ]
+    },
+    {
+      "source_page": 16,
+      "records": 4,
+      "complaint_rows": 7,
+      "officer_rows": 5,
+      "image_reviewed": true,
+      "text_reviewed": true,
+      "new_structures": [],
+      "record_numbers": [
+        "10-01",
+        "10-02",
+        "10-II02",
+        "10-03"
+      ]
+    },
+    {
+      "source_page": 17,
+      "records": 4,
+      "complaint_rows": 7,
+      "officer_rows": 4,
+      "image_reviewed": true,
+      "text_reviewed": true,
+      "new_structures": [],
+      "record_numbers": [
+        "10-06",
+        "10-04",
+        "10-05",
+        "11-II07"
+      ]
+    },
+    {
+      "source_page": 18,
+      "records": 4,
+      "complaint_rows": 5,
+      "officer_rows": 4,
+      "image_reviewed": true,
+      "text_reviewed": true,
+      "new_structures": [],
+      "record_numbers": [
+        "10-07",
+        "10-08",
+        "10-18",
+        "10-09"
+      ]
+    },
+    {
+      "source_page": 19,
+      "records": 4,
+      "complaint_rows": 6,
+      "officer_rows": 5,
+      "image_reviewed": true,
+      "text_reviewed": true,
+      "new_structures": [],
+      "record_numbers": [
+        "10-11",
+        "10-12A",
+        "10-12B",
+        "10-10"
+      ]
+    },
+    {
+      "source_page": 20,
+      "records": 4,
+      "complaint_rows": 5,
+      "officer_rows": 5,
+      "image_reviewed": true,
+      "text_reviewed": true,
+      "new_structures": [],
+      "record_numbers": [
+        "10-13",
+        "10-14",
+        "10-16",
+        "10-15"
+      ]
+    }
+  ],
+  "format_notes": [
+    "Category / Type includes formal/inquiry/admin review and citizen/internal in reading order.",
+    "Recorded On Camera represented as N/A No to match deterministic frozen adapter concatenation.",
+    "Wrapped officer ID suffixes below border retained and concatenated without spaces.",
+    "Partial surviving phone punctuation remains literal; fully redacted text is blank.",
+    "Print anomalies and abbreviated/clipped values retained literally; no inferred names or completions.",
+    "Complaint/Officer sequence labels excluded as benchmark record-level metadata; all array rows remain ordered."
+  ],
+  "qa_before_scoring": "Verified printed complaint/officer counts independently against all images. Corrected reference helper before scoring to cap wrapped ID cells at following headers and move completed date fragments to their printed field. No adapter revisions."
+}

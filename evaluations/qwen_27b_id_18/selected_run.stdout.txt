@@ -1,0 +1,1 @@
+Extracted 11 order(s) from 20 page(s) -> /Users/riccardo/tesi/code/twix_2/evaluations/qwen_27b_id_18/selected_raw.json

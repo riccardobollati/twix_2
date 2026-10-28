@@ -1,0 +1,52 @@
+New Order
+Agency: Assurance Media Station: WDAZ-S1 Flight Start: 10/30/2018
+Office: Minneapolis Order Type: Normal Flight End: 11/05/2018
+Client: 266 - West Virginia Senate - Manchin Cancel Date: Hiatus:
+Product: 355 - Get Out The Vote
+Piggyback Product:
+Estimate: 6372 - Manchin Wk#4 10.30-11.05 Received in ePort: 10/30/2018 12:02:14 PM Airtime Dollars: $51,781.00
+Interactive Dollars: $0.00
+Primary Demo: Local/National: Local Non-Airtime Dollars: $0.00
+Demo 2: Rep Office: WDAZ-S1 Total Dollars: $51,781.00
+Demo 3: AE: Alicia Munez Total Spots: 175
+GRP: 0.00 Phone:
+CPP: $0.00 OrderID: 7440870
+GIMP: 0 Status: Confirmed
+CPM: $0.00 MarketShare:
+Comments: Separation: 30
+Daily Airtime Lines
+Line Daypart DPT Total
+No (Program) Code Rate C/T Len 10/30 10/31 11/1 11/2 11/3 11/4 11/5 Spots Rtg CPP Imp CPM
+TuWThFM 11A-12P
+1 DT $30.00 C 30 3 3 3 3 0 0 3 15
+Rachael Ray
+TuWThFM 10A-11A
+2 DT $80.00 C 30 3 3 3 3 0 0 3 15
+The View
+TuWThFM 10:35P-11:35P
+3 LF $186.00 C 30 1 1 1 1 0 0 1 5
+Jimmy Kimmel
+TuWThFM 10P-10:35P
+4 LN $906.00 C 30 1 1 1 1 0 0 1 5
+WDAY/WDAZ News at 10
+Su 10:35P-11:05P
+5 LF $142.00 C 30 0 0 0 0 0 2 0 2
+WDAY/WDAZ Sports Sunday
+Su 10:35P-11:05P
+6 LF $120.00 C 30 0 0 0 0 2 0 0 2
+WDAY/WDAZ Sports Sunday
+M 9P-10P
+7 PT $825.00 C 30 0 0 0 0 0 2 0 2
+The Good Doctor
+TuWThFM 5P-5:30P
+8 EN $380.00 C 30 3 3 3 3 0 0 3 15
+WDAY/WDAZ News at 5
+Su 10P-10:35P
+9 LN $940.00 C 30 0 0 0 0 1 0 0 1
+10P News Sunday
+Su 10:35P-11:05P
+10 LF $127.00 C 30 0 0 0 0 1 0 0 1
+WDAY/WDAZ Sports Sunday
+TuWThFM 4:30P-5P
+11 EF $50.00 C 30 1 1 1 1 0 0 1 5
+Inside Edition

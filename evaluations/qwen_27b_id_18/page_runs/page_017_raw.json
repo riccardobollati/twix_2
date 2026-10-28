@@ -1,0 +1,246 @@
+{
+  "source_file": "/Users/riccardo/tesi/code/twix_2/evaluations/qwen_27b_id_18/page_runs/page_017.pdf",
+  "page_count": 1,
+  "orders": [
+    {
+      "order_id": "7441752",
+      "status": "Confirmed",
+      "agency": "Buying Time",
+      "office": "Washington",
+      "client": "325 - North Dakota Senate - Heitkamp",
+      "product": "328 - Political",
+      "piggyback_product": null,
+      "estimate": "6766 - Heitkamp Wk#4 10.30-11.05",
+      "primary_demo": null,
+      "demo_2": null,
+      "demo_3": null,
+      "grp": "0.00",
+      "cpp": "$0.00",
+      "gimp": "0",
+      "cpm": "$0.00",
+      "comments": "Separation: 15",
+      "station": "WDAY-D3",
+      "order_type": "Normal",
+      "flight_start": "10/30/2018",
+      "flight_end": "11/05/2018",
+      "cancel_date": null,
+      "hiatus": null,
+      "received_in_eport": "10/30/2018 3:31:56 PM",
+      "local_national": "Local",
+      "rep_office": "WDAY-D3",
+      "ae": "Robert Kline",
+      "phone": null,
+      "market_share": null,
+      "airtime_dollars": "$31,661.00",
+      "interactive_dollars": "$0.00",
+      "non_airtime_dollars": "$0.00",
+      "total_dollars": "$31,661.00",
+      "total_spots": 106,
+      "flight_dates": [
+        "10/30",
+        "10/31",
+        "11/1",
+        "11/2",
+        "11/3",
+        "11/4",
+        "11/5"
+      ],
+      "lines": [
+        {
+          "line_no": 1,
+          "daypart": "F 9P-10P",
+          "program": "20/20",
+          "dpt_code": "PT",
+          "rate": "$370.00",
+          "c_t": "C",
+          "len": 30,
+          "daily_spots": {
+            "10/30": 0,
+            "10/31": 0,
+            "11/1": 0,
+            "11/2": 0,
+            "11/3": 2,
+            "11/4": 0,
+            "11/5": 0
+          },
+          "total_spots": 2
+        },
+        {
+          "line_no": 2,
+          "daypart": "TuWThFM 6P-6:30P",
+          "program": "WDAY/WDAZ News at 6",
+          "dpt_code": "EN",
+          "rate": "$710.00",
+          "c_t": "C",
+          "len": 30,
+          "daily_spots": {
+            "10/30": 3,
+            "10/31": 3,
+            "11/1": 3,
+            "11/2": 3,
+            "11/3": 0,
+            "11/4": 0,
+            "11/5": 3
+          },
+          "total_spots": 15
+        },
+        {
+          "line_no": 3,
+          "daypart": "TuWThFM 10:35P-11:35P",
+          "program": "Jimmy Kimmel",
+          "dpt_code": "LF",
+          "rate": "$140.00",
+          "c_t": "C",
+          "len": 30,
+          "daily_spots": {
+            "10/30": 1,
+            "10/31": 1,
+            "11/1": 1,
+            "11/2": 1,
+            "11/3": 0,
+            "11/4": 0,
+            "11/5": 1
+          },
+          "total_spots": 5
+        },
+        {
+          "line_no": 5,
+          "daypart": "Sa 6A-7A",
+          "program": "Good Morning America Saturday",
+          "dpt_code": "EM",
+          "rate": "$80.00",
+          "c_t": "C",
+          "len": 30,
+          "daily_spots": {
+            "10/30": 0,
+            "10/31": 0,
+            "11/1": 0,
+            "11/2": 0,
+            "11/3": 0,
+            "11/4": 1,
+            "11/5": 0
+          },
+          "total_spots": 1
+        },
+        {
+          "line_no": 6,
+          "daypart": "Su 5:30P-6P",
+          "program": "Sunday Early News",
+          "dpt_code": "EN",
+          "rate": "$308.00",
+          "c_t": "C",
+          "len": 30,
+          "daily_spots": {
+            "10/30": 0,
+            "10/31": 0,
+            "11/1": 0,
+            "11/2": 0,
+            "11/3": 0,
+            "11/4": 1,
+            "11/5": 0
+          },
+          "total_spots": 1
+        },
+        {
+          "line_no": 7,
+          "daypart": "TuWThFM 5P-5:30P",
+          "program": "WDAY/WDAZ News at 5",
+          "dpt_code": "EN",
+          "rate": "$383.00",
+          "c_t": "C",
+          "len": 30,
+          "daily_spots": {
+            "10/30": 3,
+            "10/31": 3,
+            "11/1": 3,
+            "11/2": 3,
+            "11/3": 0,
+            "11/4": 0,
+            "11/5": 3
+          },
+          "total_spots": 15
+        },
+        {
+          "line_no": 8,
+          "daypart": "TuWThFM 6:30P-7P",
+          "program": "Entertainment Tonight",
+          "dpt_code": "PA",
+          "rate": "$380.00",
+          "c_t": "C",
+          "len": 30,
+          "daily_spots": {
+            "10/30": 1,
+            "10/31": 1,
+            "11/1": 1,
+            "11/2": 1,
+            "11/3": 0,
+            "11/4": 0,
+            "11/5": 1
+          },
+          "total_spots": 5
+        },
+        {
+          "line_no": 9,
+          "daypart": "Sa 6A-7A",
+          "program": "Good Morning America Saturday",
+          "dpt_code": "EM",
+          "rate": "$86.00",
+          "c_t": "C",
+          "len": 30,
+          "daily_spots": {
+            "10/30": 0,
+            "10/31": 0,
+            "11/1": 0,
+            "11/2": 0,
+            "11/3": 0,
+            "11/4": 2,
+            "11/5": 0
+          },
+          "total_spots": 2
+        },
+        {
+          "line_no": 10,
+          "daypart": "TuWThFM 4:30P-5P",
+          "program": "Inside Edition",
+          "dpt_code": "EF",
+          "rate": "$59.00",
+          "c_t": "C",
+          "len": 30,
+          "daily_spots": {
+            "10/30": 1,
+            "10/31": 1,
+            "11/1": 1,
+            "11/2": 1,
+            "11/3": 0,
+            "11/4": 0,
+            "11/5": 1
+          },
+          "total_spots": 5
+        },
+        {
+          "line_no": 11,
+          "daypart": "Su 10P-10:35P",
+          "program": "10P News Sunday",
+          "dpt_code": "LN",
+          "rate": "$830.00",
+          "c_t": "C",
+          "len": 30,
+          "daily_spots": {
+            "10/30": 0,
+            "10/31": 0,
+            "11/1": 0,
+            "11/2": 0,
+            "11/3": 2,
+            "11/4": 0,
+            "11/5": 0
+          },
+          "total_spots": 2
+        }
+      ],
+      "totals": null,
+      "pages": [
+        1
+      ]
+    }
+  ]
+}

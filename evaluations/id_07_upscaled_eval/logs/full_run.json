@@ -1,0 +1,16 @@
+{
+  "command": [
+    "/Users/riccardo/tesi/code/twix_2/env/bin/python",
+    "/Users/riccardo/tesi/code/baseline/id_07_upscaled/extract.py",
+    "/Users/riccardo/tesi/code/full_dataset/id_07_upscaled.pdf",
+    "/Users/riccardo/tesi/code/twix_2/evaluations/id_07_upscaled_eval/runs/full_raw.json"
+  ],
+  "input_pdf": "/Users/riccardo/tesi/code/full_dataset/id_07_upscaled.pdf",
+  "output_json": "/Users/riccardo/tesi/code/twix_2/evaluations/id_07_upscaled_eval/runs/full_raw.json",
+  "exit_code": 0,
+  "duration_seconds": 3.554213,
+  "stdout": "Extracted 400 areas from 35 pages -> /Users/riccardo/tesi/code/twix_2/evaluations/id_07_upscaled_eval/runs/full_raw.json\n",
+  "stderr": "",
+  "output_exists": true,
+  "rows_or_items": 400
+}

@@ -1,0 +1,152 @@
+{
+  "template": [
+    {
+      "type": "kv",
+      "fields": [
+        "Agency",
+        "Station",
+        "Flight Start",
+        "Office",
+        "Order Type",
+        "Flight End",
+        "Client",
+        "Cancel Date",
+        "Hiatus",
+        "Product",
+        "Piggyback Product",
+        "Estimate",
+        "Received in ePort",
+        "Airtime Dollars",
+        "Interactive Dollars",
+        "Primary Demo",
+        "Local/National",
+        "Non-Airtime Dollars",
+        "Demo 2",
+        "Rep Office",
+        "Total Dollars",
+        "Demo 3",
+        "AE",
+        "Total Spots",
+        "GRP",
+        "Phone",
+        "OrderID",
+        "CPP",
+        "GIMP",
+        "Status",
+        "CPM",
+        "MarketShare",
+        "Comments"
+      ],
+      "bid": [
+        0
+      ],
+      "child": -1,
+      "node_id": 0,
+      "complexity": {
+        "repeated": false
+      }
+    },
+    {
+      "type": "table",
+      "fields": [
+        "Line No",
+        "Daypart (Program)",
+        "DPT Code",
+        "Rate",
+        "C/T",
+        "Len",
+        "10/30",
+        "10/31",
+        "11/1",
+        "11/2",
+        "11/3",
+        "11/4",
+        "11/5",
+        "Total Spots",
+        "Rtg",
+        "CPP",
+        "Imp",
+        "CPM"
+      ],
+      "bid": [
+        1
+      ],
+      "child": -1,
+      "node_id": 1,
+      "complexity": {
+        "same_row_structure": true,
+        "nested": false
+      }
+    },
+    {
+      "type": "kv",
+      "fields": [
+        "Agency",
+        "Station",
+        "Order ID",
+        "Client",
+        "Product",
+        "Estimate",
+        "Flight Start",
+        "Flight End",
+        "Received in ePort"
+      ],
+      "bid": [
+        2
+      ],
+      "child": -1,
+      "node_id": 2,
+      "complexity": {
+        "repeated": false
+      }
+    },
+    {
+      "type": "kv",
+      "fields": [
+        "Cash$ - Spots",
+        "Trade$ - Spots",
+        "Total Cost",
+        "Total GRP - CPP",
+        "Total GIMP(000) - CPM"
+      ],
+      "bid": [
+        3
+      ],
+      "child": -1,
+      "node_id": 3,
+      "complexity": {
+        "repeated": false
+      }
+    },
+    {
+      "type": "kv",
+      "fields": [
+        "10/30",
+        "10/31",
+        "11/1",
+        "11/2",
+        "11/3",
+        "11/4",
+        "11/5"
+      ],
+      "bid": [
+        4
+      ],
+      "child": -1,
+      "node_id": 4,
+      "complexity": {
+        "repeated": false
+      }
+    }
+  ],
+  "metadata": [
+    {
+      "pattern": "New Order(?: \\(Page \\d+\\))?",
+      "type": "document_level"
+    },
+    {
+      "pattern": "Daily Airtime Lines",
+      "type": "record_level"
+    }
+  ]
+}

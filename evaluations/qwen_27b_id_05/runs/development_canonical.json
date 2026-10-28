@@ -1,0 +1,3702 @@
+{
+  "records": [
+    {
+      "record_id": "page_1_record_0",
+      "page": 1,
+      "nodes": [
+        {
+          "id": "0_0000",
+          "type": "table",
+          "content": {
+            "headers": [
+              "Date",
+              "Number",
+              "Investigator",
+              "Date Assigned",
+              "Racial",
+              "Category / Type",
+              "Location Of Occurrence",
+              "Disposition",
+              "Completed",
+              "Recorded On Camera"
+            ],
+            "rows": [
+              [
+                {
+                  "key": "Date",
+                  "value": "1/27/2012"
+                },
+                {
+                  "key": "Number",
+                  "value": "08-01"
+                },
+                {
+                  "key": "Investigator",
+                  "value": "Hayes, Olivia"
+                },
+                {
+                  "key": "Date Assigned",
+                  "value": "1/30/2008"
+                },
+                {
+                  "key": "Racial",
+                  "value": "No"
+                },
+                {
+                  "key": "Category / Type",
+                  "value": "FORMAL Citizen"
+                },
+                {
+                  "key": "Location Of Occurrence",
+                  "value": "Not Stated"
+                },
+                {
+                  "key": "Disposition",
+                  "value": "SUSTAINED"
+                },
+                {
+                  "key": "Completed",
+                  "value": "2/7/2008"
+                },
+                {
+                  "key": "Recorded On Camera",
+                  "value": "N/A No"
+                }
+              ]
+            ]
+          },
+          "page": 1,
+          "relationship": {
+            "parent_id": null
+          }
+        },
+        {
+          "id": "1_0000",
+          "type": "key_value",
+          "content": [
+            {
+              "key": "Complainant:",
+              "value": ""
+            },
+            {
+              "key": "DOB:",
+              "value": ""
+            },
+            {
+              "key": "Gender:",
+              "value": "FEMAL"
+            },
+            {
+              "key": "Address:",
+              "value": "Terr, Champaign IL 61820"
+            },
+            {
+              "key": "H Phone:",
+              "value": ""
+            }
+          ],
+          "page": 1,
+          "relationship": {
+            "parent_id": null
+          }
+        },
+        {
+          "id": "2_0000",
+          "type": "table",
+          "content": {
+            "headers": [
+              "Type Of Complaint",
+              "Description",
+              "Complaint Disposition"
+            ],
+            "rows": [
+              [
+                {
+                  "key": "Type Of Complaint",
+                  "value": "R-3B.1 Courtesy:Profanity"
+                },
+                {
+                  "key": "Description",
+                  "value": "Discourteous Conduct"
+                },
+                {
+                  "key": "Complaint Disposition",
+                  "value": "SUSTAINED"
+                }
+              ]
+            ]
+          },
+          "page": 1,
+          "relationship": {
+            "parent_id": null
+          }
+        },
+        {
+          "id": "3_0000",
+          "type": "table",
+          "content": {
+            "headers": [
+              "Name",
+              "ID No.",
+              "Rank",
+              "Division",
+              "Officer Disposition",
+              "Action Taken",
+              "Body Cam"
+            ],
+            "rows": [
+              [
+                {
+                  "key": "Name",
+                  "value": "Newton, Grace."
+                },
+                {
+                  "key": "ID No.",
+                  "value": "914"
+                },
+                {
+                  "key": "Rank",
+                  "value": "SERGEANT"
+                },
+                {
+                  "key": "Division",
+                  "value": "Field Operations"
+                },
+                {
+                  "key": "Officer Disposition",
+                  "value": "SUSTAINED"
+                },
+                {
+                  "key": "Action Taken",
+                  "value": "COUNSELING"
+                },
+                {
+                  "key": "Body Cam",
+                  "value": "No"
+                }
+              ]
+            ]
+          },
+          "page": 1,
+          "relationship": {
+            "parent_id": null
+          }
+        }
+      ]
+    },
+    {
+      "record_id": "page_1_record_1",
+      "page": 1,
+      "nodes": [
+        {
+          "id": "0_0001",
+          "type": "table",
+          "content": {
+            "headers": [
+              "Date",
+              "Number",
+              "Investigator",
+              "Date Assigned",
+              "Racial",
+              "Category / Type",
+              "Location Of Occurrence",
+              "Disposition",
+              "Completed",
+              "Recorded On Camera"
+            ],
+            "rows": [
+              [
+                {
+                  "key": "Date",
+                  "value": "2/24/2012"
+                },
+                {
+                  "key": "Number",
+                  "value": "08-02"
+                },
+                {
+                  "key": "Investigator",
+                  "value": "Nguyen,Ethan"
+                },
+                {
+                  "key": "Date Assigned",
+                  "value": "2/27/2008"
+                },
+                {
+                  "key": "Racial",
+                  "value": "No"
+                },
+                {
+                  "key": "Category / Type",
+                  "value": "FORMAL Citizen"
+                },
+                {
+                  "key": "Location Of Occurrence",
+                  "value": "Not Stated"
+                },
+                {
+                  "key": "Disposition",
+                  "value": "SUSTAINED"
+                },
+                {
+                  "key": "Completed",
+                  "value": "3/17/2008"
+                },
+                {
+                  "key": "Recorded On Camera",
+                  "value": "N/A No"
+                }
+              ]
+            ]
+          },
+          "page": 1,
+          "relationship": {
+            "parent_id": null
+          }
+        },
+        {
+          "id": "1_0001",
+          "type": "key_value",
+          "content": [
+            {
+              "key": "Complainant:",
+              "value": ""
+            },
+            {
+              "key": "DOB:",
+              "value": ""
+            },
+            {
+              "key": "Gender:",
+              "value": "FEMAL"
+            },
+            {
+              "key": "Address:",
+              "value": ", Champaign IL 61821"
+            },
+            {
+              "key": "H Phone:",
+              "value": ""
+            }
+          ],
+          "page": 1,
+          "relationship": {
+            "parent_id": null
+          }
+        },
+        {
+          "id": "2_0001",
+          "type": "table",
+          "content": {
+            "headers": [
+              "Type Of Complaint",
+              "Description",
+              "Complaint Disposition"
+            ],
+            "rows": [
+              [
+                {
+                  "key": "Type Of Complaint",
+                  "value": "R-3B.1 Courtesy:Profanity"
+                },
+                {
+                  "key": "Description",
+                  "value": "Discourteous Conduct"
+                },
+                {
+                  "key": "Complaint Disposition",
+                  "value": "NOT SUSTAINED"
+                }
+              ],
+              [
+                {
+                  "key": "Type Of Complaint",
+                  "value": "R-3B.4 COURTESY: COMMENT"
+                },
+                {
+                  "key": "Description",
+                  "value": "Discourteous Conduct"
+                },
+                {
+                  "key": "Complaint Disposition",
+                  "value": "SUSTAINED"
+                }
+              ],
+              [
+                {
+                  "key": "Type Of Complaint",
+                  "value": "R-5D Use of physical force"
+                },
+                {
+                  "key": "Description",
+                  "value": "Wrong Action by Employee"
+                },
+                {
+                  "key": "Complaint Disposition",
+                  "value": "EXONERATED"
+                }
+              ]
+            ]
+          },
+          "page": 1,
+          "relationship": {
+            "parent_id": null
+          }
+        },
+        {
+          "id": "3_0001",
+          "type": "table",
+          "content": {
+            "headers": [
+              "Name",
+              "ID No.",
+              "Rank",
+              "Division",
+              "Officer Disposition",
+              "Action Taken",
+              "Body Cam"
+            ],
+            "rows": [
+              [
+                {
+                  "key": "Name",
+                  "value": "Palmer, Henry."
+                },
+                {
+                  "key": "ID No.",
+                  "value": "939"
+                },
+                {
+                  "key": "Rank",
+                  "value": "Senior Officer"
+                },
+                {
+                  "key": "Division",
+                  "value": "Field Operations"
+                },
+                {
+                  "key": "Officer Disposition",
+                  "value": "SUSTAINED"
+                },
+                {
+                  "key": "Action Taken",
+                  "value": "COUNSELING"
+                },
+                {
+                  "key": "Body Cam",
+                  "value": "No"
+                }
+              ]
+            ]
+          },
+          "page": 1,
+          "relationship": {
+            "parent_id": null
+          }
+        }
+      ]
+    },
+    {
+      "record_id": "page_1_record_2",
+      "page": 1,
+      "nodes": [
+        {
+          "id": "0_0002",
+          "type": "table",
+          "content": {
+            "headers": [
+              "Date",
+              "Number",
+              "Investigator",
+              "Date Assigned",
+              "Racial",
+              "Category / Type",
+              "Location Of Occurrence",
+              "Disposition",
+              "Completed",
+              "Recorded On Camera"
+            ],
+            "rows": [
+              [
+                {
+                  "key": "Date",
+                  "value": "3/5/2012"
+                },
+                {
+                  "key": "Number",
+                  "value": "08-03"
+                },
+                {
+                  "key": "Investigator",
+                  "value": "Patel, Aanya"
+                },
+                {
+                  "key": "Date Assigned",
+                  "value": "3/10/2008"
+                },
+                {
+                  "key": "Racial",
+                  "value": "No"
+                },
+                {
+                  "key": "Category / Type",
+                  "value": "FORMAL Citizen"
+                },
+                {
+                  "key": "Location Of Occurrence",
+                  "value": "Not Stated"
+                },
+                {
+                  "key": "Disposition",
+                  "value": "NOT SUSTAINED"
+                },
+                {
+                  "key": "Completed",
+                  "value": "4/28/2008"
+                },
+                {
+                  "key": "Recorded On Camera",
+                  "value": "N/A No"
+                }
+              ]
+            ]
+          },
+          "page": 1,
+          "relationship": {
+            "parent_id": null
+          }
+        },
+        {
+          "id": "1_0002",
+          "type": "key_value",
+          "content": [
+            {
+              "key": "Complainant:",
+              "value": ""
+            },
+            {
+              "key": "DOB:",
+              "value": ""
+            },
+            {
+              "key": "Gender:",
+              "value": "MALE"
+            },
+            {
+              "key": "Address:",
+              "value": ", Champaign IL 61821"
+            },
+            {
+              "key": "H Phone:",
+              "value": "("
+            }
+          ],
+          "page": 1,
+          "relationship": {
+            "parent_id": null
+          }
+        },
+        {
+          "id": "2_0002",
+          "type": "table",
+          "content": {
+            "headers": [
+              "Type Of Complaint",
+              "Description",
+              "Complaint Disposition"
+            ],
+            "rows": [
+              [
+                {
+                  "key": "Type Of Complaint",
+                  "value": "R-3B.2 Courtesy: Rude"
+                },
+                {
+                  "key": "Description",
+                  "value": "Discourteous Conduct"
+                },
+                {
+                  "key": "Complaint Disposition",
+                  "value": "UNFOUNDED"
+                }
+              ],
+              [
+                {
+                  "key": "Type Of Complaint",
+                  "value": "R-3B.2 Courtesy: Rude"
+                },
+                {
+                  "key": "Description",
+                  "value": "Discourteous Conduct"
+                },
+                {
+                  "key": "Complaint Disposition",
+                  "value": "NOT SUSTAINED"
+                }
+              ]
+            ]
+          },
+          "page": 1,
+          "relationship": {
+            "parent_id": null
+          }
+        },
+        {
+          "id": "3_0002",
+          "type": "table",
+          "content": {
+            "headers": [
+              "Name",
+              "ID No.",
+              "Rank",
+              "Division",
+              "Officer Disposition",
+              "Action Taken",
+              "Body Cam"
+            ],
+            "rows": [
+              [
+                {
+                  "key": "Name",
+                  "value": "Walters, Leah."
+                },
+                {
+                  "key": "ID No.",
+                  "value": "921RET"
+                },
+                {
+                  "key": "Rank",
+                  "value": "SERGEANT"
+                },
+                {
+                  "key": "Division",
+                  "value": "Field Operations"
+                },
+                {
+                  "key": "Officer Disposition",
+                  "value": "NOT SUSTAINED"
+                },
+                {
+                  "key": "Action Taken",
+                  "value": "NONE"
+                },
+                {
+                  "key": "Body Cam",
+                  "value": "No"
+                }
+              ]
+            ]
+          },
+          "page": 1,
+          "relationship": {
+            "parent_id": null
+          }
+        }
+      ]
+    },
+    {
+      "record_id": "page_2_record_3",
+      "page": 2,
+      "nodes": [
+        {
+          "id": "0_0003",
+          "type": "table",
+          "content": {
+            "headers": [
+              "Date",
+              "Number",
+              "Investigator",
+              "Date Assigned",
+              "Racial",
+              "Category / Type",
+              "Location Of Occurrence",
+              "Disposition",
+              "Completed",
+              "Recorded On Camera"
+            ],
+            "rows": [
+              [
+                {
+                  "key": "Date",
+                  "value": "3/14/2012"
+                },
+                {
+                  "key": "Number",
+                  "value": "08-II01"
+                },
+                {
+                  "key": "Investigator",
+                  "value": "Kim, Joon"
+                },
+                {
+                  "key": "Date Assigned",
+                  "value": "3/14/2008"
+                },
+                {
+                  "key": "Racial",
+                  "value": "No"
+                },
+                {
+                  "key": "Category / Type",
+                  "value": "FORMAL Internal"
+                },
+                {
+                  "key": "Location Of Occurrence",
+                  "value": "Not Stated"
+                },
+                {
+                  "key": "Disposition",
+                  "value": "SUSTAINED"
+                },
+                {
+                  "key": "Completed",
+                  "value": "3/14/2008"
+                },
+                {
+                  "key": "Recorded On Camera",
+                  "value": "N/A No"
+                }
+              ]
+            ]
+          },
+          "page": 2,
+          "relationship": {
+            "parent_id": null
+          }
+        },
+        {
+          "id": "1_0003",
+          "type": "key_value",
+          "content": [
+            {
+              "key": "Complainant:",
+              "value": ""
+            },
+            {
+              "key": "DOB:",
+              "value": ""
+            },
+            {
+              "key": "Gender:",
+              "value": "FEMAL"
+            },
+            {
+              "key": "Address:",
+              "value": ", Champaign IL 61821"
+            },
+            {
+              "key": "H Phone:",
+              "value": ""
+            }
+          ],
+          "page": 2,
+          "relationship": {
+            "parent_id": null
+          }
+        },
+        {
+          "id": "2_0003",
+          "type": "table",
+          "content": {
+            "headers": [
+              "Type Of Complaint",
+              "Description",
+              "Complaint Disposition"
+            ],
+            "rows": [
+              [
+                {
+                  "key": "Type Of Complaint",
+                  "value": "R-3B.2 Courtesy: Rude"
+                },
+                {
+                  "key": "Description",
+                  "value": "Discourteous Conduct"
+                },
+                {
+                  "key": "Complaint Disposition",
+                  "value": "SUSTAINED"
+                }
+              ]
+            ]
+          },
+          "page": 2,
+          "relationship": {
+            "parent_id": null
+          }
+        },
+        {
+          "id": "3_0003",
+          "type": "table",
+          "content": {
+            "headers": [
+              "Name",
+              "ID No.",
+              "Rank",
+              "Division",
+              "Officer Disposition",
+              "Action Taken",
+              "Body Cam"
+            ],
+            "rows": [
+              [
+                {
+                  "key": "Name",
+                  "value": "Webster, Simon."
+                },
+                {
+                  "key": "ID No.",
+                  "value": "799RESIG"
+                },
+                {
+                  "key": "Rank",
+                  "value": "Senior Officer"
+                },
+                {
+                  "key": "Division",
+                  "value": "Field Operations"
+                },
+                {
+                  "key": "Officer Disposition",
+                  "value": "SUSTAINED"
+                },
+                {
+                  "key": "Action Taken",
+                  "value": "COUNSELING"
+                },
+                {
+                  "key": "Body Cam",
+                  "value": "No"
+                }
+              ]
+            ]
+          },
+          "page": 2,
+          "relationship": {
+            "parent_id": null
+          }
+        }
+      ]
+    },
+    {
+      "record_id": "page_2_record_4",
+      "page": 2,
+      "nodes": [
+        {
+          "id": "0_0004",
+          "type": "table",
+          "content": {
+            "headers": [
+              "Date",
+              "Number",
+              "Investigator",
+              "Date Assigned",
+              "Racial",
+              "Category / Type",
+              "Location Of Occurrence",
+              "Disposition",
+              "Completed",
+              "Recorded On Camera"
+            ],
+            "rows": [
+              [
+                {
+                  "key": "Date",
+                  "value": "3/18/2012"
+                },
+                {
+                  "key": "Number",
+                  "value": "08-06"
+                },
+                {
+                  "key": "Investigator",
+                  "value": "Davies, Nora"
+                },
+                {
+                  "key": "Date Assigned",
+                  "value": "4/17/2008"
+                },
+                {
+                  "key": "Racial",
+                  "value": "No"
+                },
+                {
+                  "key": "Category / Type",
+                  "value": "FORMAL Citizen"
+                },
+                {
+                  "key": "Location Of Occurrence",
+                  "value": "Not Stated"
+                },
+                {
+                  "key": "Disposition",
+                  "value": "SUSTAINED"
+                },
+                {
+                  "key": "Completed",
+                  "value": "4/23/2008"
+                },
+                {
+                  "key": "Recorded On Camera",
+                  "value": "N/A No"
+                }
+              ]
+            ]
+          },
+          "page": 2,
+          "relationship": {
+            "parent_id": null
+          }
+        },
+        {
+          "id": "1_0004",
+          "type": "key_value",
+          "content": [
+            {
+              "key": "Complainant:",
+              "value": ""
+            },
+            {
+              "key": "DOB:",
+              "value": ""
+            },
+            {
+              "key": "Gender:",
+              "value": "MALE"
+            },
+            {
+              "key": "Address:",
+              "value": ", Champaign IL 61821"
+            },
+            {
+              "key": "H Phone:",
+              "value": ""
+            }
+          ],
+          "page": 2,
+          "relationship": {
+            "parent_id": null
+          }
+        },
+        {
+          "id": "2_0004",
+          "type": "table",
+          "content": {
+            "headers": [
+              "Type Of Complaint",
+              "Description",
+              "Complaint Disposition"
+            ],
+            "rows": [
+              [
+                {
+                  "key": "Type Of Complaint",
+                  "value": "R-3B.1 Courtesy:Profanity"
+                },
+                {
+                  "key": "Description",
+                  "value": "Discourteous Conduct"
+                },
+                {
+                  "key": "Complaint Disposition",
+                  "value": "NOT SUSTAINED"
+                }
+              ],
+              [
+                {
+                  "key": "Type Of Complaint",
+                  "value": "R-3B.4 COURTESY: COMMENT"
+                },
+                {
+                  "key": "Description",
+                  "value": "Discourteous Conduct"
+                },
+                {
+                  "key": "Complaint Disposition",
+                  "value": "SUSTAINED"
+                }
+              ]
+            ]
+          },
+          "page": 2,
+          "relationship": {
+            "parent_id": null
+          }
+        },
+        {
+          "id": "3_0004",
+          "type": "table",
+          "content": {
+            "headers": [
+              "Name",
+              "ID No.",
+              "Rank",
+              "Division",
+              "Officer Disposition",
+              "Action Taken",
+              "Body Cam"
+            ],
+            "rows": [
+              [
+                {
+                  "key": "Name",
+                  "value": "Douglas, Emma."
+                },
+                {
+                  "key": "ID No.",
+                  "value": "722-Ret"
+                },
+                {
+                  "key": "Rank",
+                  "value": "DETECTIVE"
+                },
+                {
+                  "key": "Division",
+                  "value": "Operations Supp"
+                },
+                {
+                  "key": "Officer Disposition",
+                  "value": "SUSTAINED"
+                },
+                {
+                  "key": "Action Taken",
+                  "value": "COUNSELING"
+                },
+                {
+                  "key": "Body Cam",
+                  "value": "No"
+                }
+              ]
+            ]
+          },
+          "page": 2,
+          "relationship": {
+            "parent_id": null
+          }
+        }
+      ]
+    },
+    {
+      "record_id": "page_2_record_5",
+      "page": 2,
+      "nodes": [
+        {
+          "id": "0_0005",
+          "type": "table",
+          "content": {
+            "headers": [
+              "Date",
+              "Number",
+              "Investigator",
+              "Date Assigned",
+              "Racial",
+              "Category / Type",
+              "Location Of Occurrence",
+              "Disposition",
+              "Completed",
+              "Recorded On Camera"
+            ],
+            "rows": [
+              [
+                {
+                  "key": "Date",
+                  "value": "3/22/2012"
+                },
+                {
+                  "key": "Number",
+                  "value": "08-04a"
+                },
+                {
+                  "key": "Investigator",
+                  "value": "Singh, Arjun"
+                },
+                {
+                  "key": "Date Assigned",
+                  "value": "4/16/2008"
+                },
+                {
+                  "key": "Racial",
+                  "value": "No"
+                },
+                {
+                  "key": "Category / Type",
+                  "value": "FORMAL Citizen"
+                },
+                {
+                  "key": "Location Of Occurrence",
+                  "value": "Not Stated"
+                },
+                {
+                  "key": "Disposition",
+                  "value": "UNFOUNDED"
+                },
+                {
+                  "key": "Completed",
+                  "value": "5/1/2008"
+                },
+                {
+                  "key": "Recorded On Camera",
+                  "value": "N/A No"
+                }
+              ]
+            ]
+          },
+          "page": 2,
+          "relationship": {
+            "parent_id": null
+          }
+        },
+        {
+          "id": "1_0005",
+          "type": "key_value",
+          "content": [
+            {
+              "key": "Complainant:",
+              "value": ""
+            },
+            {
+              "key": "DOB:",
+              "value": ""
+            },
+            {
+              "key": "Gender:",
+              "value": "MALE"
+            },
+            {
+              "key": "Address:",
+              "value": "Ct, Rantoul IL 61866"
+            },
+            {
+              "key": "H Phone:",
+              "value": "("
+            }
+          ],
+          "page": 2,
+          "relationship": {
+            "parent_id": null
+          }
+        },
+        {
+          "id": "2_0005",
+          "type": "table",
+          "content": {
+            "headers": [
+              "Type Of Complaint",
+              "Description",
+              "Complaint Disposition"
+            ],
+            "rows": [
+              [
+                {
+                  "key": "Type Of Complaint",
+                  "value": "R-5D Use of physical force"
+                },
+                {
+                  "key": "Description",
+                  "value": "Wrong Action by Employee"
+                },
+                {
+                  "key": "Complaint Disposition",
+                  "value": "UNFOUNDED"
+                }
+              ]
+            ]
+          },
+          "page": 2,
+          "relationship": {
+            "parent_id": null
+          }
+        },
+        {
+          "id": "3_0005",
+          "type": "table",
+          "content": {
+            "headers": [
+              "Name",
+              "ID No.",
+              "Rank",
+              "Division",
+              "Officer Disposition",
+              "Action Taken",
+              "Body Cam"
+            ],
+            "rows": [
+              [
+                {
+                  "key": "Name",
+                  "value": "Douglas, Emma V."
+                },
+                {
+                  "key": "ID No.",
+                  "value": "920"
+                },
+                {
+                  "key": "Rank",
+                  "value": "SERGEANT"
+                },
+                {
+                  "key": "Division",
+                  "value": "Field Operations"
+                },
+                {
+                  "key": "Officer Disposition",
+                  "value": "UNFOUNDED"
+                },
+                {
+                  "key": "Action Taken",
+                  "value": "NONE"
+                },
+                {
+                  "key": "Body Cam",
+                  "value": "No"
+                }
+              ],
+              [
+                {
+                  "key": "Name",
+                  "value": "MULTIPLE OFFICERS/EMPLOY"
+                },
+                {
+                  "key": "ID No.",
+                  "value": ""
+                },
+                {
+                  "key": "Rank",
+                  "value": "NOT STATED"
+                },
+                {
+                  "key": "Division",
+                  "value": "NOT ENTERED"
+                },
+                {
+                  "key": "Officer Disposition",
+                  "value": "UNFOUNDED"
+                },
+                {
+                  "key": "Action Taken",
+                  "value": "NONE"
+                },
+                {
+                  "key": "Body Cam",
+                  "value": "No"
+                }
+              ]
+            ]
+          },
+          "page": 2,
+          "relationship": {
+            "parent_id": null
+          }
+        }
+      ]
+    },
+    {
+      "record_id": "page_2_record_6",
+      "page": 2,
+      "nodes": [
+        {
+          "id": "0_0006",
+          "type": "table",
+          "content": {
+            "headers": [
+              "Date",
+              "Number",
+              "Investigator",
+              "Date Assigned",
+              "Racial",
+              "Category / Type",
+              "Location Of Occurrence",
+              "Disposition",
+              "Completed",
+              "Recorded On Camera"
+            ],
+            "rows": [
+              [
+                {
+                  "key": "Date",
+                  "value": "3/22/2012"
+                },
+                {
+                  "key": "Number",
+                  "value": "08-04b"
+                },
+                {
+                  "key": "Investigator",
+                  "value": "Zhao, Leo"
+                },
+                {
+                  "key": "Date Assigned",
+                  "value": "4/16/2008"
+                },
+                {
+                  "key": "Racial",
+                  "value": "No"
+                },
+                {
+                  "key": "Category / Type",
+                  "value": "FORMAL Citizen"
+                },
+                {
+                  "key": "Location Of Occurrence",
+                  "value": "Not Stated"
+                },
+                {
+                  "key": "Disposition",
+                  "value": "UNFOUNDED"
+                },
+                {
+                  "key": "Completed",
+                  "value": "5/1/2008"
+                },
+                {
+                  "key": "Recorded On Camera",
+                  "value": "N/A No"
+                }
+              ]
+            ]
+          },
+          "page": 2,
+          "relationship": {
+            "parent_id": null
+          }
+        },
+        {
+          "id": "1_0006",
+          "type": "key_value",
+          "content": [
+            {
+              "key": "Complainant:",
+              "value": ""
+            },
+            {
+              "key": "DOB:",
+              "value": ""
+            },
+            {
+              "key": "Gender:",
+              "value": "FEMAL"
+            },
+            {
+              "key": "Address:",
+              "value": ", CHICAGO IL 60644-2803"
+            },
+            {
+              "key": "H Phone:",
+              "value": ""
+            }
+          ],
+          "page": 2,
+          "relationship": {
+            "parent_id": null
+          }
+        },
+        {
+          "id": "2_0006",
+          "type": "table",
+          "content": {
+            "headers": [
+              "Type Of Complaint",
+              "Description",
+              "Complaint Disposition"
+            ],
+            "rows": [
+              [
+                {
+                  "key": "Type Of Complaint",
+                  "value": "R-5D Use of physical force"
+                },
+                {
+                  "key": "Description",
+                  "value": "Wrong Action by Employee"
+                },
+                {
+                  "key": "Complaint Disposition",
+                  "value": "UNFOUNDED"
+                }
+              ]
+            ]
+          },
+          "page": 2,
+          "relationship": {
+            "parent_id": null
+          }
+        },
+        {
+          "id": "3_0006",
+          "type": "table",
+          "content": {
+            "headers": [
+              "Name",
+              "ID No.",
+              "Rank",
+              "Division",
+              "Officer Disposition",
+              "Action Taken",
+              "Body Cam"
+            ],
+            "rows": [
+              [
+                {
+                  "key": "Name",
+                  "value": "MULTIPLE OFFICERS/EMPLOY"
+                },
+                {
+                  "key": "ID No.",
+                  "value": ""
+                },
+                {
+                  "key": "Rank",
+                  "value": "NOT STATED"
+                },
+                {
+                  "key": "Division",
+                  "value": "NOT ENTERED"
+                },
+                {
+                  "key": "Officer Disposition",
+                  "value": "UNFOUNDED"
+                },
+                {
+                  "key": "Action Taken",
+                  "value": "NONE"
+                },
+                {
+                  "key": "Body Cam",
+                  "value": "No"
+                }
+              ]
+            ]
+          },
+          "page": 2,
+          "relationship": {
+            "parent_id": null
+          }
+        }
+      ]
+    },
+    {
+      "record_id": "page_3_record_7",
+      "page": 3,
+      "nodes": [
+        {
+          "id": "0_0007",
+          "type": "table",
+          "content": {
+            "headers": [
+              "Date",
+              "Number",
+              "Investigator",
+              "Date Assigned",
+              "Racial",
+              "Category / Type",
+              "Location Of Occurrence",
+              "Disposition",
+              "Completed",
+              "Recorded On Camera"
+            ],
+            "rows": [
+              [
+                {
+                  "key": "Date",
+                  "value": "3/22/2012"
+                },
+                {
+                  "key": "Number",
+                  "value": "08-04c"
+                },
+                {
+                  "key": "Investigator",
+                  "value": "Park, Ben"
+                },
+                {
+                  "key": "Date Assigned",
+                  "value": "4/16/2008"
+                },
+                {
+                  "key": "Racial",
+                  "value": "No"
+                },
+                {
+                  "key": "Category / Type",
+                  "value": "FORMAL Citizen"
+                },
+                {
+                  "key": "Location Of Occurrence",
+                  "value": "Not Stated"
+                },
+                {
+                  "key": "Disposition",
+                  "value": "EXONERATED"
+                },
+                {
+                  "key": "Completed",
+                  "value": "5/1/2008"
+                },
+                {
+                  "key": "Recorded On Camera",
+                  "value": "N/A No"
+                }
+              ]
+            ]
+          },
+          "page": 3,
+          "relationship": {
+            "parent_id": null
+          }
+        },
+        {
+          "id": "1_0007",
+          "type": "key_value",
+          "content": [
+            {
+              "key": "Complainant:",
+              "value": ""
+            },
+            {
+              "key": "DOB:",
+              "value": ""
+            },
+            {
+              "key": "Gender:",
+              "value": "FEMAL"
+            },
+            {
+              "key": "Address:",
+              "value": ", Champaign IL 61820"
+            },
+            {
+              "key": "H Phone:",
+              "value": ""
+            }
+          ],
+          "page": 3,
+          "relationship": {
+            "parent_id": null
+          }
+        },
+        {
+          "id": "2_0007",
+          "type": "table",
+          "content": {
+            "headers": [
+              "Type Of Complaint",
+              "Description",
+              "Complaint Disposition"
+            ],
+            "rows": [
+              [
+                {
+                  "key": "Type Of Complaint",
+                  "value": "R-5D Use of physical force"
+                },
+                {
+                  "key": "Description",
+                  "value": "Wrong Action by Employee"
+                },
+                {
+                  "key": "Complaint Disposition",
+                  "value": "EXONERATED"
+                }
+              ]
+            ]
+          },
+          "page": 3,
+          "relationship": {
+            "parent_id": null
+          }
+        },
+        {
+          "id": "3_0007",
+          "type": "table",
+          "content": {
+            "headers": [
+              "Name",
+              "ID No.",
+              "Rank",
+              "Division",
+              "Officer Disposition",
+              "Action Taken",
+              "Body Cam"
+            ],
+            "rows": [
+              [
+                {
+                  "key": "Name",
+                  "value": "MULTIPLE OFFICERS/EMPLOY"
+                },
+                {
+                  "key": "ID No.",
+                  "value": ""
+                },
+                {
+                  "key": "Rank",
+                  "value": "NOT STATED"
+                },
+                {
+                  "key": "Division",
+                  "value": "NOT ENTERED"
+                },
+                {
+                  "key": "Officer Disposition",
+                  "value": "UNFOUNDED"
+                },
+                {
+                  "key": "Action Taken",
+                  "value": "NONE"
+                },
+                {
+                  "key": "Body Cam",
+                  "value": "No"
+                }
+              ]
+            ]
+          },
+          "page": 3,
+          "relationship": {
+            "parent_id": null
+          }
+        }
+      ]
+    },
+    {
+      "record_id": "page_3_record_8",
+      "page": 3,
+      "nodes": [
+        {
+          "id": "0_0008",
+          "type": "table",
+          "content": {
+            "headers": [
+              "Date",
+              "Number",
+              "Investigator",
+              "Date Assigned",
+              "Racial",
+              "Category / Type",
+              "Location Of Occurrence",
+              "Disposition",
+              "Completed",
+              "Recorded On Camera"
+            ],
+            "rows": [
+              [
+                {
+                  "key": "Date",
+                  "value": "3/22/2012"
+                },
+                {
+                  "key": "Number",
+                  "value": "08-04d"
+                },
+                {
+                  "key": "Investigator",
+                  "value": "Tran, Mia"
+                },
+                {
+                  "key": "Date Assigned",
+                  "value": "4/16/2008"
+                },
+                {
+                  "key": "Racial",
+                  "value": "No"
+                },
+                {
+                  "key": "Category / Type",
+                  "value": "FORMAL Citizen"
+                },
+                {
+                  "key": "Location Of Occurrence",
+                  "value": "Not Stated"
+                },
+                {
+                  "key": "Disposition",
+                  "value": "EXONERATED"
+                },
+                {
+                  "key": "Completed",
+                  "value": "5/1/2008"
+                },
+                {
+                  "key": "Recorded On Camera",
+                  "value": "N/A No"
+                }
+              ]
+            ]
+          },
+          "page": 3,
+          "relationship": {
+            "parent_id": null
+          }
+        },
+        {
+          "id": "1_0008",
+          "type": "key_value",
+          "content": [
+            {
+              "key": "Complainant:",
+              "value": ""
+            },
+            {
+              "key": "DOB:",
+              "value": ""
+            },
+            {
+              "key": "Gender:",
+              "value": "FEMAL"
+            },
+            {
+              "key": "Address:",
+              "value": ", Rantoul IL 61866"
+            },
+            {
+              "key": "H Phone:",
+              "value": ""
+            }
+          ],
+          "page": 3,
+          "relationship": {
+            "parent_id": null
+          }
+        },
+        {
+          "id": "2_0008",
+          "type": "table",
+          "content": {
+            "headers": [
+              "Type Of Complaint",
+              "Description",
+              "Complaint Disposition"
+            ],
+            "rows": [
+              [
+                {
+                  "key": "Type Of Complaint",
+                  "value": "R-5D Use of physical force"
+                },
+                {
+                  "key": "Description",
+                  "value": "Wrong Action by Employee"
+                },
+                {
+                  "key": "Complaint Disposition",
+                  "value": "EXONERATED"
+                }
+              ]
+            ]
+          },
+          "page": 3,
+          "relationship": {
+            "parent_id": null
+          }
+        },
+        {
+          "id": "3_0008",
+          "type": "table",
+          "content": {
+            "headers": [
+              "Name",
+              "ID No.",
+              "Rank",
+              "Division",
+              "Officer Disposition",
+              "Action Taken",
+              "Body Cam"
+            ],
+            "rows": [
+              [
+                {
+                  "key": "Name",
+                  "value": "MULTIPLE OFFICERS/EMPLOY"
+                },
+                {
+                  "key": "ID No.",
+                  "value": ""
+                },
+                {
+                  "key": "Rank",
+                  "value": "NOT STATED"
+                },
+                {
+                  "key": "Division",
+                  "value": "NOT ENTERED"
+                },
+                {
+                  "key": "Officer Disposition",
+                  "value": "UNFOUNDED"
+                },
+                {
+                  "key": "Action Taken",
+                  "value": "NONE"
+                },
+                {
+                  "key": "Body Cam",
+                  "value": "No"
+                }
+              ]
+            ]
+          },
+          "page": 3,
+          "relationship": {
+            "parent_id": null
+          }
+        }
+      ]
+    },
+    {
+      "record_id": "page_3_record_9",
+      "page": 3,
+      "nodes": [
+        {
+          "id": "0_0009",
+          "type": "table",
+          "content": {
+            "headers": [
+              "Date",
+              "Number",
+              "Investigator",
+              "Date Assigned",
+              "Racial",
+              "Category / Type",
+              "Location Of Occurrence",
+              "Disposition",
+              "Completed",
+              "Recorded On Camera"
+            ],
+            "rows": [
+              [
+                {
+                  "key": "Date",
+                  "value": "4/10/2012"
+                },
+                {
+                  "key": "Number",
+                  "value": "08-II02"
+                },
+                {
+                  "key": "Investigator",
+                  "value": "Wang, Leo"
+                },
+                {
+                  "key": "Date Assigned",
+                  "value": "4/10/2008"
+                },
+                {
+                  "key": "Racial",
+                  "value": "No"
+                },
+                {
+                  "key": "Category / Type",
+                  "value": "FACT FINDING Internal"
+                },
+                {
+                  "key": "Location Of Occurrence",
+                  "value": "Not Stated"
+                },
+                {
+                  "key": "Disposition",
+                  "value": "Not a complaint"
+                },
+                {
+                  "key": "Completed",
+                  "value": "5/10/2008"
+                },
+                {
+                  "key": "Recorded On Camera",
+                  "value": "N/A No"
+                }
+              ]
+            ]
+          },
+          "page": 3,
+          "relationship": {
+            "parent_id": null
+          }
+        },
+        {
+          "id": "1_0009",
+          "type": "key_value",
+          "content": [
+            {
+              "key": "Complainant:",
+              "value": "CPD"
+            },
+            {
+              "key": "DOB:",
+              "value": ""
+            },
+            {
+              "key": "Gender:",
+              "value": ""
+            },
+            {
+              "key": "Address:",
+              "value": "NOT STATED ?? UNK"
+            },
+            {
+              "key": "H Phone:",
+              "value": ""
+            }
+          ],
+          "page": 3,
+          "relationship": {
+            "parent_id": null
+          }
+        },
+        {
+          "id": "2_0009",
+          "type": "table",
+          "content": {
+            "headers": [
+              "Type Of Complaint",
+              "Description",
+              "Complaint Disposition"
+            ],
+            "rows": [
+              [
+                {
+                  "key": "Type Of Complaint",
+                  "value": "S-6 Pursuit Policy"
+                },
+                {
+                  "key": "Description",
+                  "value": "Wrong Action by Employee"
+                },
+                {
+                  "key": "Complaint Disposition",
+                  "value": "Not a complaint"
+                }
+              ]
+            ]
+          },
+          "page": 3,
+          "relationship": {
+            "parent_id": null
+          }
+        },
+        {
+          "id": "3_0009",
+          "type": "table",
+          "content": {
+            "headers": [
+              "Name",
+              "ID No.",
+              "Rank",
+              "Division",
+              "Officer Disposition",
+              "Action Taken",
+              "Body Cam"
+            ],
+            "rows": [
+              [
+                {
+                  "key": "Name",
+                  "value": "Holland, Alice"
+                },
+                {
+                  "key": "ID No.",
+                  "value": "942"
+                },
+                {
+                  "key": "Rank",
+                  "value": "OFFICER"
+                },
+                {
+                  "key": "Division",
+                  "value": "Field Operations"
+                },
+                {
+                  "key": "Officer Disposition",
+                  "value": "Not a complaint"
+                },
+                {
+                  "key": "Action Taken",
+                  "value": "NONE"
+                },
+                {
+                  "key": "Body Cam",
+                  "value": "No"
+                }
+              ]
+            ]
+          },
+          "page": 3,
+          "relationship": {
+            "parent_id": null
+          }
+        }
+      ]
+    },
+    {
+      "record_id": "page_3_record_10",
+      "page": 3,
+      "nodes": [
+        {
+          "id": "0_0010",
+          "type": "table",
+          "content": {
+            "headers": [
+              "Date",
+              "Number",
+              "Investigator",
+              "Date Assigned",
+              "Racial",
+              "Category / Type",
+              "Location Of Occurrence",
+              "Disposition",
+              "Completed",
+              "Recorded On Camera"
+            ],
+            "rows": [
+              [
+                {
+                  "key": "Date",
+                  "value": "4/14/2012"
+                },
+                {
+                  "key": "Number",
+                  "value": "08-05"
+                },
+                {
+                  "key": "Investigator",
+                  "value": "Lim, Zoe"
+                },
+                {
+                  "key": "Date Assigned",
+                  "value": "4/16/2008"
+                },
+                {
+                  "key": "Racial",
+                  "value": "No"
+                },
+                {
+                  "key": "Category / Type",
+                  "value": "Inquiry Citizen"
+                },
+                {
+                  "key": "Location Of Occurrence",
+                  "value": "Not Stated"
+                },
+                {
+                  "key": "Disposition",
+                  "value": "Not a complaint"
+                },
+                {
+                  "key": "Completed",
+                  "value": "5/14/2008"
+                },
+                {
+                  "key": "Recorded On Camera",
+                  "value": "N/A No"
+                }
+              ]
+            ]
+          },
+          "page": 3,
+          "relationship": {
+            "parent_id": null
+          }
+        },
+        {
+          "id": "1_0010",
+          "type": "key_value",
+          "content": [
+            {
+              "key": "Complainant:",
+              "value": ""
+            },
+            {
+              "key": "DOB:",
+              "value": ""
+            },
+            {
+              "key": "Gender:",
+              "value": "FEMAL"
+            },
+            {
+              "key": "Address:",
+              "value": ", Champaign IL 61821"
+            },
+            {
+              "key": "H Phone:",
+              "value": ""
+            }
+          ],
+          "page": 3,
+          "relationship": {
+            "parent_id": null
+          }
+        },
+        {
+          "id": "2_0010",
+          "type": "table",
+          "content": {
+            "headers": [
+              "Type Of Complaint",
+              "Description",
+              "Complaint Disposition"
+            ],
+            "rows": [
+              [
+                {
+                  "key": "Type Of Complaint",
+                  "value": "R-5A3 OPERATIONS"
+                },
+                {
+                  "key": "Description",
+                  "value": "No Action by Employee"
+                },
+                {
+                  "key": "Complaint Disposition",
+                  "value": "Not a complaint"
+                }
+              ]
+            ]
+          },
+          "page": 3,
+          "relationship": {
+            "parent_id": null
+          }
+        },
+        {
+          "id": "3_0010",
+          "type": "table",
+          "content": {
+            "headers": [
+              "Name",
+              "ID No.",
+              "Rank",
+              "Division",
+              "Officer Disposition",
+              "Action Taken",
+              "Body Cam"
+            ],
+            "rows": [
+              [
+                {
+                  "key": "Name",
+                  "value": "Holland, Alice"
+                },
+                {
+                  "key": "ID No.",
+                  "value": "7108"
+                },
+                {
+                  "key": "Rank",
+                  "value": "RECRUIT OFFIC"
+                },
+                {
+                  "key": "Division",
+                  "value": "Field Operations"
+                },
+                {
+                  "key": "Officer Disposition",
+                  "value": "PENDING"
+                },
+                {
+                  "key": "Action Taken",
+                  "value": "NONE"
+                },
+                {
+                  "key": "Body Cam",
+                  "value": "No"
+                }
+              ]
+            ]
+          },
+          "page": 3,
+          "relationship": {
+            "parent_id": null
+          }
+        }
+      ]
+    },
+    {
+      "record_id": "page_4_record_11",
+      "page": 4,
+      "nodes": [
+        {
+          "id": "0_0011",
+          "type": "table",
+          "content": {
+            "headers": [
+              "Date",
+              "Number",
+              "Investigator",
+              "Date Assigned",
+              "Racial",
+              "Category / Type",
+              "Location Of Occurrence",
+              "Disposition",
+              "Completed",
+              "Recorded On Camera"
+            ],
+            "rows": [
+              [
+                {
+                  "key": "Date",
+                  "value": "4/25/2012"
+                },
+                {
+                  "key": "Number",
+                  "value": "09-II01"
+                },
+                {
+                  "key": "Investigator",
+                  "value": "Zhu, Eli"
+                },
+                {
+                  "key": "Date Assigned",
+                  "value": "10/2/2008"
+                },
+                {
+                  "key": "Racial",
+                  "value": "No"
+                },
+                {
+                  "key": "Category / Type",
+                  "value": "Inquiry Internal"
+                },
+                {
+                  "key": "Location Of Occurrence",
+                  "value": "Not Stated"
+                },
+                {
+                  "key": "Disposition",
+                  "value": "Not a complaint"
+                },
+                {
+                  "key": "Completed",
+                  "value": "4/17/2009"
+                },
+                {
+                  "key": "Recorded On Camera",
+                  "value": "N/A No"
+                }
+              ]
+            ]
+          },
+          "page": 4,
+          "relationship": {
+            "parent_id": null
+          }
+        },
+        {
+          "id": "1_0011",
+          "type": "key_value",
+          "content": [
+            {
+              "key": "Complainant:",
+              "value": ""
+            },
+            {
+              "key": "DOB:",
+              "value": ""
+            },
+            {
+              "key": "Gender:",
+              "value": "FEMAL"
+            },
+            {
+              "key": "Address:",
+              "value": ", Loves Park IL 61130"
+            },
+            {
+              "key": "H Phone:",
+              "value": ""
+            }
+          ],
+          "page": 4,
+          "relationship": {
+            "parent_id": null
+          }
+        },
+        {
+          "id": "2_0011",
+          "type": "table",
+          "content": {
+            "headers": [
+              "Type Of Complaint",
+              "Description",
+              "Complaint Disposition"
+            ],
+            "rows": [
+              [
+                {
+                  "key": "Type Of Complaint",
+                  "value": "R-1A2 CONDUCT GENERALLY"
+                },
+                {
+                  "key": "Description",
+                  "value": "Wrong Action by Employee"
+                },
+                {
+                  "key": "Complaint Disposition",
+                  "value": "Inquiry"
+                }
+              ]
+            ]
+          },
+          "page": 4,
+          "relationship": {
+            "parent_id": null
+          }
+        },
+        {
+          "id": "3_0011",
+          "type": "table",
+          "content": {
+            "headers": [
+              "Name",
+              "ID No.",
+              "Rank",
+              "Division",
+              "Officer Disposition",
+              "Action Taken",
+              "Body Cam"
+            ],
+            "rows": [
+              [
+                {
+                  "key": "Name",
+                  "value": "No Officers Entered"
+                },
+                {
+                  "key": "ID No.",
+                  "value": ""
+                },
+                {
+                  "key": "Rank",
+                  "value": "Not Stated"
+                },
+                {
+                  "key": "Division",
+                  "value": "Not Stated"
+                },
+                {
+                  "key": "Officer Disposition",
+                  "value": "Not a complaint"
+                },
+                {
+                  "key": "Action Taken",
+                  "value": "Not Stated"
+                },
+                {
+                  "key": "Body Cam",
+                  "value": "No"
+                }
+              ]
+            ]
+          },
+          "page": 4,
+          "relationship": {
+            "parent_id": null
+          }
+        }
+      ]
+    },
+    {
+      "record_id": "page_4_record_12",
+      "page": 4,
+      "nodes": [
+        {
+          "id": "0_0012",
+          "type": "table",
+          "content": {
+            "headers": [
+              "Date",
+              "Number",
+              "Investigator",
+              "Date Assigned",
+              "Racial",
+              "Category / Type",
+              "Location Of Occurrence",
+              "Disposition",
+              "Completed",
+              "Recorded On Camera"
+            ],
+            "rows": [
+              [
+                {
+                  "key": "Date",
+                  "value": "5/18/2012"
+                },
+                {
+                  "key": "Number",
+                  "value": "08-08"
+                },
+                {
+                  "key": "Investigator",
+                  "value": "Cho, Ivy"
+                },
+                {
+                  "key": "Date Assigned",
+                  "value": "6/5/2008"
+                },
+                {
+                  "key": "Racial",
+                  "value": "No"
+                },
+                {
+                  "key": "Category / Type",
+                  "value": "FORMAL Citizen"
+                },
+                {
+                  "key": "Location Of Occurrence",
+                  "value": "Not Stated"
+                },
+                {
+                  "key": "Disposition",
+                  "value": "SUSTAINED"
+                },
+                {
+                  "key": "Completed",
+                  "value": "7/2/2008"
+                },
+                {
+                  "key": "Recorded On Camera",
+                  "value": "N/A No"
+                }
+              ]
+            ]
+          },
+          "page": 4,
+          "relationship": {
+            "parent_id": null
+          }
+        },
+        {
+          "id": "1_0012",
+          "type": "key_value",
+          "content": [
+            {
+              "key": "Complainant:",
+              "value": ""
+            },
+            {
+              "key": "DOB:",
+              "value": ""
+            },
+            {
+              "key": "Gender:",
+              "value": "MALE"
+            },
+            {
+              "key": "Address:",
+              "value": ", Champaign IL 61820"
+            },
+            {
+              "key": "H Phone:",
+              "value": ""
+            }
+          ],
+          "page": 4,
+          "relationship": {
+            "parent_id": null
+          }
+        },
+        {
+          "id": "2_0012",
+          "type": "table",
+          "content": {
+            "headers": [
+              "Type Of Complaint",
+              "Description",
+              "Complaint Disposition"
+            ],
+            "rows": [
+              [
+                {
+                  "key": "Type Of Complaint",
+                  "value": "R-3B.4 COURTESY: COMMENT"
+                },
+                {
+                  "key": "Description",
+                  "value": "Discourteous Conduct"
+                },
+                {
+                  "key": "Complaint Disposition",
+                  "value": "SUSTAINED"
+                }
+              ],
+              [
+                {
+                  "key": "Type Of Complaint",
+                  "value": "R-5D Use of physical force"
+                },
+                {
+                  "key": "Description",
+                  "value": "Wrong Action by Employee"
+                },
+                {
+                  "key": "Complaint Disposition",
+                  "value": "EXONERATED"
+                }
+              ]
+            ]
+          },
+          "page": 4,
+          "relationship": {
+            "parent_id": null
+          }
+        },
+        {
+          "id": "3_0012",
+          "type": "table",
+          "content": {
+            "headers": [
+              "Name",
+              "ID No.",
+              "Rank",
+              "Division",
+              "Officer Disposition",
+              "Action Taken",
+              "Body Cam"
+            ],
+            "rows": [
+              [
+                {
+                  "key": "Name",
+                  "value": "Franklin, Miles"
+                },
+                {
+                  "key": "ID No.",
+                  "value": "705-MED"
+                },
+                {
+                  "key": "Rank",
+                  "value": "OFFICER"
+                },
+                {
+                  "key": "Division",
+                  "value": "Field Operations"
+                },
+                {
+                  "key": "Officer Disposition",
+                  "value": "SUSTAINED"
+                },
+                {
+                  "key": "Action Taken",
+                  "value": "LETTER OF REPRIMA"
+                },
+                {
+                  "key": "Body Cam",
+                  "value": "No"
+                }
+              ]
+            ]
+          },
+          "page": 4,
+          "relationship": {
+            "parent_id": null
+          }
+        }
+      ]
+    },
+    {
+      "record_id": "page_4_record_13",
+      "page": 4,
+      "nodes": [
+        {
+          "id": "0_0013",
+          "type": "table",
+          "content": {
+            "headers": [
+              "Date",
+              "Number",
+              "Investigator",
+              "Date Assigned",
+              "Racial",
+              "Category / Type",
+              "Location Of Occurrence",
+              "Disposition",
+              "Completed",
+              "Recorded On Camera"
+            ],
+            "rows": [
+              [
+                {
+                  "key": "Date",
+                  "value": "5/26/2012"
+                },
+                {
+                  "key": "Number",
+                  "value": "08-07"
+                },
+                {
+                  "key": "Investigator",
+                  "value": "Jin, Sam"
+                },
+                {
+                  "key": "Date Assigned",
+                  "value": "6/2/2008"
+                },
+                {
+                  "key": "Racial",
+                  "value": "No"
+                },
+                {
+                  "key": "Category / Type",
+                  "value": "Inquiry Citizen"
+                },
+                {
+                  "key": "Location Of Occurrence",
+                  "value": "Not Stated"
+                },
+                {
+                  "key": "Disposition",
+                  "value": "Inquiry"
+                },
+                {
+                  "key": "Completed",
+                  "value": "6/11/2008"
+                },
+                {
+                  "key": "Recorded On Camera",
+                  "value": "N/A No"
+                }
+              ]
+            ]
+          },
+          "page": 4,
+          "relationship": {
+            "parent_id": null
+          }
+        },
+        {
+          "id": "1_0013",
+          "type": "key_value",
+          "content": [
+            {
+              "key": "Complainant:",
+              "value": ""
+            },
+            {
+              "key": "DOB:",
+              "value": ""
+            },
+            {
+              "key": "Gender:",
+              "value": "FEMAL"
+            },
+            {
+              "key": "Address:",
+              "value": "Champaign IL 61821"
+            },
+            {
+              "key": "H Phone:",
+              "value": ""
+            }
+          ],
+          "page": 4,
+          "relationship": {
+            "parent_id": null
+          }
+        },
+        {
+          "id": "2_0013",
+          "type": "table",
+          "content": {
+            "headers": [
+              "Type Of Complaint",
+              "Description",
+              "Complaint Disposition"
+            ],
+            "rows": [
+              [
+                {
+                  "key": "Type Of Complaint",
+                  "value": "R-3B COURTESY"
+                },
+                {
+                  "key": "Description",
+                  "value": "Discourteous Conduct"
+                },
+                {
+                  "key": "Complaint Disposition",
+                  "value": "Inquiry"
+                }
+              ]
+            ]
+          },
+          "page": 4,
+          "relationship": {
+            "parent_id": null
+          }
+        },
+        {
+          "id": "3_0013",
+          "type": "table",
+          "content": {
+            "headers": [
+              "Name",
+              "ID No.",
+              "Rank",
+              "Division",
+              "Officer Disposition",
+              "Action Taken",
+              "Body Cam"
+            ],
+            "rows": [
+              [
+                {
+                  "key": "Name",
+                  "value": "Franklin, Miles."
+                },
+                {
+                  "key": "ID No.",
+                  "value": "7901"
+                },
+                {
+                  "key": "Rank",
+                  "value": "RECRUIT OFFIC"
+                },
+                {
+                  "key": "Division",
+                  "value": "Field Operations"
+                },
+                {
+                  "key": "Officer Disposition",
+                  "value": "Inquiry"
+                },
+                {
+                  "key": "Action Taken",
+                  "value": "NONE"
+                },
+                {
+                  "key": "Body Cam",
+                  "value": "No"
+                }
+              ]
+            ]
+          },
+          "page": 4,
+          "relationship": {
+            "parent_id": null
+          }
+        }
+      ]
+    },
+    {
+      "record_id": "page_4_record_14",
+      "page": 4,
+      "nodes": [
+        {
+          "id": "0_0014",
+          "type": "table",
+          "content": {
+            "headers": [
+              "Date",
+              "Number",
+              "Investigator",
+              "Date Assigned",
+              "Racial",
+              "Category / Type",
+              "Location Of Occurrence",
+              "Disposition",
+              "Completed",
+              "Recorded On Camera"
+            ],
+            "rows": [
+              [
+                {
+                  "key": "Date",
+                  "value": "5/31/2012"
+                },
+                {
+                  "key": "Number",
+                  "value": "08-09"
+                },
+                {
+                  "key": "Investigator",
+                  "value": "Yu, Kai"
+                },
+                {
+                  "key": "Date Assigned",
+                  "value": "6/5/2008"
+                },
+                {
+                  "key": "Racial",
+                  "value": "No"
+                },
+                {
+                  "key": "Category / Type",
+                  "value": "FORMAL Citizen"
+                },
+                {
+                  "key": "Location Of Occurrence",
+                  "value": "Not Stated"
+                },
+                {
+                  "key": "Disposition",
+                  "value": "EXONERATED"
+                },
+                {
+                  "key": "Completed",
+                  "value": "10/2/2008"
+                },
+                {
+                  "key": "Recorded On Camera",
+                  "value": "N/A No"
+                }
+              ]
+            ]
+          },
+          "page": 4,
+          "relationship": {
+            "parent_id": null
+          }
+        },
+        {
+          "id": "1_0014",
+          "type": "key_value",
+          "content": [
+            {
+              "key": "Complainant:",
+              "value": ""
+            },
+            {
+              "key": "DOB:",
+              "value": ""
+            },
+            {
+              "key": "Gender:",
+              "value": "MALE"
+            },
+            {
+              "key": "Address:",
+              "value": ", Champaign IL 61821"
+            },
+            {
+              "key": "H Phone:",
+              "value": ""
+            }
+          ],
+          "page": 4,
+          "relationship": {
+            "parent_id": null
+          }
+        },
+        {
+          "id": "2_0014",
+          "type": "table",
+          "content": {
+            "headers": [
+              "Type Of Complaint",
+              "Description",
+              "Complaint Disposition"
+            ],
+            "rows": [
+              [
+                {
+                  "key": "Type Of Complaint",
+                  "value": "R-5B ARREST, SEARCH AND SEIZURE"
+                },
+                {
+                  "key": "Description",
+                  "value": "Wrong Action by Employee"
+                },
+                {
+                  "key": "Complaint Disposition",
+                  "value": "EXONERATED"
+                }
+              ],
+              [
+                {
+                  "key": "Type Of Complaint",
+                  "value": "R-5D Use of physical force"
+                },
+                {
+                  "key": "Description",
+                  "value": "Wrong Action by Employee"
+                },
+                {
+                  "key": "Complaint Disposition",
+                  "value": "EXONERATED"
+                }
+              ]
+            ]
+          },
+          "page": 4,
+          "relationship": {
+            "parent_id": null
+          }
+        },
+        {
+          "id": "3_0014",
+          "type": "table",
+          "content": {
+            "headers": [
+              "Name",
+              "ID No.",
+              "Rank",
+              "Division",
+              "Officer Disposition",
+              "Action Taken",
+              "Body Cam"
+            ],
+            "rows": [
+              [
+                {
+                  "key": "Name",
+                  "value": "Franklin, Miles"
+                },
+                {
+                  "key": "ID No.",
+                  "value": "705-MED"
+                },
+                {
+                  "key": "Rank",
+                  "value": "OFFICER"
+                },
+                {
+                  "key": "Division",
+                  "value": "Field Operations"
+                },
+                {
+                  "key": "Officer Disposition",
+                  "value": "EXONERATED"
+                },
+                {
+                  "key": "Action Taken",
+                  "value": "NONE"
+                },
+                {
+                  "key": "Body Cam",
+                  "value": "No"
+                }
+              ],
+              [
+                {
+                  "key": "Name",
+                  "value": "Franklin, Miles S."
+                },
+                {
+                  "key": "ID No.",
+                  "value": "717RES"
+                },
+                {
+                  "key": "Rank",
+                  "value": "OFFICER"
+                },
+                {
+                  "key": "Division",
+                  "value": "Field Operations"
+                },
+                {
+                  "key": "Officer Disposition",
+                  "value": "EXONERATED"
+                },
+                {
+                  "key": "Action Taken",
+                  "value": "NONE"
+                },
+                {
+                  "key": "Body Cam",
+                  "value": "No"
+                }
+              ]
+            ]
+          },
+          "page": 4,
+          "relationship": {
+            "parent_id": null
+          }
+        }
+      ]
+    },
+    {
+      "record_id": "page_5_record_15",
+      "page": 5,
+      "nodes": [
+        {
+          "id": "0_0015",
+          "type": "table",
+          "content": {
+            "headers": [
+              "Date",
+              "Number",
+              "Investigator",
+              "Date Assigned",
+              "Racial",
+              "Category / Type",
+              "Location Of Occurrence",
+              "Disposition",
+              "Completed",
+              "Recorded On Camera"
+            ],
+            "rows": [
+              [
+                {
+                  "key": "Date",
+                  "value": "6/7/2012"
+                },
+                {
+                  "key": "Number",
+                  "value": "08-10"
+                },
+                {
+                  "key": "Investigator",
+                  "value": "Yu, Kai"
+                },
+                {
+                  "key": "Date Assigned",
+                  "value": "6/11/2008"
+                },
+                {
+                  "key": "Racial",
+                  "value": "No"
+                },
+                {
+                  "key": "Category / Type",
+                  "value": "FORMAL Citizen"
+                },
+                {
+                  "key": "Location Of Occurrence",
+                  "value": "Not Stated"
+                },
+                {
+                  "key": "Disposition",
+                  "value": "NOT SUSTAINED"
+                },
+                {
+                  "key": "Completed",
+                  "value": "6/26/2008"
+                },
+                {
+                  "key": "Recorded On Camera",
+                  "value": "N/A No"
+                }
+              ]
+            ]
+          },
+          "page": 5,
+          "relationship": {
+            "parent_id": null
+          }
+        },
+        {
+          "id": "1_0015",
+          "type": "key_value",
+          "content": [
+            {
+              "key": "Complainant:",
+              "value": ""
+            },
+            {
+              "key": "DOB:",
+              "value": ""
+            },
+            {
+              "key": "Gender:",
+              "value": "MALE"
+            },
+            {
+              "key": "Address:",
+              "value": ", Champaign IL 61821"
+            },
+            {
+              "key": "H Phone:",
+              "value": ""
+            }
+          ],
+          "page": 5,
+          "relationship": {
+            "parent_id": null
+          }
+        },
+        {
+          "id": "2_0015",
+          "type": "table",
+          "content": {
+            "headers": [
+              "Type Of Complaint",
+              "Description",
+              "Complaint Disposition"
+            ],
+            "rows": [
+              [
+                {
+                  "key": "Type Of Complaint",
+                  "value": "R-5D Use of physical force"
+                },
+                {
+                  "key": "Description",
+                  "value": "Wrong Action by Employee"
+                },
+                {
+                  "key": "Complaint Disposition",
+                  "value": "NOT SUSTAINED"
+                }
+              ]
+            ]
+          },
+          "page": 5,
+          "relationship": {
+            "parent_id": null
+          }
+        },
+        {
+          "id": "3_0015",
+          "type": "table",
+          "content": {
+            "headers": [
+              "Name",
+              "ID No.",
+              "Rank",
+              "Division",
+              "Officer Disposition",
+              "Action Taken",
+              "Body Cam"
+            ],
+            "rows": [
+              [
+                {
+                  "key": "Name",
+                  "value": "Wheeler, Ivy."
+                },
+                {
+                  "key": "ID No.",
+                  "value": "7110"
+                },
+                {
+                  "key": "Rank",
+                  "value": "RECRUIT OFFIC"
+                },
+                {
+                  "key": "Division",
+                  "value": "Field Operations"
+                },
+                {
+                  "key": "Officer Disposition",
+                  "value": "NOT SUSTAINED"
+                },
+                {
+                  "key": "Action Taken",
+                  "value": "NONE"
+                },
+                {
+                  "key": "Body Cam",
+                  "value": "No"
+                }
+              ]
+            ]
+          },
+          "page": 5,
+          "relationship": {
+            "parent_id": null
+          }
+        }
+      ]
+    },
+    {
+      "record_id": "page_5_record_16",
+      "page": 5,
+      "nodes": [
+        {
+          "id": "0_0016",
+          "type": "table",
+          "content": {
+            "headers": [
+              "Date",
+              "Number",
+              "Investigator",
+              "Date Assigned",
+              "Racial",
+              "Category / Type",
+              "Location Of Occurrence",
+              "Disposition",
+              "Completed",
+              "Recorded On Camera"
+            ],
+            "rows": [
+              [
+                {
+                  "key": "Date",
+                  "value": "6/29/2012"
+                },
+                {
+                  "key": "Number",
+                  "value": "08-11"
+                },
+                {
+                  "key": "Investigator",
+                  "value": "Chen, Ava"
+                },
+                {
+                  "key": "Date Assigned",
+                  "value": "7/9/2008"
+                },
+                {
+                  "key": "Racial",
+                  "value": "No"
+                },
+                {
+                  "key": "Category / Type",
+                  "value": "Inquiry Citizen"
+                },
+                {
+                  "key": "Location Of Occurrence",
+                  "value": "Not Stated"
+                },
+                {
+                  "key": "Disposition",
+                  "value": "Inquiry"
+                },
+                {
+                  "key": "Completed",
+                  "value": "7/31/2008"
+                },
+                {
+                  "key": "Recorded On Camera",
+                  "value": "N/A No"
+                }
+              ]
+            ]
+          },
+          "page": 5,
+          "relationship": {
+            "parent_id": null
+          }
+        },
+        {
+          "id": "1_0016",
+          "type": "key_value",
+          "content": [
+            {
+              "key": "Complainant:",
+              "value": ""
+            },
+            {
+              "key": "DOB:",
+              "value": ""
+            },
+            {
+              "key": "Gender:",
+              "value": "FEMAL"
+            },
+            {
+              "key": "Address:",
+              "value": ", Champaign IL 61821"
+            },
+            {
+              "key": "H Phone:",
+              "value": ""
+            }
+          ],
+          "page": 5,
+          "relationship": {
+            "parent_id": null
+          }
+        },
+        {
+          "id": "2_0016",
+          "type": "table",
+          "content": {
+            "headers": [
+              "Type Of Complaint",
+              "Description",
+              "Complaint Disposition"
+            ],
+            "rows": [
+              [
+                {
+                  "key": "Type Of Complaint",
+                  "value": "R-5D Use of physical force"
+                },
+                {
+                  "key": "Description",
+                  "value": "Wrong Action by Employee"
+                },
+                {
+                  "key": "Complaint Disposition",
+                  "value": "Inquiry"
+                }
+              ]
+            ]
+          },
+          "page": 5,
+          "relationship": {
+            "parent_id": null
+          }
+        },
+        {
+          "id": "3_0016",
+          "type": "table",
+          "content": {
+            "headers": [
+              "Name",
+              "ID No.",
+              "Rank",
+              "Division",
+              "Officer Disposition",
+              "Action Taken",
+              "Body Cam"
+            ],
+            "rows": [
+              [
+                {
+                  "key": "Name",
+                  "value": "Stevens, Noah"
+                },
+                {
+                  "key": "ID No.",
+                  "value": "7104"
+                },
+                {
+                  "key": "Rank",
+                  "value": "OFFICER"
+                },
+                {
+                  "key": "Division",
+                  "value": "Field Operations"
+                },
+                {
+                  "key": "Officer Disposition",
+                  "value": "Inquiry"
+                },
+                {
+                  "key": "Action Taken",
+                  "value": "NONE"
+                },
+                {
+                  "key": "Body Cam",
+                  "value": "No"
+                }
+              ]
+            ]
+          },
+          "page": 5,
+          "relationship": {
+            "parent_id": null
+          }
+        }
+      ]
+    },
+    {
+      "record_id": "page_5_record_17",
+      "page": 5,
+      "nodes": [
+        {
+          "id": "0_0017",
+          "type": "table",
+          "content": {
+            "headers": [
+              "Date",
+              "Number",
+              "Investigator",
+              "Date Assigned",
+              "Racial",
+              "Category / Type",
+              "Location Of Occurrence",
+              "Disposition",
+              "Completed",
+              "Recorded On Camera"
+            ],
+            "rows": [
+              [
+                {
+                  "key": "Date",
+                  "value": "7/3/2012"
+                },
+                {
+                  "key": "Number",
+                  "value": "08-12"
+                },
+                {
+                  "key": "Investigator",
+                  "value": "Chen, Ava"
+                },
+                {
+                  "key": "Date Assigned",
+                  "value": "7/11/2008"
+                },
+                {
+                  "key": "Racial",
+                  "value": "No"
+                },
+                {
+                  "key": "Category / Type",
+                  "value": "FORMAL Citizen"
+                },
+                {
+                  "key": "Location Of Occurrence",
+                  "value": "Not Stated"
+                },
+                {
+                  "key": "Disposition",
+                  "value": "UNFOUNDED"
+                },
+                {
+                  "key": "Completed",
+                  "value": "10/6/2008"
+                },
+                {
+                  "key": "Recorded On Camera",
+                  "value": "N/A No"
+                }
+              ]
+            ]
+          },
+          "page": 5,
+          "relationship": {
+            "parent_id": null
+          }
+        },
+        {
+          "id": "1_0017",
+          "type": "key_value",
+          "content": [
+            {
+              "key": "Complainant:",
+              "value": ""
+            },
+            {
+              "key": "DOB:",
+              "value": ""
+            },
+            {
+              "key": "Gender:",
+              "value": "FEMAL"
+            },
+            {
+              "key": "Address:",
+              "value": ", Champaign IL 61820"
+            },
+            {
+              "key": "H Phone:",
+              "value": "("
+            }
+          ],
+          "page": 5,
+          "relationship": {
+            "parent_id": null
+          }
+        },
+        {
+          "id": "2_0017",
+          "type": "table",
+          "content": {
+            "headers": [
+              "Type Of Complaint",
+              "Description",
+              "Complaint Disposition"
+            ],
+            "rows": [
+              [
+                {
+                  "key": "Type Of Complaint",
+                  "value": "R-5C2 PERSONS IN CUSTODY"
+                },
+                {
+                  "key": "Description",
+                  "value": "Wrong Action by Employee"
+                },
+                {
+                  "key": "Complaint Disposition",
+                  "value": "UNFOUNDED"
+                }
+              ],
+              [
+                {
+                  "key": "Type Of Complaint",
+                  "value": "R-5D Use of physical force"
+                },
+                {
+                  "key": "Description",
+                  "value": "Wrong Action by Employee"
+                },
+                {
+                  "key": "Complaint Disposition",
+                  "value": "UNFOUNDED"
+                }
+              ]
+            ]
+          },
+          "page": 5,
+          "relationship": {
+            "parent_id": null
+          }
+        },
+        {
+          "id": "3_0017",
+          "type": "table",
+          "content": {
+            "headers": [
+              "Name",
+              "ID No.",
+              "Rank",
+              "Division",
+              "Officer Disposition",
+              "Action Taken",
+              "Body Cam"
+            ],
+            "rows": [
+              [
+                {
+                  "key": "Name",
+                  "value": "Wheeler, Ivy"
+                },
+                {
+                  "key": "ID No.",
+                  "value": "785RESIG"
+                },
+                {
+                  "key": "Rank",
+                  "value": "Senior OFFICER"
+                },
+                {
+                  "key": "Division",
+                  "value": "Field Operations"
+                },
+                {
+                  "key": "Officer Disposition",
+                  "value": "UNFOUNDED"
+                },
+                {
+                  "key": "Action Taken",
+                  "value": "NONE"
+                },
+                {
+                  "key": "Body Cam",
+                  "value": "No"
+                }
+              ],
+              [
+                {
+                  "key": "Name",
+                  "value": "YLambert, LillianI"
+                },
+                {
+                  "key": "ID No.",
+                  "value": "719"
+                },
+                {
+                  "key": "Rank",
+                  "value": "Senior Officer"
+                },
+                {
+                  "key": "Division",
+                  "value": "Field Operations"
+                },
+                {
+                  "key": "Officer Disposition",
+                  "value": "UNFOUNDED"
+                },
+                {
+                  "key": "Action Taken",
+                  "value": "NONE"
+                },
+                {
+                  "key": "Body Cam",
+                  "value": "No"
+                }
+              ]
+            ]
+          },
+          "page": 5,
+          "relationship": {
+            "parent_id": null
+          }
+        }
+      ]
+    },
+    {
+      "record_id": "page_5_record_18",
+      "page": 5,
+      "nodes": [
+        {
+          "id": "0_0018",
+          "type": "table",
+          "content": {
+            "headers": [
+              "Date",
+              "Number",
+              "Investigator",
+              "Date Assigned",
+              "Racial",
+              "Category / Type",
+              "Location Of Occurrence",
+              "Disposition",
+              "Completed",
+              "Recorded On Camera"
+            ],
+            "rows": [
+              [
+                {
+                  "key": "Date",
+                  "value": "7/13/2012"
+                },
+                {
+                  "key": "Number",
+                  "value": "08-13"
+                },
+                {
+                  "key": "Investigator",
+                  "value": "Patel, Aanya"
+                },
+                {
+                  "key": "Date Assigned",
+                  "value": "7/16/2008"
+                },
+                {
+                  "key": "Racial",
+                  "value": "No"
+                },
+                {
+                  "key": "Category / Type",
+                  "value": "FORMAL Citizen"
+                },
+                {
+                  "key": "Location Of Occurrence",
+                  "value": "Not Stated"
+                },
+                {
+                  "key": "Disposition",
+                  "value": "UNFOUNDED"
+                },
+                {
+                  "key": "Completed",
+                  "value": "8/28/2008"
+                },
+                {
+                  "key": "Recorded On Camera",
+                  "value": "N/A No"
+                }
+              ]
+            ]
+          },
+          "page": 5,
+          "relationship": {
+            "parent_id": null
+          }
+        },
+        {
+          "id": "1_0018",
+          "type": "key_value",
+          "content": [
+            {
+              "key": "Complainant:",
+              "value": ""
+            },
+            {
+              "key": "DOB:",
+              "value": ""
+            },
+            {
+              "key": "Gender:",
+              "value": "MALE"
+            },
+            {
+              "key": "Address:",
+              "value": ", Champaign IL 61820"
+            },
+            {
+              "key": "H Phone:",
+              "value": "("
+            }
+          ],
+          "page": 5,
+          "relationship": {
+            "parent_id": null
+          }
+        },
+        {
+          "id": "2_0018",
+          "type": "table",
+          "content": {
+            "headers": [
+              "Type Of Complaint",
+              "Description",
+              "Complaint Disposition"
+            ],
+            "rows": [
+              [
+                {
+                  "key": "Type Of Complaint",
+                  "value": "R-3B.2 Courtesy: Rude"
+                },
+                {
+                  "key": "Description",
+                  "value": "Discourteous Conduct"
+                },
+                {
+                  "key": "Complaint Disposition",
+                  "value": "UNFOUNDED"
+                }
+              ],
+              [
+                {
+                  "key": "Type Of Complaint",
+                  "value": "R-5D Use of physical force"
+                },
+                {
+                  "key": "Description",
+                  "value": "Wrong Action by Employee"
+                },
+                {
+                  "key": "Complaint Disposition",
+                  "value": "UNFOUNDED"
+                }
+              ]
+            ]
+          },
+          "page": 5,
+          "relationship": {
+            "parent_id": null
+          }
+        },
+        {
+          "id": "3_0018",
+          "type": "table",
+          "content": {
+            "headers": [
+              "Name",
+              "ID No.",
+              "Rank",
+              "Division",
+              "Officer Disposition",
+              "Action Taken",
+              "Body Cam"
+            ],
+            "rows": [
+              [
+                {
+                  "key": "Name",
+                  "value": "Stevens, Noah"
+                },
+                {
+                  "key": "ID No.",
+                  "value": "705-MED"
+                },
+                {
+                  "key": "Rank",
+                  "value": "OFFICER"
+                },
+                {
+                  "key": "Division",
+                  "value": "Field Operations"
+                },
+                {
+                  "key": "Officer Disposition",
+                  "value": "UNFOUNDED"
+                },
+                {
+                  "key": "Action Taken",
+                  "value": "NONE"
+                },
+                {
+                  "key": "Body Cam",
+                  "value": "No"
+                }
+              ]
+            ]
+          },
+          "page": 5,
+          "relationship": {
+            "parent_id": null
+          }
+        }
+      ]
+    }
+  ]
+}

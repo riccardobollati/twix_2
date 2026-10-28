@@ -1,0 +1,46 @@
+                                                                                                             
+                                                                                                             
+      Complaints Detail Rpt #A-2                Champaign Police Department                                  
+                                                                                                             
+                                            Complaints    By  Date                                           
+                                                                                                             
+        Date  Number  Investigator Date Assigned Racial Category / Type Location Of Occurrence Disposition Completed Recorded On Camera
+       6/23/2013 09-08 Lim, Zoe         No Formal       Not Stated              NOT SUSTAINED     No         
+                                 6/30/2009         Citizen                              7/30/2009 N/A        
+        Complainant:             DOB:       Gender: FEMAL Address:   , Champaign IL 61821  H Phone:          
+                                Type Of Complaint               Description              Complaint Disposition
+                       Complaint #:1 R-3B.2 Courtesy: Rude      Discourteous Conduct     NOT SUSTAINED       
+                       Complaint #:2 R-5D Use of physical force UNREASONABLE AMOUNT OF FORCE NOT SUSTAINED   
+                                Name               ID No. Rank     Division Officer Disposition Action Taken Body Cam
+                         Officer #:1 Bryant, Jason. 7105 OFFICER   Field Operations NOT SUSTAINED NONE No    
+        Date  Number  Investigator Date Assigned Racial Category / Type Location Of Occurrence Disposition Completed Recorded On Camera
+       7/5/2013 09-09 Lim, Zoe          No Formal       Not Stated              NOT SUSTAINED     No         
+                                 8/18/2009         Citizen                              10/1/2009 N/A        
+        Complainant:             DOB:       Gender: MALE Address: STATEVILLE PRISON, NOT STATED ?? UNK H Phone:
+                                Type Of Complaint               Description              Complaint Disposition
+                       Complaint #:1 R-3B.2 Courtesy: Rude      Wrong Action by Employee NOT SUSTAINED       
+                       Complaint #:2 R-5D Use of physical force UNREASONABLE AMOUNT OF FORCE NOT SUSTAINED   
+                                Name               ID No. Rank     Division Officer Disposition Action Taken Body Cam
+                         Officer #: 1 Bryant, Jason. 790 OFFICER   Field Operations NOT SUSTAINED NONE No    
+                                                                                                             
+        Date  Number  Investigator Date Assigned Racial Category / Type Location Of Occurrence Disposition Completed Recorded On Camera
+       7/5/2013 09-10 Lim, Zoe          No Formal       Not Stated              NOT SUSTAINED     No         
+                                 7/13/2009         Citizen                              8/13/2009 N/A        
+        Complainant:             DOB:       Gender: FEMAL Address:        GURNEE IL 60031  H Phone:          
+                                Type Of Complaint               Description              Complaint Disposition
+                       Complaint #:1 R-5A3 OPERATIONS           Wrong Action by Employee EXONERATED          
+                       Complaint #:2 R-5D Use of physical force UNREASONABLE AMOUNT OF FORCE NOT SUSTAINED   
+                                Name               ID No. Rank     Division Officer Disposition Action Taken Body Cam
+                         Officer #: 1 Fisher, Hannah 712 OFFICER   Field Operations NOT SUSTAINED NONE No    
+        Date  Number  Investigator Date Assigned Racial Category / Type Location Of Occurrence Disposition Completed Recorded On Camera
+       9/5/2013 09-11 Lim, Zoe          No Formal       Not Stated              UNFOUNDED         No         
+                                 9/10/2009         Citizen                              10/20/2009 N/A       
+        Complainant:             DOB:       Gender: MALE Address:    IL 61801              H Phone: (        
+                                Type Of Complaint               Description              Complaint Disposition
+                       Complaint #:1 R-5A3 OPERATIONS           Wrong Action by Employee UNFOUNDED           
+                       Complaint #:2 R-5D Use of physical force UNREASONABLE AMOUNT OF FORCE NOT SUSTAINED   
+                                Name               ID No. Rank     Division Officer Disposition Action Taken Body Cam
+                         Officer #: 1 Fisher, Hannah 712 OFFICER   Field Operations UNFOUNDED NONE   No      
+                                                                                                             
+       L.E.A. Data Technologies ADMINISTRATIVE Database 11/10/2020 10:49:23 AM                    Page 13 of 74
+                                                                                                             

@@ -1,0 +1,5182 @@
+{
+  "records": [
+    {
+      "record_id": "page_11",
+      "source_page": 11,
+      "nodes": [
+        {
+          "id": "0_11",
+          "type": "table",
+          "content": {
+            "headers": [
+              "Year",
+              "Period",
+              "Balance - Total",
+              "Balance - Goods",
+              "Balance - Services",
+              "Exports - Total",
+              "Exports - Goods",
+              "Exports - Services",
+              "Imports - Total",
+              "Imports - Goods",
+              "Imports - Services"
+            ],
+            "rows": [
+              [
+                {
+                  "key": "Year",
+                  "value": "2035"
+                },
+                {
+                  "key": "Period",
+                  "value": "Jan. - Dec."
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "-642207"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-1520212"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "878005"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "4814185"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "3000601"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "1813584"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "5456392"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "4520813"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "935579"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2035"
+                },
+                {
+                  "key": "Period",
+                  "value": "January"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "-59953"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-132690"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "72737"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "404399"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "253991"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "150408"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "464352"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "386681"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "77671"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2035"
+                },
+                {
+                  "key": "Period",
+                  "value": "February"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "-47678"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-123715"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "76037"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "401987"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "249370"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "152617"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "449665"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "373085"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "76580"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2035"
+                },
+                {
+                  "key": "Period",
+                  "value": "March"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "-67219"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-139659"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "72440"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "407296"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "256875"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "150421"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "474515"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "396534"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "77981"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2035"
+                },
+                {
+                  "key": "Period",
+                  "value": "April"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "-51372"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-125745"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "74373"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "407297"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "256107"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "151190"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "458669"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "381852"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "76817"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2035"
+                },
+                {
+                  "key": "Period",
+                  "value": "May"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "-49259"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-123271"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "74012"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "407482"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "255549"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "151933"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "456741"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "378820"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "77921"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2035"
+                },
+                {
+                  "key": "Period",
+                  "value": "June"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "-56142"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-131062"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "74920"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "402855"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "250223"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "152632"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "458997"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "381285"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "77712"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2035"
+                },
+                {
+                  "key": "Period",
+                  "value": "July"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "-49681"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-123316"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "73635"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "407970"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "255843"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "152127"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "457651"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "379159"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "78492"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2035"
+                },
+                {
+                  "key": "Period",
+                  "value": "August"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "-60323"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-131065"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "70742"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "395651"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "246370"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "149281"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "455974"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "377435"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "78539"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2035"
+                },
+                {
+                  "key": "Period",
+                  "value": "September"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "-49724"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-121085"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "71361"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "397796"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "248246"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "149550"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "447520"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "369331"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "78189"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2035"
+                },
+                {
+                  "key": "Period",
+                  "value": "October"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "-54422"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-126283"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "71861"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "396818"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "246514"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "150304"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "451240"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "372797"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "78443"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2035"
+                },
+                {
+                  "key": "Period",
+                  "value": "November"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "-47491"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-120099"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "72608"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "392580"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "241011"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "151569"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "440071"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "361110"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "78961"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2035"
+                },
+                {
+                  "key": "Period",
+                  "value": "December"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "-48943"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-122222"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "73279"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "392054"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "240502"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "151552"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "440997"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "362724"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "78273"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2036"
+                },
+                {
+                  "key": "Period",
+                  "value": "Jan. - Dec."
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "-660215"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-1586726"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "926511"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "5007389"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "3111776"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "1895613"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "5667604"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "4698502"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "969102"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2036"
+                },
+                {
+                  "key": "Period",
+                  "value": "January"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "-62464"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-139421"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "76957"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "420351"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "262737"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "157614"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "482815"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "402158"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "80657"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2036"
+                },
+                {
+                  "key": "Period",
+                  "value": "February"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "-40535"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-118726"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "78191"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "421008"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "262784"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "158224"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "461543"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "381510"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "80033"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2036"
+                },
+                {
+                  "key": "Period",
+                  "value": "March"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "-63993"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-140814"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "76821"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "420903"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "263562"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "157341"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "484896"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "404376"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "80520"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2036"
+                },
+                {
+                  "key": "Period",
+                  "value": "April"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "-48900"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-127858"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "78958"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "425288"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "266198"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "159090"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "474188"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "394056"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "80132"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2036"
+                },
+                {
+                  "key": "Period",
+                  "value": "May"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "-52384"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-128881"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "76497"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "422531"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "265934"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "156597"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "474915"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "394815"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "80100"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2036"
+                },
+                {
+                  "key": "Period",
+                  "value": "June"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "-60727"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-139402"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "78675"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "421449"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "262481"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "158968"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "482176"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "401883"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "80293"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2036"
+                },
+                {
+                  "key": "Period",
+                  "value": "July"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "-55761"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-133086"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "77325"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "418479"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "259530"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "158949"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "474240"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "392616"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "81624"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2036"
+                },
+                {
+                  "key": "Period",
+                  "value": "August"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "-57345"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-134274"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "76929"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "416701"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "258160"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "158541"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "474046"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "392434"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "81612"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2036"
+                },
+                {
+                  "key": "Period",
+                  "value": "September"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "-54200"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-131244"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "77044"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "416464"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "258450"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "158014"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "470664"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "389694"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "80970"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2036"
+                },
+                {
+                  "key": "Period",
+                  "value": "October"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "-55766"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-133204"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "77438"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "411560"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "253116"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "158444"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "467326"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "386320"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "81006"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2036"
+                },
+                {
+                  "key": "Period",
+                  "value": "November"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "-53238"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-129210"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "75972"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "405948"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "248858"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "157090"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "459186"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "378068"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "81118"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2036"
+                },
+                {
+                  "key": "Period",
+                  "value": "December"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "-54902"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-130606"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "75704"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "406707"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "249966"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "156741"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "461609"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "380572"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "81037"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2037"
+                },
+                {
+                  "key": "Period",
+                  "value": "Jan. - Dec."
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "-631022"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-1609575"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "978553"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "5208281"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "3233302"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "1974979"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "5839303"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "4842877"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "996426"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2037"
+                },
+                {
+                  "key": "Period",
+                  "value": "January"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "-54796"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-136598"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "81802"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "437683"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "273917"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "163766"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "492479"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "410515"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "81964"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2037"
+                },
+                {
+                  "key": "Period",
+                  "value": "February"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "-35335"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-118178"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "82843"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "437987"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "272420"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "165567"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "473322"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "390598"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "82724"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2037"
+                },
+                {
+                  "key": "Period",
+                  "value": "March"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "-61721"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-145991"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "84270"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "438286"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "271478"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "166808"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "500007"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "417469"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "82538"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2037"
+                },
+                {
+                  "key": "Period",
+                  "value": "April"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "-53451"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-136847"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "83396"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "438228"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "272928"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "165300"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "491679"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "409775"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "81904"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2037"
+                },
+                {
+                  "key": "Period",
+                  "value": "May"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "-42403"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-125220"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "82817"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "442063"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "275650"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "166413"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "484466"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "400870"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "83596"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2037"
+                },
+                {
+                  "key": "Period",
+                  "value": "June"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "-59392"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-141833"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "82441"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "440095"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "275127"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "164968"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "499487"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "416960"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "82527"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2037"
+                },
+                {
+                  "key": "Period",
+                  "value": "July"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "-50668"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-129962"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "79294"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "438291"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "275333"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "162958"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "488959"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "405295"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "83664"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2037"
+                },
+                {
+                  "key": "Period",
+                  "value": "August"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "-63570"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-143785"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "80215"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "431270"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "267414"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "163856"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "494840"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "411199"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "83641"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2037"
+                },
+                {
+                  "key": "Period",
+                  "value": "September"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "-57611"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-136630"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "79019"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "431611"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "268891"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "162720"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "489222"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "405521"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "83701"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2037"
+                },
+                {
+                  "key": "Period",
+                  "value": "October"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "-48718"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-128456"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "79738"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "426664"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "263758"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "162906"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "475382"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "392214"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "83168"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2037"
+                },
+                {
+                  "key": "Period",
+                  "value": "November"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "-49189"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-130161"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "80972"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "424379"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "259701"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "164678"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "473568"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "389862"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "83706"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2037"
+                },
+                {
+                  "key": "Period",
+                  "value": "December"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "-54168"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-135914"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "81746"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "421724"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "256685"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "165039"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "475892"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "392599"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "83293"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2038"
+                },
+                {
+                  "key": "Period",
+                  "value": "Jan. - Dec."
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "-624512"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-1661926"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "1037414"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "5409742"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "3343405"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "2066337"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "6034254"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "5005331"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "1028923"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2038"
+                },
+                {
+                  "key": "Period",
+                  "value": "January"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "-48090"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-136358"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "88268"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "462875"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "288554"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "174321"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "510965"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "424912"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "86053"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2038"
+                },
+                {
+                  "key": "Period",
+                  "value": "February"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "-34177"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-121664"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "87487"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "455604"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "284118"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "171486"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "489781"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "405782"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "83999"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2038"
+                },
+                {
+                  "key": "Period",
+                  "value": "March"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "-71561"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-160410"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "88849"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "451751"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "277806"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "173945"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "523312"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "438216"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "85096"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2038"
+                },
+                {
+                  "key": "Period",
+                  "value": "April"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "-54830"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-140989"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "86159"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "453460"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "282585"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "170875"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "508290"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "423574"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "84716"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2038"
+                },
+                {
+                  "key": "Period",
+                  "value": "May"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "-47675"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-134655"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "86980"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "452373"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "280285"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "172088"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "500048"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "414940"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "85108"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2038"
+                },
+                {
+                  "key": "Period",
+                  "value": "June"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "-60439"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-148496"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "88057"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "455795"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "281369"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "174426"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "516234"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "429865"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "86369"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2038"
+                },
+                {
+                  "key": "Period",
+                  "value": "July"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "-58633"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-143479"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "84846"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "451385"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "279909"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "171476"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "510018"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "423388"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "86630"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2038"
+                },
+                {
+                  "key": "Period",
+                  "value": "August"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "-56408"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-142707"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "86299"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "449119"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "276966"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "172153"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "505527"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "419673"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "85854"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2038"
+                },
+                {
+                  "key": "Period",
+                  "value": "September"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "-45479"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-128553"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "83074"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "450558"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "280486"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "170072"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "496037"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "409039"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "86998"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2038"
+                },
+                {
+                  "key": "Period",
+                  "value": "October"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "-56563"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-140243"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "83680"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "440475"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "270573"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "169902"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "497038"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "410816"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "86222"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2038"
+                },
+                {
+                  "key": "Period",
+                  "value": "November"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "-45661"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-131981"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "86320"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "443648"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "270847"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "172801"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "489309"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "402828"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "86481"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2038"
+                },
+                {
+                  "key": "Period",
+                  "value": "December"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "-44996"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-132391"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "87395"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "442699"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "269907"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "172792"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "487695"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "402298"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "85397"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2039"
+                },
+                {
+                  "key": "Period",
+                  "value": "Jan. - Dec."
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "-635461"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-1731660"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "1096199"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "5603591"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "3443721"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "2159870"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "6239052"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "5175381"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "1063671"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2039"
+                },
+                {
+                  "key": "Period",
+                  "value": "January"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "-50813"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-142896"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "92083"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "476880"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "296339"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "180541"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "527693"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "439235"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "88458"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2039"
+                },
+                {
+                  "key": "Period",
+                  "value": "February"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "-43249"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-137013"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "93764"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "471908"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "290243"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "181665"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "515157"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "427256"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "87901"
+                }
+              ]
+            ]
+          },
+          "relationship": {
+            "parent_id": null
+          }
+        },
+        {
+          "id": "1_11",
+          "type": "key_value",
+          "content": [
+            {
+              "key": "Title",
+              "value": "U.S. International Trade in Goods and Services, 1992 - Present"
+            },
+            {
+              "key": "Units",
+              "value": "millions of dollars"
+            },
+            {
+              "key": "Seasonally adjusted",
+              "value": "Yes"
+            },
+            {
+              "key": "Notes",
+              "value": "Seasonally adjusted; details may not equal totals due to seasonal adjustment and rounding. Goods data presented on a Balance of Payments (BOP) Basis."
+            },
+            {
+              "key": "Source",
+              "value": "U.S. Census Bureau, Foreign Trade Division."
+            }
+          ],
+          "relationship": {
+            "parent_id": null
+          }
+        }
+      ]
+    },
+    {
+      "record_id": "page_21",
+      "source_page": 21,
+      "nodes": [
+        {
+          "id": "0_21",
+          "type": "table",
+          "content": {
+            "headers": [
+              "Year",
+              "Period",
+              "Balance - Total",
+              "Balance - Goods",
+              "Balance - Services",
+              "Exports - Total",
+              "Exports - Goods",
+              "Exports - Services",
+              "Imports - Total",
+              "Imports - Goods",
+              "Imports - Services"
+            ],
+            "rows": [
+              [
+                {
+                  "key": "Year",
+                  "value": "2078"
+                },
+                {
+                  "key": "Period",
+                  "value": "Jan. - Dec."
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "1559478"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-6668766"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "8228244"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "25223395"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "13219174"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "12004221"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "23663917"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "19887940"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "3775977"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2078"
+                },
+                {
+                  "key": "Period",
+                  "value": "January"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "134641"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-565561"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "700202"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "2142477"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "1131841"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "1010636"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "2007836"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "1697402"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "310434"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2078"
+                },
+                {
+                  "key": "Period",
+                  "value": "February"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "149678"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-536389"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "686067"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "2105743"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "1108643"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "997100"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "1956065"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "1645032"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "311033"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2078"
+                },
+                {
+                  "key": "Period",
+                  "value": "March"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "82128"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-607207"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "689335"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "2126653"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "1125367"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "1001286"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "2044525"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "1732574"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "311951"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2078"
+                },
+                {
+                  "key": "Period",
+                  "value": "April"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "141349"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-545810"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "687159"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "2114268"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "1114498"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "999770"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "1972919"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "1660308"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "312611"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2078"
+                },
+                {
+                  "key": "Period",
+                  "value": "May"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "184036"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-506646"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "690682"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "2136844"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "1129272"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "1007572"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "1952808"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "1635918"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "316890"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2078"
+                },
+                {
+                  "key": "Period",
+                  "value": "June"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "136344"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-552637"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "688981"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "2127256"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "1123943"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "1003313"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "1990912"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "1676580"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "314332"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2078"
+                },
+                {
+                  "key": "Period",
+                  "value": "July"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "174199"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-511483"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "685682"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "2125025"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "1121113"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "1003912"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "1950826"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "1632596"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "318230"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2078"
+                },
+                {
+                  "key": "Period",
+                  "value": "August"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "105907"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-566817"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "672724"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "2083810"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "1091874"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "991936"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "1977903"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "1658691"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "319212"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2078"
+                },
+                {
+                  "key": "Period",
+                  "value": "September"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "113046"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-562129"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "675175"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "2088012"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "1097425"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "990587"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "1974966"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "1659554"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "315412"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2078"
+                },
+                {
+                  "key": "Period",
+                  "value": "October"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "98243"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-574643"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "672886"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "2052029"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "1064554"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "987475"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "1953786"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "1639197"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "314589"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2078"
+                },
+                {
+                  "key": "Period",
+                  "value": "November"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "136966"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-550874"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "687840"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "2075454"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "1071916"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "1003538"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "1938488"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "1622790"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "315698"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2078"
+                },
+                {
+                  "key": "Period",
+                  "value": "December"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "102941"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-588570"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "691511"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "2045824"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "1038728"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "1007096"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "1942883"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "1627298"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "315585"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2079"
+                },
+                {
+                  "key": "Period",
+                  "value": "Jan. - Dec."
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "1779832"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-6898210"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "8678042"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "26283907"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "13703750"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "12580157"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "24504075"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "20601960"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "3902115"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2079"
+                },
+                {
+                  "key": "Period",
+                  "value": "January"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "152088"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-582807"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "734895"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "2219836"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "1161331"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "1058505"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "2067748"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "1744138"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "323610"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2079"
+                },
+                {
+                  "key": "Period",
+                  "value": "February"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "191526"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-534916"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "726442"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "2189507"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "1141403"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "1048104"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "1997981"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "1676319"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "321662"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2079"
+                },
+                {
+                  "key": "Period",
+                  "value": "March"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "91694"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-625394"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "717088"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "2211705"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "1168717"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "1042988"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "2120011"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "1794111"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "325900"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2079"
+                },
+                {
+                  "key": "Period",
+                  "value": "April"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "166519"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-564408"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "730927"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "2229687"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "1173091"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "1056596"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "2063168"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "1737499"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "325669"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2079"
+                },
+                {
+                  "key": "Period",
+                  "value": "May"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "148142"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-576027"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "724169"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "2212273"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "1162453"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "1049820"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "2064131"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "1738480"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "325651"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2079"
+                },
+                {
+                  "key": "Period",
+                  "value": "June"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "153728"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-570828"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "724556"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "2206010"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "1159931"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "1046079"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "2052282"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "1730759"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "321523"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2079"
+                },
+                {
+                  "key": "Period",
+                  "value": "July"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "171555"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-557205"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "728760"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "2219010"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "1165923"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "1053087"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "2047455"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "1723128"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "324327"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2079"
+                },
+                {
+                  "key": "Period",
+                  "value": "August"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "93208"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-631375"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "724583"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "2158018"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "1108465"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "1049553"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "2064810"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "1739840"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "324970"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2079"
+                },
+                {
+                  "key": "Period",
+                  "value": "September"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "116703"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-590176"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "706879"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "2159987"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "1122561"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "1037426"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "2043284"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "1712737"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "330547"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2079"
+                },
+                {
+                  "key": "Period",
+                  "value": "October"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "161456"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-563177"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "724633"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "2178244"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "1125964"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "1052280"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "2016788"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "1689141"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "327647"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2079"
+                },
+                {
+                  "key": "Period",
+                  "value": "November"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "140146"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-568025"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "708171"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "2143132"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "1107235"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "1035897"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "2002986"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "1675260"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "327726"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2079"
+                },
+                {
+                  "key": "Period",
+                  "value": "December"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "193067"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-533872"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "726939"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "2156498"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "1106676"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "1049822"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "1963431"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "1640548"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "322883"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2080"
+                },
+                {
+                  "key": "Period",
+                  "value": "Jan. - Dec."
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "1938214"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-7118724"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "9056938"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "27213508"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "14129187"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "13084321"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "25275294"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "21247911"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "4027383"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2080"
+                },
+                {
+                  "key": "Period",
+                  "value": "January"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "136988"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-634136"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "771124"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "2299849"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "1197485"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "1102364"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "2162861"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "1831621"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "331240"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2080"
+                },
+                {
+                  "key": "Period",
+                  "value": "February"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "220006"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-541806"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "761812"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "2282426"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "1191876"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "1090550"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "2062420"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "1733682"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "328738"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2080"
+                },
+                {
+                  "key": "Period",
+                  "value": "March"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "113206"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-647248"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "760454"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "2300982"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "1206023"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "1094959"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "2187776"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "1853271"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "334505"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2080"
+                },
+                {
+                  "key": "Period",
+                  "value": "April"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "205664"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-557026"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "762690"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "2315359"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "1222183"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "1093176"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "2109695"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "1779209"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "330486"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2080"
+                },
+                {
+                  "key": "Period",
+                  "value": "May"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "180828"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-571805"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "752633"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "2282213"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "1194465"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "1087748"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "2101385"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "1766270"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "335115"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2080"
+                },
+                {
+                  "key": "Period",
+                  "value": "June"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "157127"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-610135"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "767262"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "2295718"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "1193353"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "1102365"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "2138591"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "1803488"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "335103"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2080"
+                },
+                {
+                  "key": "Period",
+                  "value": "July"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "150898"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-592702"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "743600"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "2273794"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "1192649"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "1081145"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "2122896"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "1785351"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "337545"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2080"
+                },
+                {
+                  "key": "Period",
+                  "value": "August"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "94622"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-653873"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "748495"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "2235080"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "1145910"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "1089170"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "2140458"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "1799783"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "340675"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2080"
+                },
+                {
+                  "key": "Period",
+                  "value": "September"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "183854"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-562199"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "746053"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "2258323"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "1171559"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "1086764"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "2074469"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "1733758"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "340711"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2080"
+                },
+                {
+                  "key": "Period",
+                  "value": "October"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "149410"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-591792"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "741202"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "2224473"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "1145599"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "1078874"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "2075063"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "1737391"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "337672"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2080"
+                },
+                {
+                  "key": "Period",
+                  "value": "November"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "160106"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-581604"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "741710"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "2211296"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "1131569"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "1079727"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "2051190"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "1713173"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "338017"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2080"
+                },
+                {
+                  "key": "Period",
+                  "value": "December"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "185505"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-574398"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "759903"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "2233995"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "1136516"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "1097479"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "2048490"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "1710914"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "337576"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2081"
+                },
+                {
+                  "key": "Period",
+                  "value": "Jan. - Dec."
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "2196055"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-7372811"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "9568866"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "28320976"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "14591825"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "13729151"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "26124921"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "21964636"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "4160285"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2081"
+                },
+                {
+                  "key": "Period",
+                  "value": "January"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "150959"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-658546"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "809505"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "2392400"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "1234475"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "1157925"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "2241441"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "1893021"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "348420"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2081"
+                },
+                {
+                  "key": "Period",
+                  "value": "February"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "234911"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-559360"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "794271"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "2365352"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "1229812"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "1135540"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "2130441"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "1789172"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "341269"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2081"
+                },
+                {
+                  "key": "Period",
+                  "value": "March"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "107820"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-692045"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "799865"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "2361317"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "1217541"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "1143776"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "2253497"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "1909586"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "343911"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2081"
+                },
+                {
+                  "key": "Period",
+                  "value": "April"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "228889"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-579357"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "808246"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "2405647"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "1255260"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "1150387"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "2176758"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "1834617"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "342141"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2081"
+                },
+                {
+                  "key": "Period",
+                  "value": "May"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "195944"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-603397"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "799341"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "2390722"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "1246868"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "1143854"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "2194778"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "1850265"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "344513"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2081"
+                },
+                {
+                  "key": "Period",
+                  "value": "June"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "187478"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-622854"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "810332"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "2398332"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "1241247"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "1157085"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "2210854"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "1864101"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "346753"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2081"
+                },
+                {
+                  "key": "Period",
+                  "value": "July"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "227575"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-575717"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "803292"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "2403122"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "1252592"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "1150530"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "2175547"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "1828309"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "347238"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2081"
+                },
+                {
+                  "key": "Period",
+                  "value": "August"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "130866"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-647697"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "778563"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "2315447"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "1186849"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "1128598"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "2184581"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "1834546"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "350035"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2081"
+                },
+                {
+                  "key": "Period",
+                  "value": "September"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "206852"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-591233"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "798085"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "2360670"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "1213914"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "1146756"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "2153818"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "1805147"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "348671"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2081"
+                },
+                {
+                  "key": "Period",
+                  "value": "October"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "218643"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-575354"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "793997"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "2344768"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "1201301"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "1143467"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "2126125"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "1776655"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "349470"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2081"
+                },
+                {
+                  "key": "Period",
+                  "value": "November"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "165043"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-623900"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "788943"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "2296986"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "1160424"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "1136562"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "2131943"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "1784324"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "347619"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2081"
+                },
+                {
+                  "key": "Period",
+                  "value": "December"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "141075"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-643351"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "784426"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "2286213"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "1151542"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "1134671"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "2145138"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "1794893"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "350245"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2082"
+                },
+                {
+                  "key": "Period",
+                  "value": "Jan. - Dec."
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "2220228"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-7793686"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "10013914"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "29340267"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "15027580"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "14312687"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "27120039"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "22821266"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "4298773"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2082"
+                },
+                {
+                  "key": "Period",
+                  "value": "January"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "198399"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-643507"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "841906"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "2488445"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "1289487"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "1198958"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "2290046"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "1932994"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "357052"
+                }
+              ],
+              [
+                {
+                  "key": "Year",
+                  "value": "2082"
+                },
+                {
+                  "key": "Period",
+                  "value": "February"
+                },
+                {
+                  "key": "Balance - Total",
+                  "value": "273613"
+                },
+                {
+                  "key": "Balance - Goods",
+                  "value": "-579339"
+                },
+                {
+                  "key": "Balance - Services",
+                  "value": "852952"
+                },
+                {
+                  "key": "Exports - Total",
+                  "value": "2474161"
+                },
+                {
+                  "key": "Exports - Goods",
+                  "value": "1268711"
+                },
+                {
+                  "key": "Exports - Services",
+                  "value": "1205450"
+                },
+                {
+                  "key": "Imports - Total",
+                  "value": "2200548"
+                },
+                {
+                  "key": "Imports - Goods",
+                  "value": "1848050"
+                },
+                {
+                  "key": "Imports - Services",
+                  "value": "352498"
+                }
+              ]
+            ]
+          },
+          "relationship": {
+            "parent_id": null
+          }
+        },
+        {
+          "id": "1_21",
+          "type": "key_value",
+          "content": [
+            {
+              "key": "Title",
+              "value": "U.S. International Trade in Goods and Services, 1992 - Present"
+            },
+            {
+              "key": "Units",
+              "value": "millions of dollars"
+            },
+            {
+              "key": "Seasonally adjusted",
+              "value": "Yes"
+            },
+            {
+              "key": "Notes",
+              "value": "Seasonally adjusted; details may not equal totals due to seasonal adjustment and rounding. Goods data presented on a Balance of Payments (BOP) Basis."
+            },
+            {
+              "key": "Source",
+              "value": "U.S. Census Bureau, Foreign Trade Division."
+            }
+          ],
+          "relationship": {
+            "parent_id": null
+          }
+        }
+      ]
+    }
+  ]
+}

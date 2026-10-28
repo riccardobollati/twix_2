@@ -1,0 +1,246 @@
+{
+  "source_file": "/Users/riccardo/tesi/code/twix_2/evaluations/qwen_27b_id_18/page_runs/page_009.pdf",
+  "page_count": 1,
+  "orders": [
+    {
+      "order_id": "7441156",
+      "status": "Unconfirmed",
+      "agency": "Bully Pulpit",
+      "office": "Alexandria",
+      "client": "325 - North Dakota Senate - Heitkamp",
+      "product": "301 - Issue Advocacy",
+      "piggyback_product": null,
+      "estimate": "6452 - Heitkamp Wk#1 10.30-11.05",
+      "primary_demo": null,
+      "demo_2": null,
+      "demo_3": null,
+      "grp": "0.00",
+      "cpp": "$0.00",
+      "gimp": "0",
+      "cpm": "$0.00",
+      "comments": "Separation: 15",
+      "station": "KVLY-D2",
+      "order_type": "Normal",
+      "flight_start": "10/30/2018",
+      "flight_end": "11/05/2018",
+      "cancel_date": null,
+      "hiatus": null,
+      "received_in_eport": "10/30/2018 12:02:14 PM",
+      "local_national": "Local",
+      "rep_office": "KVLY-D2",
+      "ae": "Sandra Whitfield",
+      "phone": null,
+      "market_share": null,
+      "airtime_dollars": "$50,329.00",
+      "interactive_dollars": "$0.00",
+      "non_airtime_dollars": "$0.00",
+      "total_dollars": "$50,329.00",
+      "total_spots": 176,
+      "flight_dates": [
+        "10/30",
+        "10/31",
+        "11/1",
+        "11/2",
+        "11/3",
+        "11/4",
+        "11/5"
+      ],
+      "lines": [
+        {
+          "line_no": 2,
+          "daypart": "Su 10:35P-11:05P",
+          "program": "WDAY/WDAZ Sports Sunday",
+          "dpt_code": "LF",
+          "rate": "$188.00",
+          "c_t": "C",
+          "len": 30,
+          "daily_spots": {
+            "10/30": 0,
+            "10/31": 0,
+            "11/1": 0,
+            "11/2": 0,
+            "11/3": 0,
+            "11/4": 2,
+            "11/5": 0
+          },
+          "total_spots": 2
+        },
+        {
+          "line_no": 3,
+          "daypart": "TuWThFM 10:35P-11:35P",
+          "program": "Jimmy Kimmel",
+          "dpt_code": "LF",
+          "rate": "$144.00",
+          "c_t": "C",
+          "len": 30,
+          "daily_spots": {
+            "10/30": 1,
+            "10/31": 1,
+            "11/1": 1,
+            "11/2": 1,
+            "11/3": 0,
+            "11/4": 0,
+            "11/5": 1
+          },
+          "total_spots": 5
+        },
+        {
+          "line_no": 4,
+          "daypart": "TuWThFM 4P-4:30P",
+          "program": "WDAY/WDAZ News at 4p",
+          "dpt_code": "EF",
+          "rate": "$100.00",
+          "c_t": "C",
+          "len": 30,
+          "daily_spots": {
+            "10/30": 1,
+            "10/31": 1,
+            "11/1": 1,
+            "11/2": 1,
+            "11/3": 0,
+            "11/4": 0,
+            "11/5": 1
+          },
+          "total_spots": 5
+        },
+        {
+          "line_no": 5,
+          "daypart": "Su 5:30P-6P",
+          "program": "Sunday Early News",
+          "dpt_code": "EN",
+          "rate": "$342.00",
+          "c_t": "C",
+          "len": 30,
+          "daily_spots": {
+            "10/30": 0,
+            "10/31": 0,
+            "11/1": 0,
+            "11/2": 0,
+            "11/3": 2,
+            "11/4": 0,
+            "11/5": 0
+          },
+          "total_spots": 2
+        },
+        {
+          "line_no": 6,
+          "daypart": "Su 5:30P-6P",
+          "program": "Sunday Early News",
+          "dpt_code": "EN",
+          "rate": "$320.00",
+          "c_t": "C",
+          "len": 30,
+          "daily_spots": {
+            "10/30": 0,
+            "10/31": 0,
+            "11/1": 0,
+            "11/2": 0,
+            "11/3": 0,
+            "11/4": 1,
+            "11/5": 0
+          },
+          "total_spots": 1
+        },
+        {
+          "line_no": 7,
+          "daypart": "TuWThFM 4P-4:30P",
+          "program": "WDAY/WDAZ News at 4p",
+          "dpt_code": "EF",
+          "rate": "$87.00",
+          "c_t": "C",
+          "len": 30,
+          "daily_spots": {
+            "10/30": 1,
+            "10/31": 1,
+            "11/1": 1,
+            "11/2": 1,
+            "11/3": 0,
+            "11/4": 0,
+            "11/5": 1
+          },
+          "total_spots": 5
+        },
+        {
+          "line_no": 8,
+          "daypart": "TuWThFM 10P-10:35P",
+          "program": "WDAY/WDAZ News at 10",
+          "dpt_code": "LN",
+          "rate": "$920.00",
+          "c_t": "C",
+          "len": 30,
+          "daily_spots": {
+            "10/30": 1,
+            "10/31": 1,
+            "11/1": 1,
+            "11/2": 1,
+            "11/3": 0,
+            "11/4": 0,
+            "11/5": 1
+          },
+          "total_spots": 5
+        },
+        {
+          "line_no": 9,
+          "daypart": "Sa 7A-8:30A",
+          "program": "First News Saturday",
+          "dpt_code": "EM",
+          "rate": "$60.00",
+          "c_t": "C",
+          "len": 30,
+          "daily_spots": {
+            "10/30": 0,
+            "10/31": 0,
+            "11/1": 0,
+            "11/2": 0,
+            "11/3": 0,
+            "11/4": 2,
+            "11/5": 0
+          },
+          "total_spots": 2
+        },
+        {
+          "line_no": 10,
+          "daypart": "M 9P-10P",
+          "program": "The Good Doctor",
+          "dpt_code": "PT",
+          "rate": "$792.00",
+          "c_t": "C",
+          "len": 30,
+          "daily_spots": {
+            "10/30": 0,
+            "10/31": 0,
+            "11/1": 0,
+            "11/2": 0,
+            "11/3": 0,
+            "11/4": 2,
+            "11/5": 0
+          },
+          "total_spots": 2
+        },
+        {
+          "line_no": 11,
+          "daypart": "TuWThFM 4P-4:30P",
+          "program": "WDAY/WDAZ News at 4p",
+          "dpt_code": "EF",
+          "rate": "$66.00",
+          "c_t": "C",
+          "len": 30,
+          "daily_spots": {
+            "10/30": 2,
+            "10/31": 2,
+            "11/1": 2,
+            "11/2": 2,
+            "11/3": 0,
+            "11/4": 0,
+            "11/5": 2
+          },
+          "total_spots": 10
+        }
+      ],
+      "totals": null,
+      "pages": [
+        1
+      ]
+    }
+  ]
+}

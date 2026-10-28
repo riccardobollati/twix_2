@@ -1,0 +1,76 @@
+{
+  "source": "Codex-generated, model-assisted reference, not human-verified truth",
+  "independence": "Only local PDF words and rendered images used; no baseline predictions, scores or existing reference consumed.",
+  "images_reviewed": [
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23
+  ],
+  "template_additions": [
+    {
+      "node_id": 2,
+      "field": "Dimensions - Mass per Metre lb/ft",
+      "pages": [
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18
+      ],
+      "evidence": "Imperial table explicitly prints separate lb/ft and kg/m columns; preserve both instead of combining values."
+    }
+  ],
+  "notes": [
+    "All 18 pages have one property table and one Dimensions/Specification/Size Range KV block.",
+    "Pages 6-8 HE; pages 9-18 imperial UB/UC; pages 19-23 metric MB/MC.",
+    "Separate imperial lb/ft column preserved.",
+    "Row-spanning designations propagated to their numerical rows; parenthesized size and split HE suffix included; page continuations carry the open designation.",
+    "Running chapter titles and printed page numbers are document provenance; diagram letters are schema illustrations, not extra data records."
+  ],
+  "qa_checks": {
+    "numeric_cell_coverage": "Every dense table row contains exactly 26 (metric/HE) or 27 (imperial) printed numeric cells; assertions cover all selected rows.",
+    "counts_per_page": {
+      "6": 26,
+      "7": 25,
+      "8": 21,
+      "9": 29,
+      "10": 33,
+      "11": 32,
+      "12": 34,
+      "13": 35,
+      "14": 34,
+      "15": 35,
+      "16": 35,
+      "17": 33,
+      "18": 30,
+      "19": 30,
+      "20": 32,
+      "21": 32,
+      "22": 33,
+      "23": 33
+    },
+    "designation_wraps": "HE split mass suffixes and imperial parenthesized metric-size continuation retained. Three-line W24/W30/W33 designations verified and transcription helper corrected before scoring.",
+    "reference_addition_review": "All pages 9-18 reviewed for added lb/ft field; every selected page remains in reference.",
+    "development_format_validation": "Development image confirms semantic field order and decimal rendering including warping constants. Adapter frozen before independent transcription and unchanged."
+  }
+}

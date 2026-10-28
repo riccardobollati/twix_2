@@ -1,0 +1,46 @@
+                                                                                                             
+                                                                                                             
+      Complaints Detail Rpt #A-2                Champaign Police Department                                  
+                                                                                                             
+                                            Complaints    By  Date                                           
+                                                                                                             
+        Date  Number  Investigator Date Assigned Racial Category / Type Location Of Occurrence Disposition Completed Recorded On Camera
+       7/18/2014 10-13 Zhao, Leo        No Formal       Not Stated              UNFOUNDED         No         
+                                 7/21/2010         Citizen                              7/28/2010 N/A        
+        Complainant:             DOB:       Gender: MALE Address:    Champaign IL 61820    H Phone: (        
+                                Type Of Complaint               Description              Complaint Disposition
+                       Complaint #:1 R-5A3 OPERATIONS           Wrong Action by Employee UNFOUNDED           
+                                Name               ID No. Rank     Division Officer Disposition Action Taken Body Cam
+                         Officer #: 1 Zhu, Eli.    767   OFFICER   Field Operations UNFOUNDED NONE   No      
+        Date  Number  Investigator Date Assigned Racial Category / Type Location Of Occurrence Disposition Completed Recorded On Camera
+       7/18/2014 10-14 Zhao, Leo        No Formal       Not Stated              SUSTAINED         No         
+                                 7/26/2010         Citizen                               8/4/2010 N/A        
+        Complainant:             DOB:       Gender: FEMAL Address: Champaign IL 61820      H Phone:          
+                                Type Of Complaint               Description              Complaint Disposition
+                       Complaint #:1 R-3B.4 COURTESY: COMMENT   Discourteous Conduct     SUSTAINED           
+                       Complaint #:2 R-5A3 OPERATIONS           No Action by Employee    NOT SUSTAINED       
+                                Name               ID No. Rank     Division Officer Disposition Action Taken Body Cam
+                         Officer #:1 Bloom, Erik C. 777- OFFICER   Field Operations SUSTAINED COUNSELING No  
+                                                   RESIG                                                     
+                         Officer #:2 Hayes, Olivia. 904ret SERGEANT Field Operations NOT SUSTAINED NONE No   
+        Date  Number  Investigator Date Assigned Racial Category / Type Location Of Occurrence Disposition Completed Recorded On Camera
+       7/22/2014 10-16 Zhao, Leo        No Formal       Not Stated              UNFOUNDED         No         
+                                 7/30/2010         Citizen                              9/10/2010 N/A        
+        Complainant:             DOB:       Gender: MALE Address:    , Saginaw MI 48603    H Phone:          
+                                Type Of Complaint               Description              Complaint Disposition
+                       Complaint #:1 R-3B.3 Courtesy: Conduct   Discourteous Conduct     UNFOUNDED           
+                                Name               ID No. Rank     Division Officer Disposition Action Taken Body Cam
+                         Officer #: 1 Hayes, Oliviais l. 935 SERGEANT Field Operations UNFOUNDED NONE No     
+                                                                                                             
+        Date  Number  Investigator Date Assigned Racial Category / Type Location Of Occurrence Disposition Completed Recorded On Camera
+       7/25/2014 10-15 Zhao, Leo       Yes Formal       Not Stated              NOT SUSTAINED     No         
+                                 7/27/2010         Citizen                              7/29/2010 N/A        
+        Complainant:             DOB:       Gender: MALE Address:     , Champaign IL 61821 H Phone:          
+                                Type Of Complaint               Description              Complaint Disposition
+                       Complaint #:1 R-5B ARREST, SEARCH AND SEIZURE Discrimination      NOT SUSTAINED       
+                                Name               ID No. Rank     Division Officer Disposition Action Taken Body Cam
+                         Officer #: 1 Hayes, Olivia 7113 RECRUIT OFFIC Field Operations NOT SUSTAINED NONE No
+                                                                                                             
+                                                                                                             
+       L.E.A. Data Technologies ADMINISTRATIVE Database 11/10/2020 10:49:23 AM                    Page 20 of 74
+                                                                                                             

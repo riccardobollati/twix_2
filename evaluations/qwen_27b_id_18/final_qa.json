@@ -1,0 +1,8 @@
+{
+  "all_260_retained_rows_match_reference_on_all_emitted_fields": true,
+  "all_13_missing_rows_are_S_code": true,
+  "all_20_images_and_text_inspected": true,
+  "adapter_and_baseline_hashes_verified": true,
+  "no_source_code_changes": true,
+  "accuracy": 0.909704
+}

@@ -1,0 +1,28 @@
+{
+  "template": [
+    {
+      "type": "table",
+      "fields": [
+        "Identification",
+        "Name",
+        "Lateral limits",
+        "Upper limit",
+        "Lower limit",
+        "Type of activity",
+        "Remarks",
+        "Validity"
+      ],
+      "bid": [0],
+      "child": -1,
+      "node_id": 0,
+      "complexity": {
+        "same_row_structure": true,
+        "nested": false,
+        "repeated": true
+      }
+    }
+  ],
+  "metadata": [
+    {"pattern": "(?:ENR 5\\.1\\.1-\\d+|AIP - Italia|AIRAC effective date .*|ENAV - Roma)", "type": "document_level"}
+  ]
+}

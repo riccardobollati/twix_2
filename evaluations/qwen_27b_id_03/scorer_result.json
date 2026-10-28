@@ -1,0 +1,631 @@
+{
+  "doc_name": "",
+  "reference": "model_reference",
+  "candidate": "agent",
+  "reference_model": "Codex-generated local PDF reference",
+  "candidate_model": null,
+  "exact_match": false,
+  "accuracy": 0.991604,
+  "components": {
+    "RecordMatchF1": {
+      "typed_f1": 1.0,
+      "precision": 1.0,
+      "recall": 1.0
+    },
+    "NodeMatchF1": {
+      "typed_f1": 1.0,
+      "untyped_f1": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "untyped_precision": 1.0,
+      "untyped_recall": 1.0
+    },
+    "ContentScore": {
+      "overall": 0.983208,
+      "macro": 0.984745,
+      "by_type": {
+        "table": 0.984745,
+        "key_value": null,
+        "metadata": null
+      }
+    },
+    "StructureScore": {
+      "edge_accuracy": null,
+      "path_accuracy": null,
+      "note_agreement_rate": null
+    }
+  },
+  "weights": {
+    "NodeMatchF1": 0.4,
+    "ContentScore": 0.4,
+    "StructureScore": 0.2
+  },
+  "threshold": 0.9,
+  "record_alignment": [
+    {
+      "gold_record_id": "page_10",
+      "candidate_record_id": "page_10",
+      "record_sim": 0.9
+    },
+    {
+      "gold_record_id": "page_11",
+      "candidate_record_id": "page_11",
+      "record_sim": 0.9
+    },
+    {
+      "gold_record_id": "page_12",
+      "candidate_record_id": "page_12",
+      "record_sim": 0.9
+    },
+    {
+      "gold_record_id": "page_13",
+      "candidate_record_id": "page_13",
+      "record_sim": 0.9
+    },
+    {
+      "gold_record_id": "page_14",
+      "candidate_record_id": "page_14",
+      "record_sim": 0.9
+    },
+    {
+      "gold_record_id": "page_15",
+      "candidate_record_id": "page_15",
+      "record_sim": 0.9
+    },
+    {
+      "gold_record_id": "page_16",
+      "candidate_record_id": "page_16",
+      "record_sim": 0.9
+    },
+    {
+      "gold_record_id": "page_17",
+      "candidate_record_id": "page_17",
+      "record_sim": 0.896635
+    },
+    {
+      "gold_record_id": "page_18",
+      "candidate_record_id": "page_18",
+      "record_sim": 0.9
+    },
+    {
+      "gold_record_id": "page_19",
+      "candidate_record_id": "page_19",
+      "record_sim": 0.9
+    },
+    {
+      "gold_record_id": "page_20",
+      "candidate_record_id": "page_20",
+      "record_sim": 0.9
+    },
+    {
+      "gold_record_id": "page_21",
+      "candidate_record_id": "page_21",
+      "record_sim": 0.897308
+    },
+    {
+      "gold_record_id": "page_22",
+      "candidate_record_id": "page_22",
+      "record_sim": 0.9
+    },
+    {
+      "gold_record_id": "page_23",
+      "candidate_record_id": "page_23",
+      "record_sim": 0.9
+    },
+    {
+      "gold_record_id": "page_24",
+      "candidate_record_id": "page_24",
+      "record_sim": 0.874301
+    },
+    {
+      "gold_record_id": "page_25",
+      "candidate_record_id": "page_25",
+      "record_sim": 0.897308
+    },
+    {
+      "gold_record_id": "page_6",
+      "candidate_record_id": "page_6",
+      "record_sim": 0.895513
+    },
+    {
+      "gold_record_id": "page_7",
+      "candidate_record_id": "page_7",
+      "record_sim": 0.896635
+    },
+    {
+      "gold_record_id": "page_8",
+      "candidate_record_id": "page_8",
+      "record_sim": 0.891026
+    },
+    {
+      "gold_record_id": "page_9",
+      "candidate_record_id": "page_9",
+      "record_sim": 0.875
+    }
+  ],
+  "missing_gold_records": [],
+  "extra_candidate_records": [],
+  "alignment": [
+    {
+      "gold_record_id": "page_10",
+      "candidate_record_id": "page_10",
+      "gold_id": "0_0010",
+      "candidate_id": "0_0010",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "page_11",
+      "candidate_record_id": "page_11",
+      "gold_id": "0_0011",
+      "candidate_id": "0_0011",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "page_12",
+      "candidate_record_id": "page_12",
+      "gold_id": "0_0012",
+      "candidate_id": "0_0012",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "page_13",
+      "candidate_record_id": "page_13",
+      "gold_id": "0_0013",
+      "candidate_id": "0_0013",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "page_14",
+      "candidate_record_id": "page_14",
+      "gold_id": "0_0014",
+      "candidate_id": "0_0014",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "page_15",
+      "candidate_record_id": "page_15",
+      "gold_id": "0_0015",
+      "candidate_id": "0_0015",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "page_16",
+      "candidate_record_id": "page_16",
+      "gold_id": "0_0016",
+      "candidate_id": "0_0016",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "page_17",
+      "candidate_record_id": "page_17",
+      "gold_id": "0_0017",
+      "candidate_id": "0_0017",
+      "type_match": true,
+      "content_sim": 0.986538
+    },
+    {
+      "gold_record_id": "page_18",
+      "candidate_record_id": "page_18",
+      "gold_id": "0_0018",
+      "candidate_id": "0_0018",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "page_19",
+      "candidate_record_id": "page_19",
+      "gold_id": "0_0019",
+      "candidate_id": "0_0019",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "page_20",
+      "candidate_record_id": "page_20",
+      "gold_id": "0_0020",
+      "candidate_id": "0_0020",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "page_21",
+      "candidate_record_id": "page_21",
+      "gold_id": "0_0021",
+      "candidate_id": "0_0021",
+      "type_match": true,
+      "content_sim": 0.989231
+    },
+    {
+      "gold_record_id": "page_22",
+      "candidate_record_id": "page_22",
+      "gold_id": "0_0022",
+      "candidate_id": "0_0022",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "page_23",
+      "candidate_record_id": "page_23",
+      "gold_id": "0_0023",
+      "candidate_id": "0_0023",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "page_24",
+      "candidate_record_id": "page_24",
+      "gold_id": "0_0024",
+      "candidate_id": "0_0024",
+      "type_match": true,
+      "content_sim": 0.897203
+    },
+    {
+      "gold_record_id": "page_25",
+      "candidate_record_id": "page_25",
+      "gold_id": "0_0025",
+      "candidate_id": "0_0025",
+      "type_match": true,
+      "content_sim": 0.989231
+    },
+    {
+      "gold_record_id": "page_6",
+      "candidate_record_id": "page_6",
+      "gold_id": "0_0006",
+      "candidate_id": "0_0006",
+      "type_match": true,
+      "content_sim": 0.982051
+    },
+    {
+      "gold_record_id": "page_7",
+      "candidate_record_id": "page_7",
+      "gold_id": "0_0007",
+      "candidate_id": "0_0007",
+      "type_match": true,
+      "content_sim": 0.986538
+    },
+    {
+      "gold_record_id": "page_8",
+      "candidate_record_id": "page_8",
+      "gold_id": "0_0008",
+      "candidate_id": "0_0008",
+      "type_match": true,
+      "content_sim": 0.964103
+    },
+    {
+      "gold_record_id": "page_9",
+      "candidate_record_id": "page_9",
+      "gold_id": "0_0009",
+      "candidate_id": "0_0009",
+      "type_match": true,
+      "content_sim": 0.9
+    }
+  ],
+  "missing_gold_nodes": [],
+  "extra_candidate_nodes": [],
+  "type_mismatches": [],
+  "content_diffs": [
+    {
+      "gold_id": "0_0017",
+      "candidate_id": "0_0017",
+      "type": "table",
+      "field": "rows[0].DATE WAS FILED",
+      "gold": "Unknown",
+      "candidate": "",
+      "reason": "R-CELL-WRONG-COLUMN",
+      "gold_record_id": "page_17",
+      "candidate_record_id": "page_17"
+    },
+    {
+      "gold_id": "0_0017",
+      "candidate_id": "0_0017",
+      "type": "table",
+      "field": "column[DATE WAS FILED]",
+      "gold": "DATE WAS FILED",
+      "candidate": "Filings",
+      "reason": "R-COLUMN-SWAP",
+      "gold_record_id": "page_17",
+      "candidate_record_id": "page_17"
+    },
+    {
+      "gold_id": "0_0021",
+      "candidate_id": "0_0021",
+      "type": "table",
+      "field": "rows[1].DATE WAS FILED",
+      "gold": "Unknown",
+      "candidate": "",
+      "reason": "R-CELL-WRONG-COLUMN",
+      "gold_record_id": "page_21",
+      "candidate_record_id": "page_21"
+    },
+    {
+      "gold_id": "0_0021",
+      "candidate_id": "0_0021",
+      "type": "table",
+      "field": "column[DATE WAS FILED]",
+      "gold": "DATE WAS FILED",
+      "candidate": "Filings",
+      "reason": "R-COLUMN-SWAP",
+      "gold_record_id": "page_21",
+      "candidate_record_id": "page_21"
+    },
+    {
+      "gold_id": "0_0024",
+      "candidate_id": "0_0024",
+      "type": "table",
+      "field": "rows[1].DATE WAS FILED",
+      "gold": "Unknown",
+      "candidate": "",
+      "reason": "R-CELL-WRONG-COLUMN",
+      "gold_record_id": "page_24",
+      "candidate_record_id": "page_24"
+    },
+    {
+      "gold_id": "0_0024",
+      "candidate_id": "0_0024",
+      "type": "table",
+      "field": "rows[3].INJURED PARTY",
+      "gold": "Taylor, William, Jr.",
+      "candidate": "Dickerson, Lemon Taylor, William, Jr.",
+      "reason": "R-CELL-DIFFERS",
+      "gold_record_id": "page_24",
+      "candidate_record_id": "page_24"
+    },
+    {
+      "gold_id": "0_0024",
+      "candidate_id": "0_0024",
+      "type": "table",
+      "field": "rows[3].MOTION FILER",
+      "gold": "William Taylor, Jr.",
+      "candidate": "Yvonne Yancey William Taylor, Jr.",
+      "reason": "R-CELL-DIFFERS",
+      "gold_record_id": "page_24",
+      "candidate_record_id": "page_24"
+    },
+    {
+      "gold_id": "0_0024",
+      "candidate_id": "0_0024",
+      "type": "table",
+      "field": "rows[3].Comments and explanations for rulings",
+      "gold": "Diagnosed 1985, only says \"did not know.\" Risks of creosote exposure and filings of claims based on the same were the subjects of widespread publicity in the relevant areas of MS starting before 2000. Alleges lack of actual knowledge but no showing as to other relevant factors (including diligence in investigation and pursuit of claims and reasons why filed so long after the bar date), not sufficient for relief based on excusable neglect. Claim also was time-barred under the applicable statute of limitations before the Tronox bankruptcy filing.",
+      "candidate": "No claim filed and no grounds for relief set forth; sent a letter asking that any correspondence re: her dead father be sent to her address. Diagnosed 1985, only says \"did not know.\" Risks of creosote exposure and filings of claims based on the same were the subjects of widespread publicity in the relevant areas of MS starting before 2000. Alleges lack of actual knowledge but no showing as to other relevant factors (including diligence in investigation and pursuit of claims and reasons why filed so long after the bar date), not sufficient for relief based on excusable neglect. Claim also was time-barred under the applicable statute of limitations before the Tronox bankruptcy filing.",
+      "reason": "R-CELL-DIFFERS",
+      "gold_record_id": "page_24",
+      "candidate_record_id": "page_24"
+    },
+    {
+      "gold_id": "0_0024",
+      "candidate_id": "0_0024",
+      "type": "table",
+      "field": "rows[2]",
+      "gold": [
+        {
+          "key": "Claim sequence number",
+          "value": "96"
+        },
+        {
+          "key": "CLAIM NO.",
+          "value": "Unknown"
+        },
+        {
+          "key": "DATE WAS FILED",
+          "value": "12/14/2015"
+        },
+        {
+          "key": "INJURED PARTY",
+          "value": "Dickerson, Lemon"
+        },
+        {
+          "key": "MOTION FILER",
+          "value": "Yvonne Yancey"
+        },
+        {
+          "key": "Docket No.",
+          "value": "3383"
+        },
+        {
+          "key": "Filings",
+          "value": ""
+        },
+        {
+          "key": "A",
+          "value": ""
+        },
+        {
+          "key": "B",
+          "value": "X"
+        },
+        {
+          "key": "C",
+          "value": ""
+        },
+        {
+          "key": "D",
+          "value": ""
+        },
+        {
+          "key": "E",
+          "value": ""
+        },
+        {
+          "key": "Comments and explanations for rulings",
+          "value": "No claim filed and no grounds for relief set forth; sent a letter asking that any correspondence re: her dead father be sent to her address."
+        }
+      ],
+      "candidate": null,
+      "reason": "R-ROW-MISSING",
+      "gold_record_id": "page_24",
+      "candidate_record_id": "page_24"
+    },
+    {
+      "gold_id": "0_0024",
+      "candidate_id": "0_0024",
+      "type": "table",
+      "field": "column[DATE WAS FILED]",
+      "gold": "DATE WAS FILED",
+      "candidate": "Filings",
+      "reason": "R-COLUMN-SWAP",
+      "gold_record_id": "page_24",
+      "candidate_record_id": "page_24"
+    },
+    {
+      "gold_id": "0_0025",
+      "candidate_id": "0_0025",
+      "type": "table",
+      "field": "rows[2].DATE WAS FILED",
+      "gold": "Unknown",
+      "candidate": "",
+      "reason": "R-CELL-WRONG-COLUMN",
+      "gold_record_id": "page_25",
+      "candidate_record_id": "page_25"
+    },
+    {
+      "gold_id": "0_0025",
+      "candidate_id": "0_0025",
+      "type": "table",
+      "field": "column[DATE WAS FILED]",
+      "gold": "DATE WAS FILED",
+      "candidate": "Filings",
+      "reason": "R-COLUMN-SWAP",
+      "gold_record_id": "page_25",
+      "candidate_record_id": "page_25"
+    },
+    {
+      "gold_id": "0_0006",
+      "candidate_id": "0_0006",
+      "type": "table",
+      "field": "rows[0].DATE WAS FILED",
+      "gold": "Unknown",
+      "candidate": "",
+      "reason": "R-CELL-WRONG-COLUMN",
+      "gold_record_id": "page_6",
+      "candidate_record_id": "page_6"
+    },
+    {
+      "gold_id": "0_0006",
+      "candidate_id": "0_0006",
+      "type": "table",
+      "field": "column[DATE WAS FILED]",
+      "gold": "DATE WAS FILED",
+      "candidate": "Filings",
+      "reason": "R-COLUMN-SWAP",
+      "gold_record_id": "page_6",
+      "candidate_record_id": "page_6"
+    },
+    {
+      "gold_id": "0_0007",
+      "candidate_id": "0_0007",
+      "type": "table",
+      "field": "rows[2].DATE WAS FILED",
+      "gold": "Unknown",
+      "candidate": "",
+      "reason": "R-CELL-WRONG-COLUMN",
+      "gold_record_id": "page_7",
+      "candidate_record_id": "page_7"
+    },
+    {
+      "gold_id": "0_0007",
+      "candidate_id": "0_0007",
+      "type": "table",
+      "field": "column[DATE WAS FILED]",
+      "gold": "DATE WAS FILED",
+      "candidate": "Filings",
+      "reason": "R-COLUMN-SWAP",
+      "gold_record_id": "page_7",
+      "candidate_record_id": "page_7"
+    },
+    {
+      "gold_id": "0_0008",
+      "candidate_id": "0_0008",
+      "type": "table",
+      "field": "rows[0].DATE WAS FILED",
+      "gold": "Unknown",
+      "candidate": "",
+      "reason": "R-CELL-WRONG-COLUMN",
+      "gold_record_id": "page_8",
+      "candidate_record_id": "page_8"
+    },
+    {
+      "gold_id": "0_0008",
+      "candidate_id": "0_0008",
+      "type": "table",
+      "field": "rows[2].DATE WAS FILED",
+      "gold": "Unknown",
+      "candidate": "",
+      "reason": "R-CELL-WRONG-COLUMN",
+      "gold_record_id": "page_8",
+      "candidate_record_id": "page_8"
+    },
+    {
+      "gold_id": "0_0009",
+      "candidate_id": "0_0009",
+      "type": "table",
+      "field": "rows[3]",
+      "gold": [
+        {
+          "key": "Claim sequence number",
+          "value": "35"
+        },
+        {
+          "key": "CLAIM NO.",
+          "value": "Unknown"
+        },
+        {
+          "key": "DATE WAS FILED",
+          "value": "Unknown"
+        },
+        {
+          "key": "INJURED PARTY",
+          "value": "Durrah, Reonna"
+        },
+        {
+          "key": "MOTION FILER",
+          "value": "Reonna Durrah"
+        },
+        {
+          "key": "Docket No.",
+          "value": "3320"
+        },
+        {
+          "key": "Filings",
+          "value": ""
+        },
+        {
+          "key": "A",
+          "value": ""
+        },
+        {
+          "key": "B",
+          "value": "X"
+        },
+        {
+          "key": "C",
+          "value": ""
+        },
+        {
+          "key": "D",
+          "value": ""
+        },
+        {
+          "key": "E",
+          "value": ""
+        },
+        {
+          "key": "Comments and explanations for rulings",
+          "value": "Motion is not included on the Trust's summary. Diagnosed 2004, filing on behalf of daughter. Says both that \"I didn\u2019t find out about it until it was too late\" and \"I thought that she wasn't old enough.\" Risks of creosote exposure and filings of claims based on the same were the subjects of widespread publicity in the relevant areas of MS starting before 2000. Not a sufficient showing of timely action and diligent investigation to warrant relief based on excusable neglect, no claim of lack of due process."
+        }
+      ],
+      "candidate": null,
+      "reason": "R-ROW-MISSING",
+      "gold_record_id": "page_9",
+      "candidate_record_id": "page_9"
+    }
+  ],
+  "structure_diffs": []
+}

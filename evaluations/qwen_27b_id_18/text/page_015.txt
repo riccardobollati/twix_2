@@ -1,0 +1,52 @@
+New Order
+Agency: Bully Pulpit Station: WDAZ-S1 Flight Start: 10/30/2018
+Office: Washington Order Type: Normal Flight End: 11/05/2018
+Client: 092 - Wisconsin Senate - Baldwin Cancel Date: Hiatus:
+Product: 328 - Political
+Piggyback Product:
+Estimate: 6199 - Baldwin Wk#2 10.30-11.05 Received in ePort: 10/30/2018 9:14:22 AM Airtime Dollars: $23,597.00
+Interactive Dollars: $0.00
+Primary Demo: Local/National: National Non-Airtime Dollars: $0.00
+Demo 2: Rep Office: WDAZ-S1 Total Dollars: $23,597.00
+Demo 3: AE: Robert Kline Total Spots: 101
+GRP: 0.00 Phone:
+CPP: $0.00 OrderID: 7441600
+GIMP: 0 Status: Confirmed
+CPM: $0.00 MarketShare:
+Comments: Separation: 15
+Daily Airtime Lines
+Line Daypart DPT Total
+No (Program) Code Rate C/T Len 10/30 10/31 11/1 11/2 11/3 11/4 11/5 Spots Rtg CPP Imp CPM
+Su 5:30P-6P
+1 EN $370.00 C 30 0 0 0 0 2 0 0 2
+Sunday Early News
+TuWThFM 11A-12P
+2 DT $46.00 C 30 1 1 1 1 0 0 1 5
+Rachael Ray
+M 7P-9P
+3 PT $889.00 C 30 0 0 0 0 1 0 0 1
+DWTS
+TuWThFM 6A-7A
+4 EM $270.00 C 30 2 2 2 2 0 0 2 10
+First News Hour 2
+Sa 7P-10P
+5 PT $231.00 C 30 0 0 0 0 1 0 0 1
+NCAA FTBALL
+TuWThFM 10A-11A
+6 DT $74.00 C 30 1 1 1 1 0 0 1 5
+The View
+TuWThFM 12P-1P
+7 DT $60.00 C 30 1 1 1 1 0 0 1 5
+The Chew
+TuWThFM 12P-1P
+8 DT $30.00 C 30 1 1 1 1 0 0 1 5
+The Chew
+TuWThFM 4:30P-5P
+9 EF $60.00 C 30 1 1 1 1 0 0 1 5
+Inside Edition
+TuWThFM 4:30P-5P
+10 EF $59.00 C 30 1 1 1 1 0 0 1 5
+Inside Edition
+TuWThFM 6A-7A
+11 EM $220.00 C 30 1 1 1 1 0 0 1 5
+First News Hour 2

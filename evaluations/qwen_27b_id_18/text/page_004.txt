@@ -1,0 +1,53 @@
+New Order (Page 2)
+Agency: Bully Pulpit Station: WDAY-S2 Order ID: 7440730
+Client: 508 - Montana Senate - Tester Product: 301 - Issue Advocacy Estimate: 6149 - Tester Wk#3 10.30-11.05
+Flight Start: 10/30/2018 Flight End: 11/05/2018 Received in ePort: 10/30/2018 9:14:22 AM
+Line Daypart DPT Total
+No (Program) Code Rate C/T Len 10/30 10/31 11/1 11/2 11/3 11/4 11/5 Spots Rtg CPP Imp CPM
+TuWThFM 10:35P-11:35P
+12 LF $200.00 C 30 3 3 3 3 0 0 3 15
+Jimmy Kimmel
+TuWThFM 12P-1P
+13 DT $31.00 C 30 3 3 3 3 0 0 3 15
+The Chew
+F 9P-10P
+14 PT $357.00 C 30 0 0 0 0 1 0 0 1
+20/20
+TuWThFM 10:35P-11:35P
+15 LF $190.00 C 30 1 1 1 1 0 0 1 5
+Jimmy Kimmel
+TuWThFM 10:35P-11:35P
+16 LF $154.00 C 30 3 3 3 3 0 0 3 15
+Jimmy Kimmel
+TuWThFM 3P-4P
+17 EF $44.00 C 30 1 1 1 1 0 0 1 5
+The Dr. Oz Show
+TuWThFM 6P-6:30P
+18 EN $786.00 C 30 1 1 1 1 0 0 1 5
+WDAY/WDAZ News at 6
+M 9P-10P
+19 PT $770.00 C 30 0 0 0 0 0 2 0 2
+The Good Doctor
+Sa 7A-8:30A
+20 EM $49.00 C 30 0 0 0 0 1 0 0 1
+First News Saturday
+TuWThFM 9A-10A
+21 DT $80.00 C 30 1 1 1 1 0 0 1 5
+Live! with Kelly and Ryan
+Su 5:30P-6P
+22 EN $380.00 C 30 0 0 0 0 2 0 0 2
+Sunday Early News
+TuWThFM 10P-10:35P
+23 LN $940.00 C 30 1 1 1 1 0 0 1 5
+WDAY/WDAZ News at 10
+TuWThFM 10:35P-11:35P
+24 LF $192.00 C 30 1 1 1 1 0 0 1 5
+Jimmy Kimmel
+TuWThFM 4P-4:30P
+25 EF $90.00 C 30 1 1 1 1 0 0 1 5
+WDAY/WDAZ News at 4p
+M 9P-10P
+26 PT $820.00 C 30 0 0 0 0 0 1 0 1
+The Good Doctor
+Total Spots: 27 27 27 27 7 5 27
+Cash$ - Spots: $52,161.00 - 147 Trade$ - Spots: $0.00 - 0 Total Cost: $52,161.00 Total GRP - CPP: 0.0 - $0.00 Total GIMP(000) - CPM: 0 - $0.00

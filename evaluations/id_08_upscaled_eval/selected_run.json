@@ -1,0 +1,6 @@
+{
+  "exit_code": 1,
+  "stdout": "",
+  "stderr": "Extraction failed: PDF page 1: found May row before the first year heading\n",
+  "duration_seconds": 0.20824804098811
+}

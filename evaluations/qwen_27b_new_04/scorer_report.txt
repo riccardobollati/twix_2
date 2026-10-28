@@ -1,0 +1,239 @@
+=== EVAL REPORT =========================================================
+doc:        new_04 Qwen 27B baseline physical pages 6-23
+reference:  model_reference (Codex local PDF image/text reference)
+candidate:  Frozen Qwen 27B baseline with evaluation adapter (?)
+threshold:  0.90
+accuracy:   0.206      exact_match: False     verdict: FAIL
+
+--- Score breakdown ----------------------------------------------------
+RecordMatchF1   typed=0.167  P=0.167  R=0.167
+NodeMatchF1     typed=0.286  untyped=0.286  P=1.000  R=0.167
+ContentScore    overall=0.125   table=0.167  key_value=0.167  metadata=n/a
+StructureScore  edge=n/a  path=n/a  note_agreement=n/a
+
+--- Records ------------------------------------------------------------
+matched: page_6 <-> page_6 (sim=0.900)
+matched: page_7 <-> page_7 (sim=0.900)
+matched: page_8 <-> page_8 (sim=0.900)
+missing gold records:
+  page_9  [R-RECORD-MISSING]  gold record has no candidate counterpart above tau_record=0.3
+  page_10  [R-RECORD-MISSING]  gold record has no candidate counterpart above tau_record=0.3
+  page_11  [R-RECORD-MISSING]  gold record has no candidate counterpart above tau_record=0.3
+  page_12  [R-RECORD-MISSING]  gold record has no candidate counterpart above tau_record=0.3
+  page_13  [R-RECORD-MISSING]  gold record has no candidate counterpart above tau_record=0.3
+  page_14  [R-RECORD-MISSING]  gold record has no candidate counterpart above tau_record=0.3
+  page_15  [R-RECORD-MISSING]  gold record has no candidate counterpart above tau_record=0.3
+  page_16  [R-RECORD-MISSING]  gold record has no candidate counterpart above tau_record=0.3
+  page_17  [R-RECORD-MISSING]  gold record has no candidate counterpart above tau_record=0.3
+  page_18  [R-RECORD-MISSING]  gold record has no candidate counterpart above tau_record=0.3
+  page_19  [R-RECORD-MISSING]  gold record has no candidate counterpart above tau_record=0.3
+  page_20  [R-RECORD-MISSING]  gold record has no candidate counterpart above tau_record=0.3
+  page_21  [R-RECORD-MISSING]  gold record has no candidate counterpart above tau_record=0.3
+  page_22  [R-RECORD-MISSING]  gold record has no candidate counterpart above tau_record=0.3
+  page_23  [R-RECORD-MISSING]  gold record has no candidate counterpart above tau_record=0.3
+extra candidate records:
+  page_9  [R-RECORD-EXTRA]  candidate record has no gold counterpart above tau_record=0.3
+  page_10  [R-RECORD-EXTRA]  candidate record has no gold counterpart above tau_record=0.3
+  page_11  [R-RECORD-EXTRA]  candidate record has no gold counterpart above tau_record=0.3
+  page_12  [R-RECORD-EXTRA]  candidate record has no gold counterpart above tau_record=0.3
+  page_13  [R-RECORD-EXTRA]  candidate record has no gold counterpart above tau_record=0.3
+  page_14  [R-RECORD-EXTRA]  candidate record has no gold counterpart above tau_record=0.3
+  page_15  [R-RECORD-EXTRA]  candidate record has no gold counterpart above tau_record=0.3
+  page_16  [R-RECORD-EXTRA]  candidate record has no gold counterpart above tau_record=0.3
+  page_17  [R-RECORD-EXTRA]  candidate record has no gold counterpart above tau_record=0.3
+  page_18  [R-RECORD-EXTRA]  candidate record has no gold counterpart above tau_record=0.3
+  page_19  [R-RECORD-EXTRA]  candidate record has no gold counterpart above tau_record=0.3
+  page_20  [R-RECORD-EXTRA]  candidate record has no gold counterpart above tau_record=0.3
+  page_21  [R-RECORD-EXTRA]  candidate record has no gold counterpart above tau_record=0.3
+  page_22  [R-RECORD-EXTRA]  candidate record has no gold counterpart above tau_record=0.3
+  page_23  [R-RECORD-EXTRA]  candidate record has no gold counterpart above tau_record=0.3
+
+--- Missing nodes (30) -----------------------------------------------
+--- gold record page_9 (no candidate) ---
+[gold 0_9_0 / key_value]
+  what:  gold node id='0_9_0', type='key_value'
+  where: closest candidate=None (sim=0.000)
+  why:   [R-RECORD-MISSING] gold record has no candidate counterpart above tau_record=0.3
+  fix:   the candidate emitted no matching blocks for this page; check block detection.
+[gold 2_9_0 / table]
+  what:  gold node id='2_9_0', type='table'
+  where: closest candidate=None (sim=0.000)
+  why:   [R-RECORD-MISSING] gold record has no candidate counterpart above tau_record=0.3
+  fix:   the candidate emitted no matching blocks for this page; check block detection.
+--- gold record page_10 (no candidate) ---
+[gold 0_10_0 / key_value]
+  what:  gold node id='0_10_0', type='key_value'
+  where: closest candidate=None (sim=0.000)
+  why:   [R-RECORD-MISSING] gold record has no candidate counterpart above tau_record=0.3
+  fix:   the candidate emitted no matching blocks for this page; check block detection.
+[gold 2_10_0 / table]
+  what:  gold node id='2_10_0', type='table'
+  where: closest candidate=None (sim=0.000)
+  why:   [R-RECORD-MISSING] gold record has no candidate counterpart above tau_record=0.3
+  fix:   the candidate emitted no matching blocks for this page; check block detection.
+--- gold record page_11 (no candidate) ---
+[gold 0_11_0 / key_value]
+  what:  gold node id='0_11_0', type='key_value'
+  where: closest candidate=None (sim=0.000)
+  why:   [R-RECORD-MISSING] gold record has no candidate counterpart above tau_record=0.3
+  fix:   the candidate emitted no matching blocks for this page; check block detection.
+[gold 2_11_0 / table]
+  what:  gold node id='2_11_0', type='table'
+  where: closest candidate=None (sim=0.000)
+  why:   [R-RECORD-MISSING] gold record has no candidate counterpart above tau_record=0.3
+  fix:   the candidate emitted no matching blocks for this page; check block detection.
+--- gold record page_12 (no candidate) ---
+[gold 0_12_0 / key_value]
+  what:  gold node id='0_12_0', type='key_value'
+  where: closest candidate=None (sim=0.000)
+  why:   [R-RECORD-MISSING] gold record has no candidate counterpart above tau_record=0.3
+  fix:   the candidate emitted no matching blocks for this page; check block detection.
+[gold 2_12_0 / table]
+  what:  gold node id='2_12_0', type='table'
+  where: closest candidate=None (sim=0.000)
+  why:   [R-RECORD-MISSING] gold record has no candidate counterpart above tau_record=0.3
+  fix:   the candidate emitted no matching blocks for this page; check block detection.
+--- gold record page_13 (no candidate) ---
+[gold 0_13_0 / key_value]
+  what:  gold node id='0_13_0', type='key_value'
+  where: closest candidate=None (sim=0.000)
+  why:   [R-RECORD-MISSING] gold record has no candidate counterpart above tau_record=0.3
+  fix:   the candidate emitted no matching blocks for this page; check block detection.
+[gold 2_13_0 / table]
+  what:  gold node id='2_13_0', type='table'
+  where: closest candidate=None (sim=0.000)
+  why:   [R-RECORD-MISSING] gold record has no candidate counterpart above tau_record=0.3
+  fix:   the candidate emitted no matching blocks for this page; check block detection.
+--- gold record page_14 (no candidate) ---
+[gold 0_14_0 / key_value]
+  what:  gold node id='0_14_0', type='key_value'
+  where: closest candidate=None (sim=0.000)
+  why:   [R-RECORD-MISSING] gold record has no candidate counterpart above tau_record=0.3
+  fix:   the candidate emitted no matching blocks for this page; check block detection.
+[gold 2_14_0 / table]
+  what:  gold node id='2_14_0', type='table'
+  where: closest candidate=None (sim=0.000)
+  why:   [R-RECORD-MISSING] gold record has no candidate counterpart above tau_record=0.3
+  fix:   the candidate emitted no matching blocks for this page; check block detection.
+--- gold record page_15 (no candidate) ---
+[gold 0_15_0 / key_value]
+  what:  gold node id='0_15_0', type='key_value'
+  where: closest candidate=None (sim=0.000)
+  why:   [R-RECORD-MISSING] gold record has no candidate counterpart above tau_record=0.3
+  fix:   the candidate emitted no matching blocks for this page; check block detection.
+[gold 2_15_0 / table]
+  what:  gold node id='2_15_0', type='table'
+  where: closest candidate=None (sim=0.000)
+  why:   [R-RECORD-MISSING] gold record has no candidate counterpart above tau_record=0.3
+  fix:   the candidate emitted no matching blocks for this page; check block detection.
+--- gold record page_16 (no candidate) ---
+[gold 0_16_0 / key_value]
+  what:  gold node id='0_16_0', type='key_value'
+  where: closest candidate=None (sim=0.000)
+  why:   [R-RECORD-MISSING] gold record has no candidate counterpart above tau_record=0.3
+  fix:   the candidate emitted no matching blocks for this page; check block detection.
+[gold 2_16_0 / table]
+  what:  gold node id='2_16_0', type='table'
+  where: closest candidate=None (sim=0.000)
+  why:   [R-RECORD-MISSING] gold record has no candidate counterpart above tau_record=0.3
+  fix:   the candidate emitted no matching blocks for this page; check block detection.
+--- gold record page_17 (no candidate) ---
+[gold 0_17_0 / key_value]
+  what:  gold node id='0_17_0', type='key_value'
+  where: closest candidate=None (sim=0.000)
+  why:   [R-RECORD-MISSING] gold record has no candidate counterpart above tau_record=0.3
+  fix:   the candidate emitted no matching blocks for this page; check block detection.
+[gold 2_17_0 / table]
+  what:  gold node id='2_17_0', type='table'
+  where: closest candidate=None (sim=0.000)
+  why:   [R-RECORD-MISSING] gold record has no candidate counterpart above tau_record=0.3
+  fix:   the candidate emitted no matching blocks for this page; check block detection.
+--- gold record page_18 (no candidate) ---
+[gold 0_18_0 / key_value]
+  what:  gold node id='0_18_0', type='key_value'
+  where: closest candidate=None (sim=0.000)
+  why:   [R-RECORD-MISSING] gold record has no candidate counterpart above tau_record=0.3
+  fix:   the candidate emitted no matching blocks for this page; check block detection.
+[gold 2_18_0 / table]
+  what:  gold node id='2_18_0', type='table'
+  where: closest candidate=None (sim=0.000)
+  why:   [R-RECORD-MISSING] gold record has no candidate counterpart above tau_record=0.3
+  fix:   the candidate emitted no matching blocks for this page; check block detection.
+--- gold record page_19 (no candidate) ---
+[gold 0_19_0 / key_value]
+  what:  gold node id='0_19_0', type='key_value'
+  where: closest candidate=None (sim=0.000)
+  why:   [R-RECORD-MISSING] gold record has no candidate counterpart above tau_record=0.3
+  fix:   the candidate emitted no matching blocks for this page; check block detection.
+[gold 2_19_0 / table]
+  what:  gold node id='2_19_0', type='table'
+  where: closest candidate=None (sim=0.000)
+  why:   [R-RECORD-MISSING] gold record has no candidate counterpart above tau_record=0.3
+  fix:   the candidate emitted no matching blocks for this page; check block detection.
+--- gold record page_20 (no candidate) ---
+[gold 0_20_0 / key_value]
+  what:  gold node id='0_20_0', type='key_value'
+  where: closest candidate=None (sim=0.000)
+  why:   [R-RECORD-MISSING] gold record has no candidate counterpart above tau_record=0.3
+  fix:   the candidate emitted no matching blocks for this page; check block detection.
+[gold 2_20_0 / table]
+  what:  gold node id='2_20_0', type='table'
+  where: closest candidate=None (sim=0.000)
+  why:   [R-RECORD-MISSING] gold record has no candidate counterpart above tau_record=0.3
+  fix:   the candidate emitted no matching blocks for this page; check block detection.
+--- gold record page_21 (no candidate) ---
+[gold 0_21_0 / key_value]
+  what:  gold node id='0_21_0', type='key_value'
+  where: closest candidate=None (sim=0.000)
+  why:   [R-RECORD-MISSING] gold record has no candidate counterpart above tau_record=0.3
+  fix:   the candidate emitted no matching blocks for this page; check block detection.
+[gold 2_21_0 / table]
+  what:  gold node id='2_21_0', type='table'
+  where: closest candidate=None (sim=0.000)
+  why:   [R-RECORD-MISSING] gold record has no candidate counterpart above tau_record=0.3
+  fix:   the candidate emitted no matching blocks for this page; check block detection.
+--- gold record page_22 (no candidate) ---
+[gold 0_22_0 / key_value]
+  what:  gold node id='0_22_0', type='key_value'
+  where: closest candidate=None (sim=0.000)
+  why:   [R-RECORD-MISSING] gold record has no candidate counterpart above tau_record=0.3
+  fix:   the candidate emitted no matching blocks for this page; check block detection.
+[gold 2_22_0 / table]
+  what:  gold node id='2_22_0', type='table'
+  where: closest candidate=None (sim=0.000)
+  why:   [R-RECORD-MISSING] gold record has no candidate counterpart above tau_record=0.3
+  fix:   the candidate emitted no matching blocks for this page; check block detection.
+--- gold record page_23 (no candidate) ---
+[gold 0_23_0 / key_value]
+  what:  gold node id='0_23_0', type='key_value'
+  where: closest candidate=None (sim=0.000)
+  why:   [R-RECORD-MISSING] gold record has no candidate counterpart above tau_record=0.3
+  fix:   the candidate emitted no matching blocks for this page; check block detection.
+[gold 2_23_0 / table]
+  what:  gold node id='2_23_0', type='table'
+  where: closest candidate=None (sim=0.000)
+  why:   [R-RECORD-MISSING] gold record has no candidate counterpart above tau_record=0.3
+  fix:   the candidate emitted no matching blocks for this page; check block detection.
+
+--- Extra (hallucinated) nodes (0) ----------------------------------
+(none)
+
+--- Type mismatches (0) ---------------------------------------------
+(none)
+
+--- Content mismatches (1) ------------------------------------------
+--- record page_8 <-> page_8 ---
+[gold 2_8_0 / table / rows[11].Section designation]
+  gold:        "HE 1000 AA"
+  candidate:   "HE"
+  why:         [R-CELL-DIFFERS] aligned cell value differs after eval.md §3.4
+  fix:         the cell value is wrong; check column-boundary detection or text grouping.
+
+--- Structure mismatches (0) ----------------------------------------
+(none)
+
+--- Summary of root causes --------------------------------------------
+- 45 of total mismatches: [R-RECORD-MISSING] gold record has no candidate counterpart above tau_record=0.3
+- 15 of total mismatches: [R-RECORD-EXTRA] candidate record has no gold counterpart above tau_record=0.3
+- 1 of total mismatches: [R-CELL-DIFFERS] aligned cell value differs after eval.md §3.4
+========================================================================

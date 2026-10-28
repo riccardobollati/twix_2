@@ -1,0 +1,1 @@
+Extraction failed: PDF page 35, October: expected 9 numeric values, found 0 in 'October'

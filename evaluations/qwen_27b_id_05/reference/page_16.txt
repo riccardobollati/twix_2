@@ -1,0 +1,46 @@
+                                                                                                             
+                                                                                                             
+      Complaints Detail Rpt #A-2                Champaign Police Department                                  
+                                                                                                             
+                                            Complaints    By  Date                                           
+                                                                                                             
+        Date  Number  Investigator Date Assigned Racial Category / Type Location Of Occurrence Disposition Completed Recorded On Camera
+       1/8/2014 10-01 Yu, Kai          Yes Formal       Not Stated              NOT SUSTAINED     No         
+                                 1/15/2010         Citizen                              2/17/2010 N/A        
+        Complainant:             DOB:       Gender: FEMAL Address:      Champaign IL 61820 H Phone: (        
+                                Type Of Complaint               Description              Complaint Disposition
+                       Complaint #:1 R-3B.2 Courtesy: Rude      Wrong Action by Employee NOT SUSTAINED       
+                       Complaint #:2 R-5A3 OPERATIONS           Discrimination           UNFOUNDED           
+                                Name               ID No. Rank     Division Officer Disposition Action Taken Body Cam
+                         Officer #:1 Murphy, Daniel 7111 RECRUIT OFFIC NOT ENTERED NOT SUSTAINED NONE No     
+                         Officer #:2 Voges, Mason  785   OFFICER   Field Operations NOT SUSTAINED NONE No    
+        Date  Number  Investigator Date Assigned Racial Category / Type Location Of Occurrence Disposition Completed Recorded On Camera
+       1/17/2014 10-02 Yu, Kai          No Formal       Not Stated              NOT SUSTAINED     No         
+                                 1/29/2010         Citizen                              2/23/2010 N/A        
+        Complainant:             DOB:       Gender: MALE Address: STATESVILLE CC, JOLIET ?? UNK H Phone:     
+                                Type Of Complaint               Description              Complaint Disposition
+                       Complaint #:1 R-5D Use of physical force UNREASONABLE AMOUNT OF FORCE NOT SUSTAINED   
+                                Name               ID No. Rank     Division Officer Disposition Action Taken Body Cam
+                         Officer #:1 Harris, Lucas. 930  SERGEANT  Field Operations NOT SUSTAINED NONE No    
+                                                                                                             
+        Date  Number  Investigator Date Assigned Racial Category / Type Location Of Occurrence Disposition Completed Recorded On Camera
+       2/12/2014 10-II02 Yu, Kai        No Formal       Not Stated              SUSTAINED         No         
+                                 2/12/2010        Internal                              3/31/2010 N/A        
+        Complainant: DEPARTMENT  DOB:       Gender:   Address: Not Stated ?? UNK           H Phone:          
+                                Type Of Complaint               Description              Complaint Disposition
+                       Complaint #:1 R-5D Use of physical force UNREASONABLE AMOUNT OF FORCE SUSTAINED       
+                                Name               ID No. Rank     Division Officer Disposition Action Taken Body Cam
+                         Officer #:1 Sullivan, Chloe 740 OFFICER   Field Operations SUSTAINED SUSPENSION (1 DAY) No
+        Date  Number  Investigator Date Assigned Racial Category / Type Location Of Occurrence Disposition Completed Recorded On Camera
+       3/5/2014 10-03 Yu, Kai           No Formal       Not Stated              NOT SUSTAINED     No         
+                                  3/8/2010         Citizen                              4/27/2010 N/A        
+        Complainant:             DOB:       Gender: MALE Address:               IL 61820   H Phone: (        
+                                Type Of Complaint               Description              Complaint Disposition
+                       Complaint #:1 R-3B.4 COURTESY: COMMENT   Wrong Action by Employee NOT SUSTAINED       
+                       Complaint #:2 R-5D Use of physical force Wrong Action by Employee NOT SUSTAINED       
+                       Complaint #:3 R-5D Use of physical force UNREASONABLE AMOUNT OF FORCE UNFOUNDED       
+                                Name               ID No. Rank     Division Officer Disposition Action Taken Body Cam
+                         Officer #:1 Peters, Clara. 7110 RECRUIT OFFIC Field Operations NOT SUSTAINED NONE No
+                                                                                                             
+       L.E.A. Data Technologies ADMINISTRATIVE Database 11/10/2020 10:49:23 AM                    Page 16 of 74
+                                                                                                             

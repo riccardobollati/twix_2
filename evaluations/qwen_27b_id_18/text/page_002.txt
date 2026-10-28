@@ -1,0 +1,62 @@
+New Order (Page 2)
+Agency: Bully Pulpit Station: KVLY-D2 Order ID: 7440592
+Client: 412 - Missouri Senate - McCaskill Product: 328 - Political Estimate: 6539 - McCaskill Wk#4 10.30-11.05
+Flight Start: 10/30/2018 Flight End: 11/05/2018 Received in ePort: 10/30/2018 3:31:56 PM
+Line Daypart DPT Total
+No (Program) Code Rate C/T Len 10/30 10/31 11/1 11/2 11/3 11/4 11/5 Spots Rtg CPP Imp CPM
+TuWThFM 10A-11A
+12 DT $79.00 C 30 1 1 1 1 0 0 1 5
+The View
+TuWThFM 4:30P-5P
+13 EF $40.00 C 30 1 1 1 1 0 0 1 5
+Inside Edition
+M 9P-10P
+14 PT $760.00 C 30 0 0 0 0 0 1 0 1
+The Good Doctor
+Sa 6P-6:30P
+15 EN $189.00 C 30 0 0 0 0 0 2 0 2
+Saturday Early News
+TuWThFM 9A-10A
+16 DT $90.00 C 30 1 1 1 1 0 0 1 5
+Live! with Kelly and Ryan
+TuWThFM 11A-12P
+17 DT $48.00 C 30 3 3 3 3 0 0 3 15
+Rachael Ray
+Sa 7A-8:30A
+18 EM $40.00 C 30 0 0 0 0 1 0 0 1
+First News Saturday
+TuWThFM 9A-5P
+19 DT $53.00 C 30 1 1 1 1 0 0 1 5
+Daytime Rotator
+TuWThFM 7A-8A
+20 EM $388.00 C 30 2 2 2 2 0 0 2 10
+Good Morning America Hour 1
+TuWThFM 6:30P-7P
+21 PA $408.00 C 30 1 1 1 1 0 0 1 5
+Entertainment Tonight
+TuWThFM 3P-4P
+22 EF $37.00 C 30 3 3 3 3 0 0 3 15
+The Dr. Oz Show
+M 7P-9P
+23 PT $883.00 C 30 0 0 0 0 0 1 0 1
+DWTS
+Sa 7P-10P
+24 PT $268.00 C 30 0 0 0 0 2 0 0 2
+NCAA FTBALL
+Sa 7P-10P
+25 PT $250.00 C 30 0 0 0 0 0 2 0 2
+NCAA FTBALL
+TuWThFM 12P-1P
+26 DT $50.00 C 30 1 1 1 1 0 0 1 5
+The Chew
+TuWThFM 10A-11A
+27 DT $80.00 C 30 2 2 2 2 0 0 2 10
+The View
+TuWThFM 8A-9A
+28 EM $164.00 C 30 2 2 2 2 0 0 2 10
+Good Morning America Hour 2
+TuWThFM 9A-5P
+29 DT $46.00 C 30 1 1 1 1 0 0 1 5
+Daytime Rotator
+Total Spots: 27 27 27 27 5 11 27
+Cash$ - Spots: $38,277.00 - 151 Trade$ - Spots: $0.00 - 0 Total Cost: $38,277.00 Total GRP - CPP: 0.0 - $0.00 Total GIMP(000) - CPM: 0 - $0.00

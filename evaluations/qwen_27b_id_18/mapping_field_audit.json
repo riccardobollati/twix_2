@@ -1,0 +1,24 @@
+{
+  "frozen_manifest_sha256": "67d2accbb16eacde356ee6fc8b4d066de149d7cb6b58ecc7e146504f4b17fbbe",
+  "no_behavioral_change": true,
+  "additional_explicit_accounting": {
+    "root.orders": "order container flattened into physical page records",
+    "orders.lines": "all emitted rows retained, in original order",
+    "orders.totals": "all footer fields retained",
+    "orders.totals.total_cost": "node 3 Total Cost, unchanged string",
+    "wrapper.pages": "evaluation-only source provenance",
+    "wrapper.pages.source_page": "record_id and node.page",
+    "wrapper.pages.raw": "exact frozen page-run output"
+  },
+  "totals_scalar_mapping": {
+    "cash_dollars": "Cash$ - Spots amount",
+    "cash_spots": "Cash$ - Spots count",
+    "trade_dollars": "Trade$ - Spots amount",
+    "trade_spots": "Trade$ - Spots count",
+    "total_cost": "Total Cost",
+    "total_grp": "Total GRP - CPP first value",
+    "total_cpp": "Total GRP - CPP second value",
+    "total_gimp": "Total GIMP(000) - CPM first value",
+    "total_cpm": "Total GIMP(000) - CPM second value"
+  }
+}

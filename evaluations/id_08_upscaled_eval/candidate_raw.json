@@ -1,0 +1,2300 @@
+{
+  "runs": [
+    {
+      "raw": {
+        "document": {
+          "source_file": "evaluations/id_08_upscaled_eval/page_runs/11.pdf",
+          "title": "U.S. International Trade in Goods and Services, 1992 - Present",
+          "units": "millions of dollars",
+          "seasonally_adjusted": true,
+          "notes": [
+            "Seasonally adjusted; details may not equal totals due to seasonal adjustment and rounding.",
+            "Goods data presented on a Balance of Payments (BOP) Basis."
+          ],
+          "source": "U.S. Census Bureau, Foreign Trade Division.",
+          "processed_pages": 1,
+          "year_range": {
+            "first": 2035,
+            "last": 2039
+          }
+        },
+        "years": [
+          {
+            "year": 2035,
+            "annual": {
+              "source_page": 1,
+              "period": "Jan. - Dec.",
+              "balance": {
+                "total": -642207,
+                "goods": -1520212,
+                "services": 878005
+              },
+              "exports": {
+                "total": 4814185,
+                "goods": 3000601,
+                "services": 1813584
+              },
+              "imports": {
+                "total": 5456392,
+                "goods": 4520813,
+                "services": 935579
+              }
+            },
+            "months": [
+              {
+                "source_page": 1,
+                "month": "January",
+                "month_number": 1,
+                "balance": {
+                  "total": -59953,
+                  "goods": -132690,
+                  "services": 72737
+                },
+                "exports": {
+                  "total": 404399,
+                  "goods": 253991,
+                  "services": 150408
+                },
+                "imports": {
+                  "total": 464352,
+                  "goods": 386681,
+                  "services": 77671
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "February",
+                "month_number": 2,
+                "balance": {
+                  "total": -47678,
+                  "goods": -123715,
+                  "services": 76037
+                },
+                "exports": {
+                  "total": 401987,
+                  "goods": 249370,
+                  "services": 152617
+                },
+                "imports": {
+                  "total": 449665,
+                  "goods": 373085,
+                  "services": 76580
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "March",
+                "month_number": 3,
+                "balance": {
+                  "total": -67219,
+                  "goods": -139659,
+                  "services": 72440
+                },
+                "exports": {
+                  "total": 407296,
+                  "goods": 256875,
+                  "services": 150421
+                },
+                "imports": {
+                  "total": 474515,
+                  "goods": 396534,
+                  "services": 77981
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "April",
+                "month_number": 4,
+                "balance": {
+                  "total": -51372,
+                  "goods": -125745,
+                  "services": 74373
+                },
+                "exports": {
+                  "total": 407297,
+                  "goods": 256107,
+                  "services": 151190
+                },
+                "imports": {
+                  "total": 458669,
+                  "goods": 381852,
+                  "services": 76817
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "May",
+                "month_number": 5,
+                "balance": {
+                  "total": -49259,
+                  "goods": -123271,
+                  "services": 74012
+                },
+                "exports": {
+                  "total": 407482,
+                  "goods": 255549,
+                  "services": 151933
+                },
+                "imports": {
+                  "total": 456741,
+                  "goods": 378820,
+                  "services": 77921
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "June",
+                "month_number": 6,
+                "balance": {
+                  "total": -56142,
+                  "goods": -131062,
+                  "services": 74920
+                },
+                "exports": {
+                  "total": 402855,
+                  "goods": 250223,
+                  "services": 152632
+                },
+                "imports": {
+                  "total": 458997,
+                  "goods": 381285,
+                  "services": 77712
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "July",
+                "month_number": 7,
+                "balance": {
+                  "total": -49681,
+                  "goods": -123316,
+                  "services": 73635
+                },
+                "exports": {
+                  "total": 407970,
+                  "goods": 255843,
+                  "services": 152127
+                },
+                "imports": {
+                  "total": 457651,
+                  "goods": 379159,
+                  "services": 78492
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "August",
+                "month_number": 8,
+                "balance": {
+                  "total": -60323,
+                  "goods": -131065,
+                  "services": 70742
+                },
+                "exports": {
+                  "total": 395651,
+                  "goods": 246370,
+                  "services": 149281
+                },
+                "imports": {
+                  "total": 455974,
+                  "goods": 377435,
+                  "services": 78539
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "September",
+                "month_number": 9,
+                "balance": {
+                  "total": -49724,
+                  "goods": -121085,
+                  "services": 71361
+                },
+                "exports": {
+                  "total": 397796,
+                  "goods": 248246,
+                  "services": 149550
+                },
+                "imports": {
+                  "total": 447520,
+                  "goods": 369331,
+                  "services": 78189
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "October",
+                "month_number": 10,
+                "balance": {
+                  "total": -54422,
+                  "goods": -126283,
+                  "services": 71861
+                },
+                "exports": {
+                  "total": 396818,
+                  "goods": 246514,
+                  "services": 150304
+                },
+                "imports": {
+                  "total": 451240,
+                  "goods": 372797,
+                  "services": 78443
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "November",
+                "month_number": 11,
+                "balance": {
+                  "total": -47491,
+                  "goods": -120099,
+                  "services": 72608
+                },
+                "exports": {
+                  "total": 392580,
+                  "goods": 241011,
+                  "services": 151569
+                },
+                "imports": {
+                  "total": 440071,
+                  "goods": 361110,
+                  "services": 78961
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "December",
+                "month_number": 12,
+                "balance": {
+                  "total": -48943,
+                  "goods": -122222,
+                  "services": 73279
+                },
+                "exports": {
+                  "total": 392054,
+                  "goods": 240502,
+                  "services": 151552
+                },
+                "imports": {
+                  "total": 440997,
+                  "goods": 362724,
+                  "services": 78273
+                }
+              }
+            ]
+          },
+          {
+            "year": 2036,
+            "annual": {
+              "source_page": 1,
+              "period": "Jan. - Dec.",
+              "balance": {
+                "total": -660215,
+                "goods": -1586726,
+                "services": 926511
+              },
+              "exports": {
+                "total": 5007389,
+                "goods": 3111776,
+                "services": 1895613
+              },
+              "imports": {
+                "total": 5667604,
+                "goods": 4698502,
+                "services": 969102
+              }
+            },
+            "months": [
+              {
+                "source_page": 1,
+                "month": "January",
+                "month_number": 1,
+                "balance": {
+                  "total": -62464,
+                  "goods": -139421,
+                  "services": 76957
+                },
+                "exports": {
+                  "total": 420351,
+                  "goods": 262737,
+                  "services": 157614
+                },
+                "imports": {
+                  "total": 482815,
+                  "goods": 402158,
+                  "services": 80657
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "February",
+                "month_number": 2,
+                "balance": {
+                  "total": -40535,
+                  "goods": -118726,
+                  "services": 78191
+                },
+                "exports": {
+                  "total": 421008,
+                  "goods": 262784,
+                  "services": 158224
+                },
+                "imports": {
+                  "total": 461543,
+                  "goods": 381510,
+                  "services": 80033
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "March",
+                "month_number": 3,
+                "balance": {
+                  "total": -63993,
+                  "goods": -140814,
+                  "services": 76821
+                },
+                "exports": {
+                  "total": 420903,
+                  "goods": 263562,
+                  "services": 157341
+                },
+                "imports": {
+                  "total": 484896,
+                  "goods": 404376,
+                  "services": 80520
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "April",
+                "month_number": 4,
+                "balance": {
+                  "total": -48900,
+                  "goods": -127858,
+                  "services": 78958
+                },
+                "exports": {
+                  "total": 425288,
+                  "goods": 266198,
+                  "services": 159090
+                },
+                "imports": {
+                  "total": 474188,
+                  "goods": 394056,
+                  "services": 80132
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "May",
+                "month_number": 5,
+                "balance": {
+                  "total": -52384,
+                  "goods": -128881,
+                  "services": 76497
+                },
+                "exports": {
+                  "total": 422531,
+                  "goods": 265934,
+                  "services": 156597
+                },
+                "imports": {
+                  "total": 474915,
+                  "goods": 394815,
+                  "services": 80100
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "June",
+                "month_number": 6,
+                "balance": {
+                  "total": -60727,
+                  "goods": -139402,
+                  "services": 78675
+                },
+                "exports": {
+                  "total": 421449,
+                  "goods": 262481,
+                  "services": 158968
+                },
+                "imports": {
+                  "total": 482176,
+                  "goods": 401883,
+                  "services": 80293
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "July",
+                "month_number": 7,
+                "balance": {
+                  "total": -55761,
+                  "goods": -133086,
+                  "services": 77325
+                },
+                "exports": {
+                  "total": 418479,
+                  "goods": 259530,
+                  "services": 158949
+                },
+                "imports": {
+                  "total": 474240,
+                  "goods": 392616,
+                  "services": 81624
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "August",
+                "month_number": 8,
+                "balance": {
+                  "total": -57345,
+                  "goods": -134274,
+                  "services": 76929
+                },
+                "exports": {
+                  "total": 416701,
+                  "goods": 258160,
+                  "services": 158541
+                },
+                "imports": {
+                  "total": 474046,
+                  "goods": 392434,
+                  "services": 81612
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "September",
+                "month_number": 9,
+                "balance": {
+                  "total": -54200,
+                  "goods": -131244,
+                  "services": 77044
+                },
+                "exports": {
+                  "total": 416464,
+                  "goods": 258450,
+                  "services": 158014
+                },
+                "imports": {
+                  "total": 470664,
+                  "goods": 389694,
+                  "services": 80970
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "October",
+                "month_number": 10,
+                "balance": {
+                  "total": -55766,
+                  "goods": -133204,
+                  "services": 77438
+                },
+                "exports": {
+                  "total": 411560,
+                  "goods": 253116,
+                  "services": 158444
+                },
+                "imports": {
+                  "total": 467326,
+                  "goods": 386320,
+                  "services": 81006
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "November",
+                "month_number": 11,
+                "balance": {
+                  "total": -53238,
+                  "goods": -129210,
+                  "services": 75972
+                },
+                "exports": {
+                  "total": 405948,
+                  "goods": 248858,
+                  "services": 157090
+                },
+                "imports": {
+                  "total": 459186,
+                  "goods": 378068,
+                  "services": 81118
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "December",
+                "month_number": 12,
+                "balance": {
+                  "total": -54902,
+                  "goods": -130606,
+                  "services": 75704
+                },
+                "exports": {
+                  "total": 406707,
+                  "goods": 249966,
+                  "services": 156741
+                },
+                "imports": {
+                  "total": 461609,
+                  "goods": 380572,
+                  "services": 81037
+                }
+              }
+            ]
+          },
+          {
+            "year": 2037,
+            "annual": {
+              "source_page": 1,
+              "period": "Jan. - Dec.",
+              "balance": {
+                "total": -631022,
+                "goods": -1609575,
+                "services": 978553
+              },
+              "exports": {
+                "total": 5208281,
+                "goods": 3233302,
+                "services": 1974979
+              },
+              "imports": {
+                "total": 5839303,
+                "goods": 4842877,
+                "services": 996426
+              }
+            },
+            "months": [
+              {
+                "source_page": 1,
+                "month": "January",
+                "month_number": 1,
+                "balance": {
+                  "total": -54796,
+                  "goods": -136598,
+                  "services": 81802
+                },
+                "exports": {
+                  "total": 437683,
+                  "goods": 273917,
+                  "services": 163766
+                },
+                "imports": {
+                  "total": 492479,
+                  "goods": 410515,
+                  "services": 81964
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "February",
+                "month_number": 2,
+                "balance": {
+                  "total": -35335,
+                  "goods": -118178,
+                  "services": 82843
+                },
+                "exports": {
+                  "total": 437987,
+                  "goods": 272420,
+                  "services": 165567
+                },
+                "imports": {
+                  "total": 473322,
+                  "goods": 390598,
+                  "services": 82724
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "March",
+                "month_number": 3,
+                "balance": {
+                  "total": -61721,
+                  "goods": -145991,
+                  "services": 84270
+                },
+                "exports": {
+                  "total": 438286,
+                  "goods": 271478,
+                  "services": 166808
+                },
+                "imports": {
+                  "total": 500007,
+                  "goods": 417469,
+                  "services": 82538
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "April",
+                "month_number": 4,
+                "balance": {
+                  "total": -53451,
+                  "goods": -136847,
+                  "services": 83396
+                },
+                "exports": {
+                  "total": 438228,
+                  "goods": 272928,
+                  "services": 165300
+                },
+                "imports": {
+                  "total": 491679,
+                  "goods": 409775,
+                  "services": 81904
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "May",
+                "month_number": 5,
+                "balance": {
+                  "total": -42403,
+                  "goods": -125220,
+                  "services": 82817
+                },
+                "exports": {
+                  "total": 442063,
+                  "goods": 275650,
+                  "services": 166413
+                },
+                "imports": {
+                  "total": 484466,
+                  "goods": 400870,
+                  "services": 83596
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "June",
+                "month_number": 6,
+                "balance": {
+                  "total": -59392,
+                  "goods": -141833,
+                  "services": 82441
+                },
+                "exports": {
+                  "total": 440095,
+                  "goods": 275127,
+                  "services": 164968
+                },
+                "imports": {
+                  "total": 499487,
+                  "goods": 416960,
+                  "services": 82527
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "July",
+                "month_number": 7,
+                "balance": {
+                  "total": -50668,
+                  "goods": -129962,
+                  "services": 79294
+                },
+                "exports": {
+                  "total": 438291,
+                  "goods": 275333,
+                  "services": 162958
+                },
+                "imports": {
+                  "total": 488959,
+                  "goods": 405295,
+                  "services": 83664
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "August",
+                "month_number": 8,
+                "balance": {
+                  "total": -63570,
+                  "goods": -143785,
+                  "services": 80215
+                },
+                "exports": {
+                  "total": 431270,
+                  "goods": 267414,
+                  "services": 163856
+                },
+                "imports": {
+                  "total": 494840,
+                  "goods": 411199,
+                  "services": 83641
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "September",
+                "month_number": 9,
+                "balance": {
+                  "total": -57611,
+                  "goods": -136630,
+                  "services": 79019
+                },
+                "exports": {
+                  "total": 431611,
+                  "goods": 268891,
+                  "services": 162720
+                },
+                "imports": {
+                  "total": 489222,
+                  "goods": 405521,
+                  "services": 83701
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "October",
+                "month_number": 10,
+                "balance": {
+                  "total": -48718,
+                  "goods": -128456,
+                  "services": 79738
+                },
+                "exports": {
+                  "total": 426664,
+                  "goods": 263758,
+                  "services": 162906
+                },
+                "imports": {
+                  "total": 475382,
+                  "goods": 392214,
+                  "services": 83168
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "November",
+                "month_number": 11,
+                "balance": {
+                  "total": -49189,
+                  "goods": -130161,
+                  "services": 80972
+                },
+                "exports": {
+                  "total": 424379,
+                  "goods": 259701,
+                  "services": 164678
+                },
+                "imports": {
+                  "total": 473568,
+                  "goods": 389862,
+                  "services": 83706
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "December",
+                "month_number": 12,
+                "balance": {
+                  "total": -54168,
+                  "goods": -135914,
+                  "services": 81746
+                },
+                "exports": {
+                  "total": 421724,
+                  "goods": 256685,
+                  "services": 165039
+                },
+                "imports": {
+                  "total": 475892,
+                  "goods": 392599,
+                  "services": 83293
+                }
+              }
+            ]
+          },
+          {
+            "year": 2038,
+            "annual": {
+              "source_page": 1,
+              "period": "Jan. - Dec.",
+              "balance": {
+                "total": -624512,
+                "goods": -1661926,
+                "services": 1037414
+              },
+              "exports": {
+                "total": 5409742,
+                "goods": 3343405,
+                "services": 2066337
+              },
+              "imports": {
+                "total": 6034254,
+                "goods": 5005331,
+                "services": 1028923
+              }
+            },
+            "months": [
+              {
+                "source_page": 1,
+                "month": "January",
+                "month_number": 1,
+                "balance": {
+                  "total": -48090,
+                  "goods": -136358,
+                  "services": 88268
+                },
+                "exports": {
+                  "total": 462875,
+                  "goods": 288554,
+                  "services": 174321
+                },
+                "imports": {
+                  "total": 510965,
+                  "goods": 424912,
+                  "services": 86053
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "February",
+                "month_number": 2,
+                "balance": {
+                  "total": -34177,
+                  "goods": -121664,
+                  "services": 87487
+                },
+                "exports": {
+                  "total": 455604,
+                  "goods": 284118,
+                  "services": 171486
+                },
+                "imports": {
+                  "total": 489781,
+                  "goods": 405782,
+                  "services": 83999
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "March",
+                "month_number": 3,
+                "balance": {
+                  "total": -71561,
+                  "goods": -160410,
+                  "services": 88849
+                },
+                "exports": {
+                  "total": 451751,
+                  "goods": 277806,
+                  "services": 173945
+                },
+                "imports": {
+                  "total": 523312,
+                  "goods": 438216,
+                  "services": 85096
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "April",
+                "month_number": 4,
+                "balance": {
+                  "total": -54830,
+                  "goods": -140989,
+                  "services": 86159
+                },
+                "exports": {
+                  "total": 453460,
+                  "goods": 282585,
+                  "services": 170875
+                },
+                "imports": {
+                  "total": 508290,
+                  "goods": 423574,
+                  "services": 84716
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "May",
+                "month_number": 5,
+                "balance": {
+                  "total": -47675,
+                  "goods": -134655,
+                  "services": 86980
+                },
+                "exports": {
+                  "total": 452373,
+                  "goods": 280285,
+                  "services": 172088
+                },
+                "imports": {
+                  "total": 500048,
+                  "goods": 414940,
+                  "services": 85108
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "June",
+                "month_number": 6,
+                "balance": {
+                  "total": -60439,
+                  "goods": -148496,
+                  "services": 88057
+                },
+                "exports": {
+                  "total": 455795,
+                  "goods": 281369,
+                  "services": 174426
+                },
+                "imports": {
+                  "total": 516234,
+                  "goods": 429865,
+                  "services": 86369
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "July",
+                "month_number": 7,
+                "balance": {
+                  "total": -58633,
+                  "goods": -143479,
+                  "services": 84846
+                },
+                "exports": {
+                  "total": 451385,
+                  "goods": 279909,
+                  "services": 171476
+                },
+                "imports": {
+                  "total": 510018,
+                  "goods": 423388,
+                  "services": 86630
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "August",
+                "month_number": 8,
+                "balance": {
+                  "total": -56408,
+                  "goods": -142707,
+                  "services": 86299
+                },
+                "exports": {
+                  "total": 449119,
+                  "goods": 276966,
+                  "services": 172153
+                },
+                "imports": {
+                  "total": 505527,
+                  "goods": 419673,
+                  "services": 85854
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "September",
+                "month_number": 9,
+                "balance": {
+                  "total": -45479,
+                  "goods": -128553,
+                  "services": 83074
+                },
+                "exports": {
+                  "total": 450558,
+                  "goods": 280486,
+                  "services": 170072
+                },
+                "imports": {
+                  "total": 496037,
+                  "goods": 409039,
+                  "services": 86998
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "October",
+                "month_number": 10,
+                "balance": {
+                  "total": -56563,
+                  "goods": -140243,
+                  "services": 83680
+                },
+                "exports": {
+                  "total": 440475,
+                  "goods": 270573,
+                  "services": 169902
+                },
+                "imports": {
+                  "total": 497038,
+                  "goods": 410816,
+                  "services": 86222
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "November",
+                "month_number": 11,
+                "balance": {
+                  "total": -45661,
+                  "goods": -131981,
+                  "services": 86320
+                },
+                "exports": {
+                  "total": 443648,
+                  "goods": 270847,
+                  "services": 172801
+                },
+                "imports": {
+                  "total": 489309,
+                  "goods": 402828,
+                  "services": 86481
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "December",
+                "month_number": 12,
+                "balance": {
+                  "total": -44996,
+                  "goods": -132391,
+                  "services": 87395
+                },
+                "exports": {
+                  "total": 442699,
+                  "goods": 269907,
+                  "services": 172792
+                },
+                "imports": {
+                  "total": 487695,
+                  "goods": 402298,
+                  "services": 85397
+                }
+              }
+            ]
+          },
+          {
+            "year": 2039,
+            "annual": {
+              "source_page": 1,
+              "period": "Jan. - Dec.",
+              "balance": {
+                "total": -635461,
+                "goods": -1731660,
+                "services": 1096199
+              },
+              "exports": {
+                "total": 5603591,
+                "goods": 3443721,
+                "services": 2159870
+              },
+              "imports": {
+                "total": 6239052,
+                "goods": 5175381,
+                "services": 1063671
+              }
+            },
+            "months": [
+              {
+                "source_page": 1,
+                "month": "January",
+                "month_number": 1,
+                "balance": {
+                  "total": -50813,
+                  "goods": -142896,
+                  "services": 92083
+                },
+                "exports": {
+                  "total": 476880,
+                  "goods": 296339,
+                  "services": 180541
+                },
+                "imports": {
+                  "total": 527693,
+                  "goods": 439235,
+                  "services": 88458
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "February",
+                "month_number": 2,
+                "balance": {
+                  "total": -43249,
+                  "goods": -137013,
+                  "services": 93764
+                },
+                "exports": {
+                  "total": 471908,
+                  "goods": 290243,
+                  "services": 181665
+                },
+                "imports": {
+                  "total": 515157,
+                  "goods": 427256,
+                  "services": 87901
+                }
+              }
+            ]
+          }
+        ],
+        "warnings": [
+          "Final year 2039 contains January through February only."
+        ]
+      },
+      "page_map": {
+        "1": 11
+      }
+    },
+    {
+      "raw": {
+        "document": {
+          "source_file": "evaluations/id_08_upscaled_eval/page_runs/21.pdf",
+          "title": "U.S. International Trade in Goods and Services, 1992 - Present",
+          "units": "millions of dollars",
+          "seasonally_adjusted": true,
+          "notes": [
+            "Seasonally adjusted; details may not equal totals due to seasonal adjustment and rounding.",
+            "Goods data presented on a Balance of Payments (BOP) Basis."
+          ],
+          "source": "U.S. Census Bureau, Foreign Trade Division.",
+          "processed_pages": 1,
+          "year_range": {
+            "first": 2078,
+            "last": 2082
+          }
+        },
+        "years": [
+          {
+            "year": 2078,
+            "annual": {
+              "source_page": 1,
+              "period": "Jan. - Dec.",
+              "balance": {
+                "total": 1559478,
+                "goods": -6668766,
+                "services": 8228244
+              },
+              "exports": {
+                "total": 25223395,
+                "goods": 13219174,
+                "services": 12004221
+              },
+              "imports": {
+                "total": 23663917,
+                "goods": 19887940,
+                "services": 3775977
+              }
+            },
+            "months": [
+              {
+                "source_page": 1,
+                "month": "January",
+                "month_number": 1,
+                "balance": {
+                  "total": 134641,
+                  "goods": -565561,
+                  "services": 700202
+                },
+                "exports": {
+                  "total": 2142477,
+                  "goods": 1131841,
+                  "services": 1010636
+                },
+                "imports": {
+                  "total": 2007836,
+                  "goods": 1697402,
+                  "services": 310434
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "February",
+                "month_number": 2,
+                "balance": {
+                  "total": 149678,
+                  "goods": -536389,
+                  "services": 686067
+                },
+                "exports": {
+                  "total": 2105743,
+                  "goods": 1108643,
+                  "services": 997100
+                },
+                "imports": {
+                  "total": 1956065,
+                  "goods": 1645032,
+                  "services": 311033
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "March",
+                "month_number": 3,
+                "balance": {
+                  "total": 82128,
+                  "goods": -607207,
+                  "services": 689335
+                },
+                "exports": {
+                  "total": 2126653,
+                  "goods": 1125367,
+                  "services": 1001286
+                },
+                "imports": {
+                  "total": 2044525,
+                  "goods": 1732574,
+                  "services": 311951
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "April",
+                "month_number": 4,
+                "balance": {
+                  "total": 141349,
+                  "goods": -545810,
+                  "services": 687159
+                },
+                "exports": {
+                  "total": 2114268,
+                  "goods": 1114498,
+                  "services": 999770
+                },
+                "imports": {
+                  "total": 1972919,
+                  "goods": 1660308,
+                  "services": 312611
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "May",
+                "month_number": 5,
+                "balance": {
+                  "total": 184036,
+                  "goods": -506646,
+                  "services": 690682
+                },
+                "exports": {
+                  "total": 2136844,
+                  "goods": 1129272,
+                  "services": 1007572
+                },
+                "imports": {
+                  "total": 1952808,
+                  "goods": 1635918,
+                  "services": 316890
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "June",
+                "month_number": 6,
+                "balance": {
+                  "total": 136344,
+                  "goods": -552637,
+                  "services": 688981
+                },
+                "exports": {
+                  "total": 2127256,
+                  "goods": 1123943,
+                  "services": 1003313
+                },
+                "imports": {
+                  "total": 1990912,
+                  "goods": 1676580,
+                  "services": 314332
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "July",
+                "month_number": 7,
+                "balance": {
+                  "total": 174199,
+                  "goods": -511483,
+                  "services": 685682
+                },
+                "exports": {
+                  "total": 2125025,
+                  "goods": 1121113,
+                  "services": 1003912
+                },
+                "imports": {
+                  "total": 1950826,
+                  "goods": 1632596,
+                  "services": 318230
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "August",
+                "month_number": 8,
+                "balance": {
+                  "total": 105907,
+                  "goods": -566817,
+                  "services": 672724
+                },
+                "exports": {
+                  "total": 2083810,
+                  "goods": 1091874,
+                  "services": 991936
+                },
+                "imports": {
+                  "total": 1977903,
+                  "goods": 1658691,
+                  "services": 319212
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "September",
+                "month_number": 9,
+                "balance": {
+                  "total": 113046,
+                  "goods": -562129,
+                  "services": 675175
+                },
+                "exports": {
+                  "total": 2088012,
+                  "goods": 1097425,
+                  "services": 990587
+                },
+                "imports": {
+                  "total": 1974966,
+                  "goods": 1659554,
+                  "services": 315412
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "October",
+                "month_number": 10,
+                "balance": {
+                  "total": 98243,
+                  "goods": -574643,
+                  "services": 672886
+                },
+                "exports": {
+                  "total": 2052029,
+                  "goods": 1064554,
+                  "services": 987475
+                },
+                "imports": {
+                  "total": 1953786,
+                  "goods": 1639197,
+                  "services": 314589
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "November",
+                "month_number": 11,
+                "balance": {
+                  "total": 136966,
+                  "goods": -550874,
+                  "services": 687840
+                },
+                "exports": {
+                  "total": 2075454,
+                  "goods": 1071916,
+                  "services": 1003538
+                },
+                "imports": {
+                  "total": 1938488,
+                  "goods": 1622790,
+                  "services": 315698
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "December",
+                "month_number": 12,
+                "balance": {
+                  "total": 102941,
+                  "goods": -588570,
+                  "services": 691511
+                },
+                "exports": {
+                  "total": 2045824,
+                  "goods": 1038728,
+                  "services": 1007096
+                },
+                "imports": {
+                  "total": 1942883,
+                  "goods": 1627298,
+                  "services": 315585
+                }
+              }
+            ]
+          },
+          {
+            "year": 2079,
+            "annual": {
+              "source_page": 1,
+              "period": "Jan. - Dec.",
+              "balance": {
+                "total": 1779832,
+                "goods": -6898210,
+                "services": 8678042
+              },
+              "exports": {
+                "total": 26283907,
+                "goods": 13703750,
+                "services": 12580157
+              },
+              "imports": {
+                "total": 24504075,
+                "goods": 20601960,
+                "services": 3902115
+              }
+            },
+            "months": [
+              {
+                "source_page": 1,
+                "month": "January",
+                "month_number": 1,
+                "balance": {
+                  "total": 152088,
+                  "goods": -582807,
+                  "services": 734895
+                },
+                "exports": {
+                  "total": 2219836,
+                  "goods": 1161331,
+                  "services": 1058505
+                },
+                "imports": {
+                  "total": 2067748,
+                  "goods": 1744138,
+                  "services": 323610
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "February",
+                "month_number": 2,
+                "balance": {
+                  "total": 191526,
+                  "goods": -534916,
+                  "services": 726442
+                },
+                "exports": {
+                  "total": 2189507,
+                  "goods": 1141403,
+                  "services": 1048104
+                },
+                "imports": {
+                  "total": 1997981,
+                  "goods": 1676319,
+                  "services": 321662
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "March",
+                "month_number": 3,
+                "balance": {
+                  "total": 91694,
+                  "goods": -625394,
+                  "services": 717088
+                },
+                "exports": {
+                  "total": 2211705,
+                  "goods": 1168717,
+                  "services": 1042988
+                },
+                "imports": {
+                  "total": 2120011,
+                  "goods": 1794111,
+                  "services": 325900
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "April",
+                "month_number": 4,
+                "balance": {
+                  "total": 166519,
+                  "goods": -564408,
+                  "services": 730927
+                },
+                "exports": {
+                  "total": 2229687,
+                  "goods": 1173091,
+                  "services": 1056596
+                },
+                "imports": {
+                  "total": 2063168,
+                  "goods": 1737499,
+                  "services": 325669
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "May",
+                "month_number": 5,
+                "balance": {
+                  "total": 148142,
+                  "goods": -576027,
+                  "services": 724169
+                },
+                "exports": {
+                  "total": 2212273,
+                  "goods": 1162453,
+                  "services": 1049820
+                },
+                "imports": {
+                  "total": 2064131,
+                  "goods": 1738480,
+                  "services": 325651
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "June",
+                "month_number": 6,
+                "balance": {
+                  "total": 153728,
+                  "goods": -570828,
+                  "services": 724556
+                },
+                "exports": {
+                  "total": 2206010,
+                  "goods": 1159931,
+                  "services": 1046079
+                },
+                "imports": {
+                  "total": 2052282,
+                  "goods": 1730759,
+                  "services": 321523
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "July",
+                "month_number": 7,
+                "balance": {
+                  "total": 171555,
+                  "goods": -557205,
+                  "services": 728760
+                },
+                "exports": {
+                  "total": 2219010,
+                  "goods": 1165923,
+                  "services": 1053087
+                },
+                "imports": {
+                  "total": 2047455,
+                  "goods": 1723128,
+                  "services": 324327
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "August",
+                "month_number": 8,
+                "balance": {
+                  "total": 93208,
+                  "goods": -631375,
+                  "services": 724583
+                },
+                "exports": {
+                  "total": 2158018,
+                  "goods": 1108465,
+                  "services": 1049553
+                },
+                "imports": {
+                  "total": 2064810,
+                  "goods": 1739840,
+                  "services": 324970
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "September",
+                "month_number": 9,
+                "balance": {
+                  "total": 116703,
+                  "goods": -590176,
+                  "services": 706879
+                },
+                "exports": {
+                  "total": 2159987,
+                  "goods": 1122561,
+                  "services": 1037426
+                },
+                "imports": {
+                  "total": 2043284,
+                  "goods": 1712737,
+                  "services": 330547
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "October",
+                "month_number": 10,
+                "balance": {
+                  "total": 161456,
+                  "goods": -563177,
+                  "services": 724633
+                },
+                "exports": {
+                  "total": 2178244,
+                  "goods": 1125964,
+                  "services": 1052280
+                },
+                "imports": {
+                  "total": 2016788,
+                  "goods": 1689141,
+                  "services": 327647
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "November",
+                "month_number": 11,
+                "balance": {
+                  "total": 140146,
+                  "goods": -568025,
+                  "services": 708171
+                },
+                "exports": {
+                  "total": 2143132,
+                  "goods": 1107235,
+                  "services": 1035897
+                },
+                "imports": {
+                  "total": 2002986,
+                  "goods": 1675260,
+                  "services": 327726
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "December",
+                "month_number": 12,
+                "balance": {
+                  "total": 193067,
+                  "goods": -533872,
+                  "services": 726939
+                },
+                "exports": {
+                  "total": 2156498,
+                  "goods": 1106676,
+                  "services": 1049822
+                },
+                "imports": {
+                  "total": 1963431,
+                  "goods": 1640548,
+                  "services": 322883
+                }
+              }
+            ]
+          },
+          {
+            "year": 2080,
+            "annual": {
+              "source_page": 1,
+              "period": "Jan. - Dec.",
+              "balance": {
+                "total": 1938214,
+                "goods": -7118724,
+                "services": 9056938
+              },
+              "exports": {
+                "total": 27213508,
+                "goods": 14129187,
+                "services": 13084321
+              },
+              "imports": {
+                "total": 25275294,
+                "goods": 21247911,
+                "services": 4027383
+              }
+            },
+            "months": [
+              {
+                "source_page": 1,
+                "month": "January",
+                "month_number": 1,
+                "balance": {
+                  "total": 136988,
+                  "goods": -634136,
+                  "services": 771124
+                },
+                "exports": {
+                  "total": 2299849,
+                  "goods": 1197485,
+                  "services": 1102364
+                },
+                "imports": {
+                  "total": 2162861,
+                  "goods": 1831621,
+                  "services": 331240
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "February",
+                "month_number": 2,
+                "balance": {
+                  "total": 220006,
+                  "goods": -541806,
+                  "services": 761812
+                },
+                "exports": {
+                  "total": 2282426,
+                  "goods": 1191876,
+                  "services": 1090550
+                },
+                "imports": {
+                  "total": 2062420,
+                  "goods": 1733682,
+                  "services": 328738
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "March",
+                "month_number": 3,
+                "balance": {
+                  "total": 113206,
+                  "goods": -647248,
+                  "services": 760454
+                },
+                "exports": {
+                  "total": 2300982,
+                  "goods": 1206023,
+                  "services": 1094959
+                },
+                "imports": {
+                  "total": 2187776,
+                  "goods": 1853271,
+                  "services": 334505
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "April",
+                "month_number": 4,
+                "balance": {
+                  "total": 205664,
+                  "goods": -557026,
+                  "services": 762690
+                },
+                "exports": {
+                  "total": 2315359,
+                  "goods": 1222183,
+                  "services": 1093176
+                },
+                "imports": {
+                  "total": 2109695,
+                  "goods": 1779209,
+                  "services": 330486
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "May",
+                "month_number": 5,
+                "balance": {
+                  "total": 180828,
+                  "goods": -571805,
+                  "services": 752633
+                },
+                "exports": {
+                  "total": 2282213,
+                  "goods": 1194465,
+                  "services": 1087748
+                },
+                "imports": {
+                  "total": 2101385,
+                  "goods": 1766270,
+                  "services": 335115
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "June",
+                "month_number": 6,
+                "balance": {
+                  "total": 157127,
+                  "goods": -610135,
+                  "services": 767262
+                },
+                "exports": {
+                  "total": 2295718,
+                  "goods": 1193353,
+                  "services": 1102365
+                },
+                "imports": {
+                  "total": 2138591,
+                  "goods": 1803488,
+                  "services": 335103
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "July",
+                "month_number": 7,
+                "balance": {
+                  "total": 150898,
+                  "goods": -592702,
+                  "services": 743600
+                },
+                "exports": {
+                  "total": 2273794,
+                  "goods": 1192649,
+                  "services": 1081145
+                },
+                "imports": {
+                  "total": 2122896,
+                  "goods": 1785351,
+                  "services": 337545
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "August",
+                "month_number": 8,
+                "balance": {
+                  "total": 94622,
+                  "goods": -653873,
+                  "services": 748495
+                },
+                "exports": {
+                  "total": 2235080,
+                  "goods": 1145910,
+                  "services": 1089170
+                },
+                "imports": {
+                  "total": 2140458,
+                  "goods": 1799783,
+                  "services": 340675
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "September",
+                "month_number": 9,
+                "balance": {
+                  "total": 183854,
+                  "goods": -562199,
+                  "services": 746053
+                },
+                "exports": {
+                  "total": 2258323,
+                  "goods": 1171559,
+                  "services": 1086764
+                },
+                "imports": {
+                  "total": 2074469,
+                  "goods": 1733758,
+                  "services": 340711
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "October",
+                "month_number": 10,
+                "balance": {
+                  "total": 149410,
+                  "goods": -591792,
+                  "services": 741202
+                },
+                "exports": {
+                  "total": 2224473,
+                  "goods": 1145599,
+                  "services": 1078874
+                },
+                "imports": {
+                  "total": 2075063,
+                  "goods": 1737391,
+                  "services": 337672
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "November",
+                "month_number": 11,
+                "balance": {
+                  "total": 160106,
+                  "goods": -581604,
+                  "services": 741710
+                },
+                "exports": {
+                  "total": 2211296,
+                  "goods": 1131569,
+                  "services": 1079727
+                },
+                "imports": {
+                  "total": 2051190,
+                  "goods": 1713173,
+                  "services": 338017
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "December",
+                "month_number": 12,
+                "balance": {
+                  "total": 185505,
+                  "goods": -574398,
+                  "services": 759903
+                },
+                "exports": {
+                  "total": 2233995,
+                  "goods": 1136516,
+                  "services": 1097479
+                },
+                "imports": {
+                  "total": 2048490,
+                  "goods": 1710914,
+                  "services": 337576
+                }
+              }
+            ]
+          },
+          {
+            "year": 2081,
+            "annual": {
+              "source_page": 1,
+              "period": "Jan. - Dec.",
+              "balance": {
+                "total": 2196055,
+                "goods": -7372811,
+                "services": 9568866
+              },
+              "exports": {
+                "total": 28320976,
+                "goods": 14591825,
+                "services": 13729151
+              },
+              "imports": {
+                "total": 26124921,
+                "goods": 21964636,
+                "services": 4160285
+              }
+            },
+            "months": [
+              {
+                "source_page": 1,
+                "month": "January",
+                "month_number": 1,
+                "balance": {
+                  "total": 150959,
+                  "goods": -658546,
+                  "services": 809505
+                },
+                "exports": {
+                  "total": 2392400,
+                  "goods": 1234475,
+                  "services": 1157925
+                },
+                "imports": {
+                  "total": 2241441,
+                  "goods": 1893021,
+                  "services": 348420
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "February",
+                "month_number": 2,
+                "balance": {
+                  "total": 234911,
+                  "goods": -559360,
+                  "services": 794271
+                },
+                "exports": {
+                  "total": 2365352,
+                  "goods": 1229812,
+                  "services": 1135540
+                },
+                "imports": {
+                  "total": 2130441,
+                  "goods": 1789172,
+                  "services": 341269
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "March",
+                "month_number": 3,
+                "balance": {
+                  "total": 107820,
+                  "goods": -692045,
+                  "services": 799865
+                },
+                "exports": {
+                  "total": 2361317,
+                  "goods": 1217541,
+                  "services": 1143776
+                },
+                "imports": {
+                  "total": 2253497,
+                  "goods": 1909586,
+                  "services": 343911
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "April",
+                "month_number": 4,
+                "balance": {
+                  "total": 228889,
+                  "goods": -579357,
+                  "services": 808246
+                },
+                "exports": {
+                  "total": 2405647,
+                  "goods": 1255260,
+                  "services": 1150387
+                },
+                "imports": {
+                  "total": 2176758,
+                  "goods": 1834617,
+                  "services": 342141
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "May",
+                "month_number": 5,
+                "balance": {
+                  "total": 195944,
+                  "goods": -603397,
+                  "services": 799341
+                },
+                "exports": {
+                  "total": 2390722,
+                  "goods": 1246868,
+                  "services": 1143854
+                },
+                "imports": {
+                  "total": 2194778,
+                  "goods": 1850265,
+                  "services": 344513
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "June",
+                "month_number": 6,
+                "balance": {
+                  "total": 187478,
+                  "goods": -622854,
+                  "services": 810332
+                },
+                "exports": {
+                  "total": 2398332,
+                  "goods": 1241247,
+                  "services": 1157085
+                },
+                "imports": {
+                  "total": 2210854,
+                  "goods": 1864101,
+                  "services": 346753
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "July",
+                "month_number": 7,
+                "balance": {
+                  "total": 227575,
+                  "goods": -575717,
+                  "services": 803292
+                },
+                "exports": {
+                  "total": 2403122,
+                  "goods": 1252592,
+                  "services": 1150530
+                },
+                "imports": {
+                  "total": 2175547,
+                  "goods": 1828309,
+                  "services": 347238
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "August",
+                "month_number": 8,
+                "balance": {
+                  "total": 130866,
+                  "goods": -647697,
+                  "services": 778563
+                },
+                "exports": {
+                  "total": 2315447,
+                  "goods": 1186849,
+                  "services": 1128598
+                },
+                "imports": {
+                  "total": 2184581,
+                  "goods": 1834546,
+                  "services": 350035
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "September",
+                "month_number": 9,
+                "balance": {
+                  "total": 206852,
+                  "goods": -591233,
+                  "services": 798085
+                },
+                "exports": {
+                  "total": 2360670,
+                  "goods": 1213914,
+                  "services": 1146756
+                },
+                "imports": {
+                  "total": 2153818,
+                  "goods": 1805147,
+                  "services": 348671
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "October",
+                "month_number": 10,
+                "balance": {
+                  "total": 218643,
+                  "goods": -575354,
+                  "services": 793997
+                },
+                "exports": {
+                  "total": 2344768,
+                  "goods": 1201301,
+                  "services": 1143467
+                },
+                "imports": {
+                  "total": 2126125,
+                  "goods": 1776655,
+                  "services": 349470
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "November",
+                "month_number": 11,
+                "balance": {
+                  "total": 165043,
+                  "goods": -623900,
+                  "services": 788943
+                },
+                "exports": {
+                  "total": 2296986,
+                  "goods": 1160424,
+                  "services": 1136562
+                },
+                "imports": {
+                  "total": 2131943,
+                  "goods": 1784324,
+                  "services": 347619
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "December",
+                "month_number": 12,
+                "balance": {
+                  "total": 141075,
+                  "goods": -643351,
+                  "services": 784426
+                },
+                "exports": {
+                  "total": 2286213,
+                  "goods": 1151542,
+                  "services": 1134671
+                },
+                "imports": {
+                  "total": 2145138,
+                  "goods": 1794893,
+                  "services": 350245
+                }
+              }
+            ]
+          },
+          {
+            "year": 2082,
+            "annual": {
+              "source_page": 1,
+              "period": "Jan. - Dec.",
+              "balance": {
+                "total": 2220228,
+                "goods": -7793686,
+                "services": 10013914
+              },
+              "exports": {
+                "total": 29340267,
+                "goods": 15027580,
+                "services": 14312687
+              },
+              "imports": {
+                "total": 27120039,
+                "goods": 22821266,
+                "services": 4298773
+              }
+            },
+            "months": [
+              {
+                "source_page": 1,
+                "month": "January",
+                "month_number": 1,
+                "balance": {
+                  "total": 198399,
+                  "goods": -643507,
+                  "services": 841906
+                },
+                "exports": {
+                  "total": 2488445,
+                  "goods": 1289487,
+                  "services": 1198958
+                },
+                "imports": {
+                  "total": 2290046,
+                  "goods": 1932994,
+                  "services": 357052
+                }
+              },
+              {
+                "source_page": 1,
+                "month": "February",
+                "month_number": 2,
+                "balance": {
+                  "total": 273613,
+                  "goods": -579339,
+                  "services": 852952
+                },
+                "exports": {
+                  "total": 2474161,
+                  "goods": 1268711,
+                  "services": 1205450
+                },
+                "imports": {
+                  "total": 2200548,
+                  "goods": 1848050,
+                  "services": 352498
+                }
+              }
+            ]
+          }
+        ],
+        "warnings": [
+          "Final year 2082 contains January through February only."
+        ]
+      },
+      "page_map": {
+        "1": 21
+      }
+    }
+  ]
+}

@@ -1,0 +1,265 @@
+{
+  "source_file": "/Users/riccardo/tesi/code/twix_2/evaluations/qwen_27b_id_18/page_runs/page_025.pdf",
+  "page_count": 1,
+  "orders": [
+    {
+      "order_id": "7442380",
+      "status": "Confirmed",
+      "agency": "Bully Pulpit",
+      "office": "Washington",
+      "client": "092 - Wisconsin Senate - Baldwin",
+      "product": "328 - Political",
+      "piggyback_product": null,
+      "estimate": "6565 - Baldwin Wk#4 10.30-11.05",
+      "primary_demo": null,
+      "demo_2": null,
+      "demo_3": null,
+      "grp": "0.00",
+      "cpp": "$0.00",
+      "gimp": "0",
+      "cpm": "$0.00",
+      "comments": "Separation: 30",
+      "station": "WDAZ-S1",
+      "order_type": "Normal",
+      "flight_start": "10/30/2018",
+      "flight_end": "11/05/2018",
+      "cancel_date": null,
+      "hiatus": null,
+      "received_in_eport": "10/30/2018 12:02:14 PM",
+      "local_national": "Local",
+      "rep_office": "WDAZ-S1",
+      "ae": "Sandra Whitfield",
+      "phone": null,
+      "market_share": null,
+      "airtime_dollars": "$28,871.00",
+      "interactive_dollars": "$0.00",
+      "non_airtime_dollars": "$0.00",
+      "total_dollars": "$28,871.00",
+      "total_spots": 142,
+      "flight_dates": [
+        "10/30",
+        "10/31",
+        "11/1",
+        "11/2",
+        "11/3",
+        "11/4",
+        "11/5"
+      ],
+      "lines": [
+        {
+          "line_no": 1,
+          "daypart": "TuWThFM 3P-4P",
+          "program": "The Dr. Oz Show",
+          "dpt_code": "EF",
+          "rate": "$40.00",
+          "c_t": "C",
+          "len": 30,
+          "daily_spots": {
+            "10/30": 1,
+            "10/31": 1,
+            "11/1": 1,
+            "11/2": 1,
+            "11/3": 0,
+            "11/4": 0,
+            "11/5": 1
+          },
+          "total_spots": 5
+        },
+        {
+          "line_no": 2,
+          "daypart": "Sa 6P-6:30P",
+          "program": "Saturday Early News",
+          "dpt_code": "EN",
+          "rate": "$172.00",
+          "c_t": "C",
+          "len": 30,
+          "daily_spots": {
+            "10/30": 0,
+            "10/31": 0,
+            "11/1": 0,
+            "11/2": 0,
+            "11/3": 2,
+            "11/4": 0,
+            "11/5": 0
+          },
+          "total_spots": 2
+        },
+        {
+          "line_no": 3,
+          "daypart": "Su 5:30P-6P",
+          "program": "Sunday Early News",
+          "dpt_code": "EN",
+          "rate": "$341.00",
+          "c_t": "C",
+          "len": 30,
+          "daily_spots": {
+            "10/30": 0,
+            "10/31": 0,
+            "11/1": 0,
+            "11/2": 0,
+            "11/3": 2,
+            "11/4": 0,
+            "11/5": 0
+          },
+          "total_spots": 2
+        },
+        {
+          "line_no": 4,
+          "daypart": "TuWThFM 9A-5P",
+          "program": "Daytime Rotator",
+          "dpt_code": "DT",
+          "rate": "$55.00",
+          "c_t": "C",
+          "len": 30,
+          "daily_spots": {
+            "10/30": 1,
+            "10/31": 1,
+            "11/1": 1,
+            "11/2": 1,
+            "11/3": 0,
+            "11/4": 0,
+            "11/5": 1
+          },
+          "total_spots": 5
+        },
+        {
+          "line_no": 5,
+          "daypart": "TuWThFM 10A-11A",
+          "program": "The View",
+          "dpt_code": "DT",
+          "rate": "$60.00",
+          "c_t": "C",
+          "len": 30,
+          "daily_spots": {
+            "10/30": 2,
+            "10/31": 2,
+            "11/1": 2,
+            "11/2": 2,
+            "11/3": 0,
+            "11/4": 0,
+            "11/5": 2
+          },
+          "total_spots": 10
+        },
+        {
+          "line_no": 6,
+          "daypart": "Sa 6A-7A",
+          "program": "Good Morning America Saturday",
+          "dpt_code": "EM",
+          "rate": "$70.00",
+          "c_t": "C",
+          "len": 30,
+          "daily_spots": {
+            "10/30": 0,
+            "10/31": 0,
+            "11/1": 0,
+            "11/2": 0,
+            "11/3": 2,
+            "11/4": 0,
+            "11/5": 0
+          },
+          "total_spots": 2
+        },
+        {
+          "line_no": 7,
+          "daypart": "TuWThFM 5A-6A",
+          "program": "First News Hour 1",
+          "dpt_code": "EM",
+          "rate": "$60.00",
+          "c_t": "C",
+          "len": 30,
+          "daily_spots": {
+            "10/30": 1,
+            "10/31": 1,
+            "11/1": 1,
+            "11/2": 1,
+            "11/3": 0,
+            "11/4": 0,
+            "11/5": 1
+          },
+          "total_spots": 5
+        },
+        {
+          "line_no": 8,
+          "daypart": "Su 5:30P-6P",
+          "program": "Sunday Early News",
+          "dpt_code": "EN",
+          "rate": "$330.00",
+          "c_t": "C",
+          "len": 30,
+          "daily_spots": {
+            "10/30": 0,
+            "10/31": 0,
+            "11/1": 0,
+            "11/2": 0,
+            "11/3": 2,
+            "11/4": 0,
+            "11/5": 0
+          },
+          "total_spots": 2
+        },
+        {
+          "line_no": 9,
+          "daypart": "Su 10:35P-11:05P",
+          "program": "WDAY/WDAZ Sports Sunday",
+          "dpt_code": "LF",
+          "rate": "$152.00",
+          "c_t": "C",
+          "len": 30,
+          "daily_spots": {
+            "10/30": 0,
+            "10/31": 0,
+            "11/1": 0,
+            "11/2": 0,
+            "11/3": 2,
+            "11/4": 0,
+            "11/5": 0
+          },
+          "total_spots": 2
+        },
+        {
+          "line_no": 10,
+          "daypart": "Su 10:35P-11:05P",
+          "program": "WDAY/WDAZ Sports Sunday",
+          "dpt_code": "LF",
+          "rate": "$148.00",
+          "c_t": "C",
+          "len": 30,
+          "daily_spots": {
+            "10/30": 0,
+            "10/31": 0,
+            "11/1": 0,
+            "11/2": 0,
+            "11/3": 0,
+            "11/4": 2,
+            "11/5": 0
+          },
+          "total_spots": 2
+        },
+        {
+          "line_no": 11,
+          "daypart": "TuWThFM 10P-10:35P",
+          "program": "WDAY/WDAZ News at 10",
+          "dpt_code": "LN",
+          "rate": "$893.00",
+          "c_t": "C",
+          "len": 30,
+          "daily_spots": {
+            "10/30": 2,
+            "10/31": 2,
+            "11/1": 2,
+            "11/2": 2,
+            "11/3": 0,
+            "11/4": 0,
+            "11/5": 2
+          },
+          "total_spots": 10
+        }
+      ],
+      "totals": null,
+      "pages": [
+        1
+      ]
+    }
+  ]
+}

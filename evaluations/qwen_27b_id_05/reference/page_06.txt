@@ -1,0 +1,46 @@
+                                                                                                             
+                                                                                                             
+      Complaints Detail Rpt #A-2                Champaign Police Department                                  
+                                                                                                             
+                                            Complaints    By  Date                                           
+                                                                                                             
+        Date  Number  Investigator Date Assigned Racial Category / Type Location Of Occurrence Disposition Completed Recorded On Camera
+       7/19/2012 08-14 Kim, Joon        No FORMAL       Not Stated              UNFOUNDED         No         
+                                 7/23/2008         Citizen                              8/18/2008 N/A        
+        Complainant:             DOB:       Gender: MALE Address:    , Champaign IL 61820  H Phone:          
+                                Type Of Complaint               Description              Complaint Disposition
+                       Complaint #:1 R-3B.3 Courtesy: Conduct   Wrong Action by Employee UNFOUNDED           
+                                Name               ID No. Rank     Division Officer Disposition Action Taken Body Cam
+                         Officer #: 1 Carter, Felix. 7901 OFFICER  Field Operations UNFOUNDED NONE   No      
+        Date  Number  Investigator Date Assigned Racial Category / Type Location Of Occurrence Disposition Completed Recorded On Camera
+       7/29/2012 08-15 Kim, Joon        No Formal       Not Stated              SUSTAINED         No         
+                                 8/21/2008         Citizen                              9/26/2008 N/A        
+        Complainant:             DOB:       Gender: MALE Address:      , Urbana IL 61802   H Phone:          
+                                Type Of Complaint               Description              Complaint Disposition
+                       Complaint #:1 R-5A3 OPERATIONS           Wrong Action by Employee SUSTAINED           
+                       Complaint #:2 R-5B ARREST, SEARCH AND SEIZURE Wrong Action by Employee UNFOUNDED      
+                       Complaint #:3 R-5B ARREST, SEARCH AND SEIZURE Wrong Action by Employee UNFOUNDED      
+                       Complaint #:4 R-5B ARREST, SEARCH AND SEIZURE Wrong Action by Employee UNFOUNDED      
+                                Name               ID No. Rank     Division Officer Disposition Action Taken Body Cam
+                         Officer #:1 MULTIPLE OFFICERS/EMPLOY NOT STATED NOT ENTERED UNFOUNDED NONE  No      
+                                                                                                             
+        Date  Number  Investigator Date Assigned Racial Category / Type Location Of Occurrence Disposition Completed Recorded On Camera
+       8/17/2012 08-16 Patel, Aanya     No Formal       Not Stated              EXONERATED        No         
+                                  9/2/2008         Citizen                              10/9/2008 N/A        
+        Complainant:             DOB:       Gender: MALE Address:  , Champaign IL 61821    H Phone:          
+                                Type Of Complaint               Description              Complaint Disposition
+                       Complaint #:1 R-5A3 OPERATIONS           Wrong Action by Employee NOT SUSTAINED       
+                       Complaint #:2 R-5A3 OPERATIONS           No Action by Employee    EXONERATED          
+                       Complaint #:3 R-5C2 PERSONS IN CUSTODY   No Action by Employee    EXONERATED          
+                       Complaint #:4 R-5D Use of physical force Wrong Action by Employee UNFOUNDED           
+                                Name               ID No. Rank     Division Officer Disposition Action Taken Body Cam
+                         Officer #:1 TCarter, Felix. 7105 OFFICER  Field Operations EXONERATED NONE  No      
+                                                                                                             
+                                                                                                             
+                                                                                                             
+                                                                                                             
+                                                                                                             
+                                                                                                             
+                                                                                                             
+       L.E.A. Data Technologies ADMINISTRATIVE Database 11/10/2020 10:49:22 AM                    Page 6 of 74
+                                                                                                             

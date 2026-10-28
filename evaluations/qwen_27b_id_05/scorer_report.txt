@@ -1,0 +1,112 @@
+=== EVAL REPORT =========================================================
+doc:        id_05 Qwen 27B baseline pages 6-20
+reference:  model_reference (Codex local PDF image/text review)
+candidate:  Frozen baseline extractor with evaluation-only adapter (?)
+threshold:  0.90
+accuracy:   0.999      exact_match: False     verdict: PASS
+
+--- Score breakdown ----------------------------------------------------
+RecordMatchF1   typed=1.000  P=1.000  R=1.000
+NodeMatchF1     typed=1.000  untyped=1.000  P=1.000  R=1.000
+ContentScore    overall=0.998   table=0.998  key_value=1.000  metadata=n/a
+StructureScore  edge=n/a  path=n/a  note_agreement=n/a
+
+--- Records ------------------------------------------------------------
+matched: 0 <-> page_6_record_0 (sim=0.900)
+matched: 1 <-> page_6_record_1 (sim=0.900)
+matched: 10 <-> page_9_record_10 (sim=0.900)
+matched: 11 <-> page_9_record_11 (sim=0.900)
+matched: 12 <-> page_9_record_12 (sim=0.887)
+matched: 13 <-> page_10_record_13 (sim=0.900)
+matched: 14 <-> page_10_record_14 (sim=0.900)
+matched: 15 <-> page_10_record_15 (sim=0.900)
+matched: 16 <-> page_10_record_16 (sim=0.900)
+matched: 17 <-> page_11_record_17 (sim=0.900)
+matched: 18 <-> page_11_record_18 (sim=0.900)
+matched: 19 <-> page_11_record_19 (sim=0.900)
+matched: 2 <-> page_6_record_2 (sim=0.900)
+matched: 20 <-> page_11_record_20 (sim=0.900)
+matched: 21 <-> page_12_record_21 (sim=0.900)
+matched: 22 <-> page_12_record_22 (sim=0.900)
+matched: 23 <-> page_12_record_23 (sim=0.900)
+matched: 24 <-> page_13_record_24 (sim=0.900)
+matched: 25 <-> page_13_record_25 (sim=0.900)
+matched: 26 <-> page_13_record_26 (sim=0.900)
+matched: 27 <-> page_13_record_27 (sim=0.900)
+matched: 28 <-> page_14_record_28 (sim=0.900)
+matched: 29 <-> page_14_record_29 (sim=0.887)
+matched: 3 <-> page_7_record_3 (sim=0.900)
+matched: 30 <-> page_14_record_30 (sim=0.900)
+matched: 31 <-> page_14_record_31 (sim=0.900)
+matched: 32 <-> page_15_record_32 (sim=0.900)
+matched: 33 <-> page_15_record_33 (sim=0.900)
+matched: 34 <-> page_15_record_34 (sim=0.900)
+matched: 35 <-> page_15_record_35 (sim=0.900)
+matched: 36 <-> page_16_record_36 (sim=0.900)
+matched: 37 <-> page_16_record_37 (sim=0.900)
+matched: 38 <-> page_16_record_38 (sim=0.900)
+matched: 39 <-> page_16_record_39 (sim=0.900)
+matched: 4 <-> page_7_record_4 (sim=0.900)
+matched: 40 <-> page_17_record_40 (sim=0.900)
+matched: 41 <-> page_17_record_41 (sim=0.900)
+matched: 42 <-> page_17_record_42 (sim=0.900)
+matched: 43 <-> page_17_record_43 (sim=0.900)
+matched: 44 <-> page_18_record_44 (sim=0.900)
+matched: 45 <-> page_18_record_45 (sim=0.900)
+matched: 46 <-> page_18_record_46 (sim=0.900)
+matched: 47 <-> page_18_record_47 (sim=0.900)
+matched: 48 <-> page_19_record_48 (sim=0.900)
+matched: 49 <-> page_19_record_49 (sim=0.900)
+matched: 5 <-> page_7_record_5 (sim=0.900)
+matched: 50 <-> page_19_record_50 (sim=0.900)
+matched: 51 <-> page_19_record_51 (sim=0.900)
+matched: 52 <-> page_20_record_52 (sim=0.900)
+matched: 53 <-> page_20_record_53 (sim=0.900)
+matched: 54 <-> page_20_record_54 (sim=0.900)
+matched: 55 <-> page_20_record_55 (sim=0.900)
+matched: 6 <-> page_8_record_6 (sim=0.900)
+matched: 7 <-> page_8_record_7 (sim=0.900)
+matched: 8 <-> page_8_record_8 (sim=0.900)
+matched: 9 <-> page_8_record_9 (sim=0.900)
+missing gold records:    (none)
+extra candidate records: (none)
+
+--- Missing nodes (0) -----------------------------------------------
+(none)
+
+--- Extra (hallucinated) nodes (0) ----------------------------------
+(none)
+
+--- Type mismatches (0) ---------------------------------------------
+(none)
+
+--- Content mismatches (4) ------------------------------------------
+--- record 12 <-> page_9_record_12 ---
+[gold 3_0902 / table / rows[0].Action Taken]
+  gold:        "RESIGNATION IN LIE"
+  candidate:   "RESIGNATION IN"
+  why:         [R-CELL-DIFFERS] aligned cell value differs after eval.md §3.4
+  fix:         the cell value is wrong; check column-boundary detection or text grouping.
+[gold 3_0902 / table / rows[0].Body Cam]
+  gold:        "No"
+  candidate:   "LIE No"
+  why:         [R-CELL-DIFFERS] aligned cell value differs after eval.md §3.4
+  fix:         the cell value is wrong; check column-boundary detection or text grouping.
+--- record 29 <-> page_14_record_29 ---
+[gold 3_1401 / table / rows[0].Action Taken]
+  gold:        "PLACED ON ADMIN L"
+  candidate:   "PLACED ON ADMIN"
+  why:         [R-CELL-DIFFERS] aligned cell value differs after eval.md §3.4
+  fix:         the cell value is wrong; check column-boundary detection or text grouping.
+[gold 3_1401 / table / rows[0].Body Cam]
+  gold:        "No"
+  candidate:   "L No"
+  why:         [R-CELL-DIFFERS] aligned cell value differs after eval.md §3.4
+  fix:         the cell value is wrong; check column-boundary detection or text grouping.
+
+--- Structure mismatches (0) ----------------------------------------
+(none)
+
+--- Summary of root causes --------------------------------------------
+- 4 of total mismatches: [R-CELL-DIFFERS] aligned cell value differs after eval.md §3.4
+========================================================================

@@ -1,0 +1,9 @@
+[
+  {
+    "node_id": 0,
+    "field": "Claim sequence number",
+    "reason": "Separate unheaded substantive column in the ruled grid; absent from original TWIX field list",
+    "evidence": "Development page 2 image and cells; confirmed on every held-out page",
+    "stable_node_id_preserved": true
+  }
+]

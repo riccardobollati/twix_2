@@ -1,0 +1,2106 @@
+{
+  "records": [
+    {
+      "record_id": "page_1",
+      "nodes": [
+        {
+          "id": "areas_page_1",
+          "type": "table",
+          "content": {
+            "headers": [
+              "Identification",
+              "Name",
+              "Lateral limits",
+              "Upper limit",
+              "Lower limit",
+              "Type of activity",
+              "Remarks",
+              "Validity"
+            ],
+            "rows": [
+              [
+                {
+                  "key": "Identification",
+                  "value": "LI P274"
+                },
+                {
+                  "key": "Name",
+                  "value": "Domodossola"
+                },
+                {
+                  "key": "Lateral limits",
+                  "value": "Cerchio di raggio/Circle of radius 1.0NM centrato su/ centred on: 39°30'12\"N 010°04'48\"E"
+                },
+                {
+                  "key": "Upper limit",
+                  "value": "1500ft AGL"
+                },
+                {
+                  "key": "Lower limit",
+                  "value": "SFC"
+                },
+                {
+                  "key": "Type of activity",
+                  "value": "Attività tecnologiche/ Technological activities"
+                },
+                {
+                  "key": "Remarks",
+                  "value": "NIL"
+                },
+                {
+                  "key": "Validity",
+                  "value": "PERM"
+                }
+              ],
+              [
+                {
+                  "key": "Identification",
+                  "value": "LI P275"
+                },
+                {
+                  "key": "Name",
+                  "value": "Manduria"
+                },
+                {
+                  "key": "Lateral limits",
+                  "value": "Cerchio di raggio/Circle of radius 0.5NM centrato su/ centred on: 43°15'44\"N 015°39'32\"E"
+                },
+                {
+                  "key": "Upper limit",
+                  "value": "2500ft AGL"
+                },
+                {
+                  "key": "Lower limit",
+                  "value": "SFC"
+                },
+                {
+                  "key": "Type of activity",
+                  "value": "Divieto di sorvolo di edifici particolari/ Protected buildings overflying interdiction"
+                },
+                {
+                  "key": "Remarks",
+                  "value": "NIL"
+                },
+                {
+                  "key": "Validity",
+                  "value": "PERM"
+                }
+              ],
+              [
+                {
+                  "key": "Identification",
+                  "value": "LI P276"
+                },
+                {
+                  "key": "Name",
+                  "value": "Sora"
+                },
+                {
+                  "key": "Lateral limits",
+                  "value": "Cerchio di raggio/Circle of radius 0.5NM centrato su/ centred on: 37°11'25\"N 016°48'29\"E"
+                },
+                {
+                  "key": "Upper limit",
+                  "value": "1500ft AGL"
+                },
+                {
+                  "key": "Lower limit",
+                  "value": "SFC"
+                },
+                {
+                  "key": "Type of activity",
+                  "value": "Divieto di sorvolo di edifici particolari/ Protected buildings overflying interdiction"
+                },
+                {
+                  "key": "Remarks",
+                  "value": "1) Proibito il traffico aereo civile, eccetto il TFC IFR che segue le procedure strumentali pubblicate da/e per l'AD di Sora/Civil air traffic prohibited, except IFR TFC following published instrument procedures to/ from Sora AD."
+                },
+                {
+                  "key": "Validity",
+                  "value": "PERM"
+                }
+              ],
+              [
+                {
+                  "key": "Identification",
+                  "value": "LI P277"
+                },
+                {
+                  "key": "Name",
+                  "value": "Lanciano"
+                },
+                {
+                  "key": "Lateral limits",
+                  "value": "Cerchio di raggio/Circle of radius 1.0NM centrato su/ centred on: 46°16'06\"N 010°01'02\"E"
+                },
+                {
+                  "key": "Upper limit",
+                  "value": "1500ft AGL"
+                },
+                {
+                  "key": "Lower limit",
+                  "value": "SFC"
+                },
+                {
+                  "key": "Type of activity",
+                  "value": "Zona di particolare interesse monumentale ed archeologico/ Area of monumental and archeological interest"
+                },
+                {
+                  "key": "Remarks",
+                  "value": "NIL"
+                },
+                {
+                  "key": "Validity",
+                  "value": "PERM"
+                }
+              ],
+              [
+                {
+                  "key": "Identification",
+                  "value": "LI P278"
+                },
+                {
+                  "key": "Name",
+                  "value": "Mondovi"
+                },
+                {
+                  "key": "Lateral limits",
+                  "value": "Cerchio di raggio/Circle of radius 1.0NM centrato su/ centred on: 43°32'54\"N 008°56'18\"E"
+                },
+                {
+                  "key": "Upper limit",
+                  "value": "2000ft AGL"
+                },
+                {
+                  "key": "Lower limit",
+                  "value": "SFC"
+                },
+                {
+                  "key": "Type of activity",
+                  "value": "Divieto di sorvolo di edifici particolari/ Protected buildings overflying interdiction"
+                },
+                {
+                  "key": "Remarks",
+                  "value": "NIL"
+                },
+                {
+                  "key": "Validity",
+                  "value": "PERM"
+                }
+              ],
+              [
+                {
+                  "key": "Identification",
+                  "value": "LI P279"
+                },
+                {
+                  "key": "Name",
+                  "value": "Busto Arsizio"
+                },
+                {
+                  "key": "Lateral limits",
+                  "value": "Cerchio di raggio/Circle of radius 0.3NM centrato su/ centred on: 46°37'07\"N 008°58'30\"E"
+                },
+                {
+                  "key": "Upper limit",
+                  "value": "1500ft AGL"
+                },
+                {
+                  "key": "Lower limit",
+                  "value": "SFC"
+                },
+                {
+                  "key": "Type of activity",
+                  "value": "Attività tecnologiche/ Technological activities"
+                },
+                {
+                  "key": "Remarks",
+                  "value": "1) Proibito il traffico aereo civile/ Civil air traffic prohibited."
+                },
+                {
+                  "key": "Validity",
+                  "value": "PERM"
+                }
+              ],
+              [
+                {
+                  "key": "Identification",
+                  "value": "LI P280"
+                },
+                {
+                  "key": "Name",
+                  "value": "Acqui Terme"
+                },
+                {
+                  "key": "Lateral limits",
+                  "value": "Linea congiungente i punti/ line joining following points: 43°47'20\"N 017°54'51\"E 42°27'14\"N 016°39'54\"E 42°34'42\"N 015°14'07\"E 42°23'29\"N 010°14'54\"E 44°43'56\"N 009°49'47\"E 43°47'20\"N 017°54'51\"E"
+                },
+                {
+                  "key": "Upper limit",
+                  "value": "5000ft AGL"
+                },
+                {
+                  "key": "Lower limit",
+                  "value": "SFC"
+                },
+                {
+                  "key": "Type of activity",
+                  "value": "Attività tecnologiche/ Technological activities"
+                },
+                {
+                  "key": "Remarks",
+                  "value": "NIL"
+                },
+                {
+                  "key": "Validity",
+                  "value": "PERM"
+                }
+              ],
+              [
+                {
+                  "key": "Identification",
+                  "value": "LI P281"
+                },
+                {
+                  "key": "Name",
+                  "value": "Cerveteri"
+                },
+                {
+                  "key": "Lateral limits",
+                  "value": "Cerchio di raggio/Circle of radius 2.0NM centrato su/ centred on: 41°03'03\"N 012°38'23\"E"
+                },
+                {
+                  "key": "Upper limit",
+                  "value": "1000ft AGL"
+                },
+                {
+                  "key": "Lower limit",
+                  "value": "SFC"
+                },
+                {
+                  "key": "Type of activity",
+                  "value": "Zona vietata al sorvolo per motivi di sicurezza/ Area subject to overflyng restriction for security-safety reasons"
+                },
+                {
+                  "key": "Remarks",
+                  "value": "NIL"
+                },
+                {
+                  "key": "Validity",
+                  "value": "PERM"
+                }
+              ],
+              [
+                {
+                  "key": "Identification",
+                  "value": "LI P282"
+                },
+                {
+                  "key": "Name",
+                  "value": "Biella"
+                },
+                {
+                  "key": "Lateral limits",
+                  "value": "Cerchio di raggio/Circle of radius 1.5NM centrato su/ centred on: 44°26'54\"N 008°27'35\"E"
+                },
+                {
+                  "key": "Upper limit",
+                  "value": "2500ft AGL"
+                },
+                {
+                  "key": "Lower limit",
+                  "value": "SFC"
+                },
+                {
+                  "key": "Type of activity",
+                  "value": "Divieto di sorvolo di edifici particolari/ Protected buildings overflying interdiction"
+                },
+                {
+                  "key": "Remarks",
+                  "value": "NIL"
+                },
+                {
+                  "key": "Validity",
+                  "value": "PERM"
+                }
+              ],
+              [
+                {
+                  "key": "Identification",
+                  "value": "LI P283"
+                },
+                {
+                  "key": "Name",
+                  "value": "Chioggia"
+                },
+                {
+                  "key": "Lateral limits",
+                  "value": "Cerchio di raggio/Circle of radius 1.0NM centrato su/ centred on: 38°07'27\"N 008°10'01\"E"
+                },
+                {
+                  "key": "Upper limit",
+                  "value": "1000ft AGL"
+                },
+                {
+                  "key": "Lower limit",
+                  "value": "SFC"
+                },
+                {
+                  "key": "Type of activity",
+                  "value": "Divieto di sorvolo di edifici particolari/ Protected buildings overflying interdiction"
+                },
+                {
+                  "key": "Remarks",
+                  "value": "NIL"
+                },
+                {
+                  "key": "Validity",
+                  "value": "PERM"
+                }
+              ],
+              [
+                {
+                  "key": "Identification",
+                  "value": "LI P284"
+                },
+                {
+                  "key": "Name",
+                  "value": "Formia"
+                },
+                {
+                  "key": "Lateral limits",
+                  "value": "Cerchio di raggio/Circle of radius 0.5NM centrato su/ centred on: 42°11'58\"N 013°59'24\"E"
+                },
+                {
+                  "key": "Upper limit",
+                  "value": "1500ft AGL"
+                },
+                {
+                  "key": "Lower limit",
+                  "value": "3000ft AGL"
+                },
+                {
+                  "key": "Type of activity",
+                  "value": "Gruppo di aerogeneratori/ Group of aeolic propellers"
+                },
+                {
+                  "key": "Remarks",
+                  "value": "NIL"
+                },
+                {
+                  "key": "Validity",
+                  "value": "PERM"
+                }
+              ],
+              [
+                {
+                  "key": "Identification",
+                  "value": "LI P285"
+                },
+                {
+                  "key": "Name",
+                  "value": "Rho"
+                },
+                {
+                  "key": "Lateral limits",
+                  "value": "Cerchio di raggio/Circle of radius 1.2NM centrato su/ centred on: 44°04'48\"N 009°30'18\"E"
+                },
+                {
+                  "key": "Upper limit",
+                  "value": "1500ft AGL"
+                },
+                {
+                  "key": "Lower limit",
+                  "value": "SFC"
+                },
+                {
+                  "key": "Type of activity",
+                  "value": "Divieto di sorvolo di edifici particolari/ Protected buildings overflying interdiction"
+                },
+                {
+                  "key": "Remarks",
+                  "value": "1) Proibito il traffico aereo civile, eccetto il TFC IFR che segue le procedure strumentali pubblicate da/e per l'AD di Rho/Civil air traffic prohibited, except IFR TFC following published instrument procedures to/ from Rho AD."
+                },
+                {
+                  "key": "Validity",
+                  "value": "PERM"
+                }
+              ],
+              [
+                {
+                  "key": "Identification",
+                  "value": "LI P286"
+                },
+                {
+                  "key": "Name",
+                  "value": "Senigallia"
+                },
+                {
+                  "key": "Lateral limits",
+                  "value": "Cerchio di raggio/Circle of radius 1.0NM centrato su/ centred on: 37°05'01\"N 010°27'28\"E"
+                },
+                {
+                  "key": "Upper limit",
+                  "value": "3000ft AGL"
+                },
+                {
+                  "key": "Lower limit",
+                  "value": "SFC"
+                },
+                {
+                  "key": "Type of activity",
+                  "value": "Zona vietata al sorvolo per motivi di sicurezza/ Area subject to overflyng restriction for security-safety reasons"
+                },
+                {
+                  "key": "Remarks",
+                  "value": "NIL"
+                },
+                {
+                  "key": "Validity",
+                  "value": "PERM"
+                }
+              ]
+            ]
+          },
+          "relationship": {
+            "parent_id": null
+          }
+        }
+      ]
+    },
+    {
+      "record_id": "page_2",
+      "nodes": [
+        {
+          "id": "areas_page_2",
+          "type": "table",
+          "content": {
+            "headers": [
+              "Identification",
+              "Name",
+              "Lateral limits",
+              "Upper limit",
+              "Lower limit",
+              "Type of activity",
+              "Remarks",
+              "Validity"
+            ],
+            "rows": [
+              [
+                {
+                  "key": "Identification",
+                  "value": "LI P287"
+                },
+                {
+                  "key": "Name",
+                  "value": "Sacile"
+                },
+                {
+                  "key": "Lateral limits",
+                  "value": "Cerchio di raggio/Circle of radius 0.5NM centrato su/ centred on: 40°04'57\"N 012°24'51\"E"
+                },
+                {
+                  "key": "Upper limit",
+                  "value": "5000ft AGL"
+                },
+                {
+                  "key": "Lower limit",
+                  "value": "SFC"
+                },
+                {
+                  "key": "Type of activity",
+                  "value": "Attività tecnologiche/ Technological activities"
+                },
+                {
+                  "key": "Remarks",
+                  "value": "1) Proibito il traffico aereo civile/ Civil air traffic prohibited."
+                },
+                {
+                  "key": "Validity",
+                  "value": "PERM"
+                }
+              ],
+              [
+                {
+                  "key": "Identification",
+                  "value": "LI P288"
+                },
+                {
+                  "key": "Name",
+                  "value": "Cava de' Tirreni"
+                },
+                {
+                  "key": "Lateral limits",
+                  "value": "Cerchio di raggio/Circle of radius 2.0NM centrato su/ centred on: 45°34'10\"N 009°18'03\"E"
+                },
+                {
+                  "key": "Upper limit",
+                  "value": "5000ft AMSL"
+                },
+                {
+                  "key": "Lower limit",
+                  "value": "3000ft AGL"
+                },
+                {
+                  "key": "Type of activity",
+                  "value": "Zona di particolare interesse monumentale ed archeologico/ Area of monumental and archeological interest"
+                },
+                {
+                  "key": "Remarks",
+                  "value": "NIL"
+                },
+                {
+                  "key": "Validity",
+                  "value": "PERM"
+                }
+              ],
+              [
+                {
+                  "key": "Identification",
+                  "value": "LI P289"
+                },
+                {
+                  "key": "Name",
+                  "value": "Nardo"
+                },
+                {
+                  "key": "Lateral limits",
+                  "value": "Cerchio di raggio/Circle of radius 1.0NM centrato su/ centred on: 37°55'26\"N 012°35'00\"E"
+                },
+                {
+                  "key": "Upper limit",
+                  "value": "5000ft AGL"
+                },
+                {
+                  "key": "Lower limit",
+                  "value": "3000ft AGL"
+                },
+                {
+                  "key": "Type of activity",
+                  "value": "Zona vietata al sorvolo per motivi di sicurezza/ Area subject to overflyng restriction for security-safety reasons"
+                },
+                {
+                  "key": "Remarks",
+                  "value": "1) Proibito il traffico aereo civile/ Civil air traffic prohibited."
+                },
+                {
+                  "key": "Validity",
+                  "value": "PERM"
+                }
+              ],
+              [
+                {
+                  "key": "Identification",
+                  "value": "LI P290"
+                },
+                {
+                  "key": "Name",
+                  "value": "Montebelluna"
+                },
+                {
+                  "key": "Lateral limits",
+                  "value": "Cerchio di raggio/Circle of radius 1.2NM centrato su/ centred on: 44°02'32\"N 009°27'25\"E"
+                },
+                {
+                  "key": "Upper limit",
+                  "value": "1000ft AGL"
+                },
+                {
+                  "key": "Lower limit",
+                  "value": "SFC"
+                },
+                {
+                  "key": "Type of activity",
+                  "value": "Divieto di sorvolo di edifici particolari/ Protected buildings overflying interdiction"
+                },
+                {
+                  "key": "Remarks",
+                  "value": "NIL"
+                },
+                {
+                  "key": "Validity",
+                  "value": "PERM"
+                }
+              ],
+              [
+                {
+                  "key": "Identification",
+                  "value": "LI P291"
+                },
+                {
+                  "key": "Name",
+                  "value": "Carpi"
+                },
+                {
+                  "key": "Lateral limits",
+                  "value": "Cerchio di raggio/Circle of radius 1.0NM centrato su/ centred on: 40°10'57\"N 008°01'31\"E"
+                },
+                {
+                  "key": "Upper limit",
+                  "value": "3000ft AGL"
+                },
+                {
+                  "key": "Lower limit",
+                  "value": "SFC"
+                },
+                {
+                  "key": "Type of activity",
+                  "value": "Attività tecnologiche/ Technological activities"
+                },
+                {
+                  "key": "Remarks",
+                  "value": "NIL"
+                },
+                {
+                  "key": "Validity",
+                  "value": "PERM"
+                }
+              ],
+              [
+                {
+                  "key": "Identification",
+                  "value": "LI P292"
+                },
+                {
+                  "key": "Name",
+                  "value": "Rossano"
+                },
+                {
+                  "key": "Lateral limits",
+                  "value": "Cerchio di raggio/Circle of radius 1.5NM centrato su/ centred on: 38°13'55\"N 008°27'05\"E"
+                },
+                {
+                  "key": "Upper limit",
+                  "value": "FL195"
+                },
+                {
+                  "key": "Lower limit",
+                  "value": "SFC"
+                },
+                {
+                  "key": "Type of activity",
+                  "value": "Divieto di sorvolo di edifici particolari/ Protected buildings overflying interdiction"
+                },
+                {
+                  "key": "Remarks",
+                  "value": "NIL"
+                },
+                {
+                  "key": "Validity",
+                  "value": "PERM"
+                }
+              ],
+              [
+                {
+                  "key": "Identification",
+                  "value": "LI P293"
+                },
+                {
+                  "key": "Name",
+                  "value": "Zafferana"
+                },
+                {
+                  "key": "Lateral limits",
+                  "value": "Cerchio di raggio/Circle of radius 0.5NM centrato su/ centred on: 42°17'35\"N 016°27'46\"E"
+                },
+                {
+                  "key": "Upper limit",
+                  "value": "1000ft AMSL"
+                },
+                {
+                  "key": "Lower limit",
+                  "value": "SFC"
+                },
+                {
+                  "key": "Type of activity",
+                  "value": "Sito monumentale/ Area of monumental interest"
+                },
+                {
+                  "key": "Remarks",
+                  "value": "NIL"
+                },
+                {
+                  "key": "Validity",
+                  "value": "PERM"
+                }
+              ],
+              [
+                {
+                  "key": "Identification",
+                  "value": "LI P294"
+                },
+                {
+                  "key": "Name",
+                  "value": "Chieti"
+                },
+                {
+                  "key": "Lateral limits",
+                  "value": "Cerchio di raggio/Circle of radius 1.0NM centrato su/ centred on: 39°39'49\"N 011°22'24\"E"
+                },
+                {
+                  "key": "Upper limit",
+                  "value": "3000ft AGL"
+                },
+                {
+                  "key": "Lower limit",
+                  "value": "SFC"
+                },
+                {
+                  "key": "Type of activity",
+                  "value": "Divieto di sorvolo di edifici particolari/ Protected buildings overflying interdiction"
+                },
+                {
+                  "key": "Remarks",
+                  "value": "1) Proibito il traffico aereo civile, eccetto il TFC IFR che segue le procedure strumentali pubblicate da/e per l'AD di Chieti/Civil air traffic prohibited, except IFR TFC following published instrument procedures to/ from Chieti AD."
+                },
+                {
+                  "key": "Validity",
+                  "value": "PERM"
+                }
+              ],
+              [
+                {
+                  "key": "Identification",
+                  "value": "LI P295"
+                },
+                {
+                  "key": "Name",
+                  "value": "Guastalla"
+                },
+                {
+                  "key": "Lateral limits",
+                  "value": "Cerchio di raggio/Circle of radius 0.5NM centrato su/ centred on: 40°17'45\"N 010°13'09\"E"
+                },
+                {
+                  "key": "Upper limit",
+                  "value": "1000ft AGL"
+                },
+                {
+                  "key": "Lower limit",
+                  "value": "SFC"
+                },
+                {
+                  "key": "Type of activity",
+                  "value": "Divieto di sorvolo di edifici particolari/ Protected buildings overflying interdiction"
+                },
+                {
+                  "key": "Remarks",
+                  "value": "NIL"
+                },
+                {
+                  "key": "Validity",
+                  "value": "PERM"
+                }
+              ],
+              [
+                {
+                  "key": "Identification",
+                  "value": "LI P296"
+                },
+                {
+                  "key": "Name",
+                  "value": "Legnano"
+                },
+                {
+                  "key": "Lateral limits",
+                  "value": "Cerchio di raggio/Circle of radius 2.0NM centrato su/ centred on: 39°01'49\"N 016°47'02\"E"
+                },
+                {
+                  "key": "Upper limit",
+                  "value": "3500ft AMSL"
+                },
+                {
+                  "key": "Lower limit",
+                  "value": "SFC"
+                },
+                {
+                  "key": "Type of activity",
+                  "value": "Attività tecnologiche/ Technological activities"
+                },
+                {
+                  "key": "Remarks",
+                  "value": "1) Proibito il traffico aereo civile/ Civil air traffic prohibited."
+                },
+                {
+                  "key": "Validity",
+                  "value": "PERM"
+                }
+              ],
+              [
+                {
+                  "key": "Identification",
+                  "value": "LI P297"
+                },
+                {
+                  "key": "Name",
+                  "value": "Cologno"
+                },
+                {
+                  "key": "Lateral limits",
+                  "value": "Cerchio di raggio/Circle of radius 1.5NM centrato su/ centred on: 40°35'38\"N 010°39'13\"E"
+                },
+                {
+                  "key": "Upper limit",
+                  "value": "FL80"
+                },
+                {
+                  "key": "Lower limit",
+                  "value": "SFC"
+                },
+                {
+                  "key": "Type of activity",
+                  "value": "Attività tecnologiche/ Technological activities"
+                },
+                {
+                  "key": "Remarks",
+                  "value": "1) Proibito il traffico aereo civile/ Civil air traffic prohibited."
+                },
+                {
+                  "key": "Validity",
+                  "value": "PERM"
+                }
+              ],
+              [
+                {
+                  "key": "Identification",
+                  "value": "LI P298"
+                },
+                {
+                  "key": "Name",
+                  "value": "Crema"
+                },
+                {
+                  "key": "Lateral limits",
+                  "value": "Cerchio di raggio/Circle of radius 1.3NM centrato su/ centred on: 46°54'30\"N 013°58'41\"E"
+                },
+                {
+                  "key": "Upper limit",
+                  "value": "2500ft AGL"
+                },
+                {
+                  "key": "Lower limit",
+                  "value": "SFC"
+                },
+                {
+                  "key": "Type of activity",
+                  "value": "Attività tecnologiche/ Technological activities"
+                },
+                {
+                  "key": "Remarks",
+                  "value": "1) Proibito il traffico aereo civile/ Civil air traffic prohibited."
+                },
+                {
+                  "key": "Validity",
+                  "value": "PERM"
+                }
+              ],
+              [
+                {
+                  "key": "Identification",
+                  "value": "LI P299"
+                },
+                {
+                  "key": "Name",
+                  "value": "Bressanone"
+                },
+                {
+                  "key": "Lateral limits",
+                  "value": "Cerchio di raggio/Circle of radius 1.2NM centrato su/ centred on: 37°20'46\"N 014°12'41\"E"
+                },
+                {
+                  "key": "Upper limit",
+                  "value": "1000ft AMSL"
+                },
+                {
+                  "key": "Lower limit",
+                  "value": "SFC"
+                },
+                {
+                  "key": "Type of activity",
+                  "value": "Divieto di sorvolo di edifici particolari/ Protected buildings overflying interdiction"
+                },
+                {
+                  "key": "Remarks",
+                  "value": "1) Proibito il traffico aereo civile, eccetto il TFC IFR che segue le procedure strumentali pubblicate da/e per l'AD di Bressanone/Civil air traffic prohibited, except IFR TFC following published instrument procedures to/ from Bressanone AD."
+                },
+                {
+                  "key": "Validity",
+                  "value": "PERM"
+                }
+              ],
+              [
+                {
+                  "key": "Identification",
+                  "value": "LI P300"
+                },
+                {
+                  "key": "Name",
+                  "value": "Cecina"
+                },
+                {
+                  "key": "Lateral limits",
+                  "value": "Cerchio di raggio/Circle of radius 1.2NM centrato su/ centred on: 46°30'10\"N 010°51'42\"E"
+                },
+                {
+                  "key": "Upper limit",
+                  "value": "1500ft AGL"
+                },
+                {
+                  "key": "Lower limit",
+                  "value": "SFC"
+                },
+                {
+                  "key": "Type of activity",
+                  "value": "Divieto di sorvolo di edifici particolari/ Protected buildings overflying interdiction"
+                },
+                {
+                  "key": "Remarks",
+                  "value": "NIL"
+                },
+                {
+                  "key": "Validity",
+                  "value": "PERM"
+                }
+              ]
+            ]
+          },
+          "relationship": {
+            "parent_id": null
+          }
+        }
+      ]
+    },
+    {
+      "record_id": "page_3",
+      "nodes": [
+        {
+          "id": "areas_page_3",
+          "type": "table",
+          "content": {
+            "headers": [
+              "Identification",
+              "Name",
+              "Lateral limits",
+              "Upper limit",
+              "Lower limit",
+              "Type of activity",
+              "Remarks",
+              "Validity"
+            ],
+            "rows": [
+              [
+                {
+                  "key": "Identification",
+                  "value": "LI P301"
+                },
+                {
+                  "key": "Name",
+                  "value": "Sassuolo"
+                },
+                {
+                  "key": "Lateral limits",
+                  "value": "Cerchio di raggio/Circle of radius 1.0NM centrato su/ centred on: 40°28'01\"N 012°38'06\"E"
+                },
+                {
+                  "key": "Upper limit",
+                  "value": "2000ft AMSL"
+                },
+                {
+                  "key": "Lower limit",
+                  "value": "SFC"
+                },
+                {
+                  "key": "Type of activity",
+                  "value": "Attività tecnologiche/ Technological activities"
+                },
+                {
+                  "key": "Remarks",
+                  "value": "1) Proibito il traffico aereo civile/ Civil air traffic prohibited."
+                },
+                {
+                  "key": "Validity",
+                  "value": "PERM"
+                }
+              ],
+              [
+                {
+                  "key": "Identification",
+                  "value": "LI P302"
+                },
+                {
+                  "key": "Name",
+                  "value": "Portogruaro"
+                },
+                {
+                  "key": "Lateral limits",
+                  "value": "Cerchio di raggio/Circle of radius 1.0NM centrato su/ centred on: 40°46'06\"N 007°13'19\"E"
+                },
+                {
+                  "key": "Upper limit",
+                  "value": "2000ft AMSL"
+                },
+                {
+                  "key": "Lower limit",
+                  "value": "SFC"
+                },
+                {
+                  "key": "Type of activity",
+                  "value": "Divieto di sorvolo di edifici particolari/ Protected buildings overflying interdiction"
+                },
+                {
+                  "key": "Remarks",
+                  "value": "1) Proibito il traffico aereo civile, eccetto il TFC IFR che segue le procedure strumentali pubblicate da/e per l'AD di Portogruaro/Civil air traffic prohibited, except IFR TFC following published instrument procedures to/ from Portogruaro AD."
+                },
+                {
+                  "key": "Validity",
+                  "value": "PERM"
+                }
+              ],
+              [
+                {
+                  "key": "Identification",
+                  "value": "LI P303"
+                },
+                {
+                  "key": "Name",
+                  "value": "Vittorio Veneto"
+                },
+                {
+                  "key": "Lateral limits",
+                  "value": "Linea congiungente i punti/ line joining following points: 45°28'12\"N 016°58'08\"E 37°20'09\"N 007°18'54\"E 45°20'49\"N 013°35'42\"E 46°54'50\"N 017°19'53\"E 39°50'16\"N 011°50'44\"E 45°09'28\"N 011°43'30\"E 45°28'12\"N 016°58'08\"E"
+                },
+                {
+                  "key": "Upper limit",
+                  "value": "1500ft AGL"
+                },
+                {
+                  "key": "Lower limit",
+                  "value": "SFC"
+                },
+                {
+                  "key": "Type of activity",
+                  "value": "Zona vietata al sorvolo per motivi di sicurezza/ Area subject to overflyng restriction for security-safety reasons"
+                },
+                {
+                  "key": "Remarks",
+                  "value": "NIL"
+                },
+                {
+                  "key": "Validity",
+                  "value": "PERM"
+                }
+              ],
+              [
+                {
+                  "key": "Identification",
+                  "value": "LI P304"
+                },
+                {
+                  "key": "Name",
+                  "value": "Empoli"
+                },
+                {
+                  "key": "Lateral limits",
+                  "value": "Cerchio di raggio/Circle of radius 0.3NM centrato su/ centred on: 45°19'48\"N 011°02'42\"E"
+                },
+                {
+                  "key": "Upper limit",
+                  "value": "1500ft AGL"
+                },
+                {
+                  "key": "Lower limit",
+                  "value": "SFC"
+                },
+                {
+                  "key": "Type of activity",
+                  "value": "Attività tecnologiche/ Technological activities"
+                },
+                {
+                  "key": "Remarks",
+                  "value": "NIL"
+                },
+                {
+                  "key": "Validity",
+                  "value": "PERM"
+                }
+              ],
+              [
+                {
+                  "key": "Identification",
+                  "value": "LI P305"
+                },
+                {
+                  "key": "Name",
+                  "value": "Mestre"
+                },
+                {
+                  "key": "Lateral limits",
+                  "value": "Cerchio di raggio/Circle of radius 1.0NM centrato su/ centred on: 44°22'30\"N 007°48'38\"E"
+                },
+                {
+                  "key": "Upper limit",
+                  "value": "1500ft AGL"
+                },
+                {
+                  "key": "Lower limit",
+                  "value": "SFC"
+                },
+                {
+                  "key": "Type of activity",
+                  "value": "Gruppo di aerogeneratori/ Group of aeolic propellers"
+                },
+                {
+                  "key": "Remarks",
+                  "value": "NIL"
+                },
+                {
+                  "key": "Validity",
+                  "value": "PERM"
+                }
+              ],
+              [
+                {
+                  "key": "Identification",
+                  "value": "LI P306"
+                },
+                {
+                  "key": "Name",
+                  "value": "Ceccano"
+                },
+                {
+                  "key": "Lateral limits",
+                  "value": "Cerchio di raggio/Circle of radius 1.0NM centrato su/ centred on: 41°16'31\"N 016°04'02\"E"
+                },
+                {
+                  "key": "Upper limit",
+                  "value": "1500ft AGL"
+                },
+                {
+                  "key": "Lower limit",
+                  "value": "SFC"
+                },
+                {
+                  "key": "Type of activity",
+                  "value": "Divieto di sorvolo di edifici particolari/ Protected buildings overflying interdiction"
+                },
+                {
+                  "key": "Remarks",
+                  "value": "NIL"
+                },
+                {
+                  "key": "Validity",
+                  "value": "PERM"
+                }
+              ],
+              [
+                {
+                  "key": "Identification",
+                  "value": "LI P307"
+                },
+                {
+                  "key": "Name",
+                  "value": "Brindisi"
+                },
+                {
+                  "key": "Lateral limits",
+                  "value": "Linea congiungente i punti/ line joining following points: 39°07'11\"N 008°38'06\"E 45°35'12\"N 011°57'58\"E 43°44'47\"N 012°51'52\"E 40°21'34\"N 012°15'40\"E 43°30'50\"N 013°14'53\"E 39°07'11\"N 008°38'06\"E"
+                },
+                {
+                  "key": "Upper limit",
+                  "value": "4000ft AMSL"
+                },
+                {
+                  "key": "Lower limit",
+                  "value": "SFC"
+                },
+                {
+                  "key": "Type of activity",
+                  "value": "Divieto di sorvolo di edifici particolari/ Protected buildings overflying interdiction"
+                },
+                {
+                  "key": "Remarks",
+                  "value": "NIL"
+                },
+                {
+                  "key": "Validity",
+                  "value": "PERM"
+                }
+              ],
+              [
+                {
+                  "key": "Identification",
+                  "value": "LI P308"
+                },
+                {
+                  "key": "Name",
+                  "value": "Desenzano"
+                },
+                {
+                  "key": "Lateral limits",
+                  "value": "Cerchio di raggio/Circle of radius 1.5NM centrato su/ centred on: 44°22'10\"N 010°43'20\"E"
+                },
+                {
+                  "key": "Upper limit",
+                  "value": "500ft AGL"
+                },
+                {
+                  "key": "Lower limit",
+                  "value": "SFC"
+                },
+                {
+                  "key": "Type of activity",
+                  "value": "Divieto di sorvolo di edifici particolari/ Protected buildings overflying interdiction"
+                },
+                {
+                  "key": "Remarks",
+                  "value": "1) Proibito il traffico aereo civile, eccetto il TFC IFR che segue le procedure strumentali pubblicate da/e per l'AD di Desenzano/Civil air traffic prohibited, except IFR TFC following published instrument procedures to/ from Desenzano AD."
+                },
+                {
+                  "key": "Validity",
+                  "value": "PERM"
+                }
+              ],
+              [
+                {
+                  "key": "Identification",
+                  "value": "LI P309"
+                },
+                {
+                  "key": "Name",
+                  "value": "Ozieri"
+                },
+                {
+                  "key": "Lateral limits",
+                  "value": "Cerchio di raggio/Circle of radius 1.5NM centrato su/ centred on: 43°58'28\"N 007°12'28\"E"
+                },
+                {
+                  "key": "Upper limit",
+                  "value": "1000ft AGL"
+                },
+                {
+                  "key": "Lower limit",
+                  "value": "SFC"
+                },
+                {
+                  "key": "Type of activity",
+                  "value": "Divieto di sorvolo di edifici particolari/ Protected buildings overflying interdiction"
+                },
+                {
+                  "key": "Remarks",
+                  "value": "NIL"
+                },
+                {
+                  "key": "Validity",
+                  "value": "PERM"
+                }
+              ],
+              [
+                {
+                  "key": "Identification",
+                  "value": "LI P310"
+                },
+                {
+                  "key": "Name",
+                  "value": "Afragola"
+                },
+                {
+                  "key": "Lateral limits",
+                  "value": "Cerchio di raggio/Circle of radius 1.2NM centrato su/ centred on: 38°29'42\"N 015°47'58\"E"
+                },
+                {
+                  "key": "Upper limit",
+                  "value": "1000ft AGL"
+                },
+                {
+                  "key": "Lower limit",
+                  "value": "SFC"
+                },
+                {
+                  "key": "Type of activity",
+                  "value": "Divieto di sorvolo di edifici particolari/ Protected buildings overflying interdiction"
+                },
+                {
+                  "key": "Remarks",
+                  "value": "NIL"
+                },
+                {
+                  "key": "Validity",
+                  "value": "PERM"
+                }
+              ],
+              [
+                {
+                  "key": "Identification",
+                  "value": "LI P311"
+                },
+                {
+                  "key": "Name",
+                  "value": "Thiene"
+                },
+                {
+                  "key": "Lateral limits",
+                  "value": "Linea congiungente i punti/ line joining following points: 42°35'06\"N 007°34'06\"E 45°17'42\"N 007°10'16\"E 39°42'11\"N 016°07'27\"E 39°50'28\"N 017°04'04\"E 42°35'06\"N 007°34'06\"E"
+                },
+                {
+                  "key": "Upper limit",
+                  "value": "2000ft AGL"
+                },
+                {
+                  "key": "Lower limit",
+                  "value": "3000ft AGL"
+                },
+                {
+                  "key": "Type of activity",
+                  "value": "Zona vietata al sorvolo per motivi di sicurezza/ Area subject to overflyng restriction for security-safety reasons"
+                },
+                {
+                  "key": "Remarks",
+                  "value": "NIL"
+                },
+                {
+                  "key": "Validity",
+                  "value": "PERM"
+                }
+              ]
+            ]
+          },
+          "relationship": {
+            "parent_id": null
+          }
+        }
+      ]
+    },
+    {
+      "record_id": "page_4",
+      "nodes": [
+        {
+          "id": "areas_page_4",
+          "type": "table",
+          "content": {
+            "headers": [
+              "Identification",
+              "Name",
+              "Lateral limits",
+              "Upper limit",
+              "Lower limit",
+              "Type of activity",
+              "Remarks",
+              "Validity"
+            ],
+            "rows": [
+              [
+                {
+                  "key": "Identification",
+                  "value": "LI P312"
+                },
+                {
+                  "key": "Name",
+                  "value": "Gallarate"
+                },
+                {
+                  "key": "Lateral limits",
+                  "value": "Cerchio di raggio/Circle of radius 1.0NM centrato su/ centred on: 41°26'35\"N 015°28'39\"E"
+                },
+                {
+                  "key": "Upper limit",
+                  "value": "2000ft AMSL"
+                },
+                {
+                  "key": "Lower limit",
+                  "value": "SFC"
+                },
+                {
+                  "key": "Type of activity",
+                  "value": "Divieto di sorvolo di edifici particolari/ Protected buildings overflying interdiction"
+                },
+                {
+                  "key": "Remarks",
+                  "value": "1) Proibito il traffico aereo civile, eccetto il TFC IFR che segue le procedure strumentali pubblicate da/e per l'AD di Gallarate/Civil air traffic prohibited, except IFR TFC following published instrument procedures to/ from Gallarate AD."
+                },
+                {
+                  "key": "Validity",
+                  "value": "PERM"
+                }
+              ],
+              [
+                {
+                  "key": "Identification",
+                  "value": "LI P313"
+                },
+                {
+                  "key": "Name",
+                  "value": "Recanati"
+                },
+                {
+                  "key": "Lateral limits",
+                  "value": "Cerchio di raggio/Circle of radius 0.5NM centrato su/ centred on: 37°32'47\"N 017°49'48\"E"
+                },
+                {
+                  "key": "Upper limit",
+                  "value": "1000ft AGL"
+                },
+                {
+                  "key": "Lower limit",
+                  "value": "SFC"
+                },
+                {
+                  "key": "Type of activity",
+                  "value": "Attività tecnologiche/ Technological activities"
+                },
+                {
+                  "key": "Remarks",
+                  "value": "NIL"
+                },
+                {
+                  "key": "Validity",
+                  "value": "PERM"
+                }
+              ],
+              [
+                {
+                  "key": "Identification",
+                  "value": "LI P314"
+                },
+                {
+                  "key": "Name",
+                  "value": "Ivrea"
+                },
+                {
+                  "key": "Lateral limits",
+                  "value": "Cerchio di raggio/Circle of radius 2.0NM centrato su/ centred on: 44°56'58\"N 010°26'50\"E"
+                },
+                {
+                  "key": "Upper limit",
+                  "value": "3500ft AMSL"
+                },
+                {
+                  "key": "Lower limit",
+                  "value": "SFC"
+                },
+                {
+                  "key": "Type of activity",
+                  "value": "Divieto di sorvolo di edifici particolari/ Protected buildings overflying interdiction"
+                },
+                {
+                  "key": "Remarks",
+                  "value": "NIL"
+                },
+                {
+                  "key": "Validity",
+                  "value": "PERM"
+                }
+              ],
+              [
+                {
+                  "key": "Identification",
+                  "value": "LI P315"
+                },
+                {
+                  "key": "Name",
+                  "value": "Monopoli"
+                },
+                {
+                  "key": "Lateral limits",
+                  "value": "Cerchio di raggio/Circle of radius 1.0NM centrato su/ centred on: 40°28'34\"N 013°17'53\"E"
+                },
+                {
+                  "key": "Upper limit",
+                  "value": "800ft AGL"
+                },
+                {
+                  "key": "Lower limit",
+                  "value": "SFC"
+                },
+                {
+                  "key": "Type of activity",
+                  "value": "Divieto di sorvolo di edifici particolari/ Protected buildings overflying interdiction"
+                },
+                {
+                  "key": "Remarks",
+                  "value": "1) Proibito il traffico aereo civile, eccetto il TFC IFR che segue le procedure strumentali pubblicate da/e per l'AD di Monopoli/Civil air traffic prohibited, except IFR TFC following published instrument procedures to/ from Monopoli AD."
+                },
+                {
+                  "key": "Validity",
+                  "value": "PERM"
+                }
+              ],
+              [
+                {
+                  "key": "Identification",
+                  "value": "LI P316"
+                },
+                {
+                  "key": "Name",
+                  "value": "Isernia"
+                },
+                {
+                  "key": "Lateral limits",
+                  "value": "Cerchio di raggio/Circle of radius 2.0NM centrato su/ centred on: 45°09'50\"N 015°56'29\"E"
+                },
+                {
+                  "key": "Upper limit",
+                  "value": "1500ft AGL"
+                },
+                {
+                  "key": "Lower limit",
+                  "value": "SFC"
+                },
+                {
+                  "key": "Type of activity",
+                  "value": "Zona di particolare interesse monumentale ed archeologico/ Area of monumental and archeological interest"
+                },
+                {
+                  "key": "Remarks",
+                  "value": "NIL"
+                },
+                {
+                  "key": "Validity",
+                  "value": "PERM"
+                }
+              ],
+              [
+                {
+                  "key": "Identification",
+                  "value": "LI P317"
+                },
+                {
+                  "key": "Name",
+                  "value": "Manfredonia"
+                },
+                {
+                  "key": "Lateral limits",
+                  "value": "Linea congiungente i punti/ line joining following points: 43°31'55\"N 014°08'57\"E 42°27'03\"N 009°40'41\"E 39°57'14\"N 011°51'37\"E 41°59'33\"N 014°49'37\"E 46°00'31\"N 007°50'59\"E 43°31'55\"N 014°08'57\"E"
+                },
+                {
+                  "key": "Upper limit",
+                  "value": "1500ft AMSL"
+                },
+                {
+                  "key": "Lower limit",
+                  "value": "SFC"
+                },
+                {
+                  "key": "Type of activity",
+                  "value": "Divieto di sorvolo di edifici particolari/ Protected buildings overflying interdiction"
+                },
+                {
+                  "key": "Remarks",
+                  "value": "1) Proibito il traffico aereo civile, eccetto il TFC IFR che segue le procedure strumentali pubblicate da/e per l'AD di Manfredonia/Civil air traffic prohibited, except IFR TFC following published instrument procedures to/ from Manfredonia AD."
+                },
+                {
+                  "key": "Validity",
+                  "value": "PERM"
+                }
+              ],
+              [
+                {
+                  "key": "Identification",
+                  "value": "LI P318"
+                },
+                {
+                  "key": "Name",
+                  "value": "Maddaloni"
+                },
+                {
+                  "key": "Lateral limits",
+                  "value": "Linea congiungente i punti/ line joining following points: 37°38'39\"N 010°30'48\"E 40°23'25\"N 013°14'57\"E 42°01'28\"N 017°02'37\"E 40°04'33\"N 011°56'22\"E 46°41'18\"N 007°47'39\"E 37°38'39\"N 010°30'48\"E"
+                },
+                {
+                  "key": "Upper limit",
+                  "value": "4000ft AMSL"
+                },
+                {
+                  "key": "Lower limit",
+                  "value": "SFC"
+                },
+                {
+                  "key": "Type of activity",
+                  "value": "Divieto di sorvolo di edifici particolari/ Protected buildings overflying interdiction"
+                },
+                {
+                  "key": "Remarks",
+                  "value": "NIL"
+                },
+                {
+                  "key": "Validity",
+                  "value": "PERM"
+                }
+              ],
+              [
+                {
+                  "key": "Identification",
+                  "value": "LI P319"
+                },
+                {
+                  "key": "Name",
+                  "value": "Vigevano"
+                },
+                {
+                  "key": "Lateral limits",
+                  "value": "Cerchio di raggio/Circle of radius 0.5NM centrato su/ centred on: 46°10'46\"N 015°02'58\"E"
+                },
+                {
+                  "key": "Upper limit",
+                  "value": "6000ft AGL"
+                },
+                {
+                  "key": "Lower limit",
+                  "value": "SFC"
+                },
+                {
+                  "key": "Type of activity",
+                  "value": "Divieto di sorvolo di edifici particolari/ Protected buildings overflying interdiction"
+                },
+                {
+                  "key": "Remarks",
+                  "value": "NIL"
+                },
+                {
+                  "key": "Validity",
+                  "value": "PERM"
+                }
+              ],
+              [
+                {
+                  "key": "Identification",
+                  "value": "LI P320"
+                },
+                {
+                  "key": "Name",
+                  "value": "Cassino"
+                },
+                {
+                  "key": "Lateral limits",
+                  "value": "Linea congiungente i punti/ line joining following points: 38°18'44\"N 016°17'54\"E 37°57'37\"N 013°15'39\"E 39°54'11\"N 010°31'33\"E 42°20'16\"N 013°38'56\"E 43°34'08\"N 007°29'50\"E 38°18'44\"N 016°17'54\"E"
+                },
+                {
+                  "key": "Upper limit",
+                  "value": "FL195"
+                },
+                {
+                  "key": "Lower limit",
+                  "value": "SFC"
+                },
+                {
+                  "key": "Type of activity",
+                  "value": "Attività tecnologiche/ Technological activities"
+                },
+                {
+                  "key": "Remarks",
+                  "value": "NIL"
+                },
+                {
+                  "key": "Validity",
+                  "value": "PERM"
+                }
+              ],
+              [
+                {
+                  "key": "Identification",
+                  "value": "LI P321"
+                },
+                {
+                  "key": "Name",
+                  "value": "Udine"
+                },
+                {
+                  "key": "Lateral limits",
+                  "value": "Cerchio di raggio/Circle of radius 1.0NM centrato su/ centred on: 46°38'12\"N 015°08'14\"E"
+                },
+                {
+                  "key": "Upper limit",
+                  "value": "1500ft AGL"
+                },
+                {
+                  "key": "Lower limit",
+                  "value": "SFC"
+                },
+                {
+                  "key": "Type of activity",
+                  "value": "Divieto di sorvolo di edifici particolari/ Protected buildings overflying interdiction"
+                },
+                {
+                  "key": "Remarks",
+                  "value": "NIL"
+                },
+                {
+                  "key": "Validity",
+                  "value": "PERM"
+                }
+              ]
+            ]
+          },
+          "relationship": {
+            "parent_id": null
+          }
+        }
+      ]
+    },
+    {
+      "record_id": "page_5",
+      "nodes": [
+        {
+          "id": "areas_page_5",
+          "type": "table",
+          "content": {
+            "headers": [
+              "Identification",
+              "Name",
+              "Lateral limits",
+              "Upper limit",
+              "Lower limit",
+              "Type of activity",
+              "Remarks",
+              "Validity"
+            ],
+            "rows": [
+              [
+                {
+                  "key": "Identification",
+                  "value": "LI P322"
+                },
+                {
+                  "key": "Name",
+                  "value": "Voghera"
+                },
+                {
+                  "key": "Lateral limits",
+                  "value": "Linea congiungente i punti/ line joining following points: 42°29'24\"N 014°44'01\"E 46°05'47\"N 013°37'19\"E 39°43'23\"N 007°30'15\"E 43°28'10\"N 013°04'38\"E 42°29'24\"N 014°44'01\"E"
+                },
+                {
+                  "key": "Upper limit",
+                  "value": "2000ft AGL"
+                },
+                {
+                  "key": "Lower limit",
+                  "value": "SFC"
+                },
+                {
+                  "key": "Type of activity",
+                  "value": "Attività vulcanica/ Volcanic activity"
+                },
+                {
+                  "key": "Remarks",
+                  "value": "1) Proibito il traffico aereo, eccetto voli di Stato, elicotteri del servizio medico e aeromobili direttamente coinvolti in operazioni autorizzate dal dipartimento della Protezione Civile con adeguata valutazione del rischio e approvati dall'autorità dello Stato dell'operatore per quelle specifiche operazioni/Air traffic prohibited except state, helicopter medical service and aircraft directly involved in operations authorized by the Italian Civil Protection Department with appropriate risk assessment approved by the State Authority of the operator for those specific operations."
+                },
+                {
+                  "key": "Validity",
+                  "value": "PERM"
+                }
+              ],
+              [
+                {
+                  "key": "Identification",
+                  "value": "LI P323"
+                },
+                {
+                  "key": "Name",
+                  "value": "Sesto"
+                },
+                {
+                  "key": "Lateral limits",
+                  "value": "Cerchio di raggio/Circle of radius 1.2NM centrato su/ centred on: 39°15'21\"N 017°47'03\"E"
+                },
+                {
+                  "key": "Upper limit",
+                  "value": "1500ft AGL"
+                },
+                {
+                  "key": "Lower limit",
+                  "value": "SFC"
+                },
+                {
+                  "key": "Type of activity",
+                  "value": "Zona vietata al sorvolo per motivi di sicurezza/ Area subject to overflyng restriction for security-safety reasons"
+                },
+                {
+                  "key": "Remarks",
+                  "value": "NIL"
+                },
+                {
+                  "key": "Validity",
+                  "value": "PERM"
+                }
+              ],
+              [
+                {
+                  "key": "Identification",
+                  "value": "LI P324"
+                },
+                {
+                  "key": "Name",
+                  "value": "Trapani"
+                },
+                {
+                  "key": "Lateral limits",
+                  "value": "Cerchio di raggio/Circle of radius 1.2NM centrato su/ centred on: 39°15'25\"N 017°52'56\"E"
+                },
+                {
+                  "key": "Upper limit",
+                  "value": "6000ft AGL"
+                },
+                {
+                  "key": "Lower limit",
+                  "value": "SFC"
+                },
+                {
+                  "key": "Type of activity",
+                  "value": "Zona di particolare interesse monumentale ed archeologico/ Area of monumental and archeological interest"
+                },
+                {
+                  "key": "Remarks",
+                  "value": "NIL"
+                },
+                {
+                  "key": "Validity",
+                  "value": "PERM"
+                }
+              ],
+              [
+                {
+                  "key": "Identification",
+                  "value": "LI P325"
+                },
+                {
+                  "key": "Name",
+                  "value": "Adrano"
+                },
+                {
+                  "key": "Lateral limits",
+                  "value": "Cerchio di raggio/Circle of radius 1.0NM centrato su/ centred on: 40°56'07\"N 008°12'23\"E"
+                },
+                {
+                  "key": "Upper limit",
+                  "value": "1000ft AMSL"
+                },
+                {
+                  "key": "Lower limit",
+                  "value": "SFC"
+                },
+                {
+                  "key": "Type of activity",
+                  "value": "Attività tecnologiche/ Technological activities"
+                },
+                {
+                  "key": "Remarks",
+                  "value": "1) Proibito il traffico aereo civile/ Civil air traffic prohibited."
+                },
+                {
+                  "key": "Validity",
+                  "value": "PERM"
+                }
+              ],
+              [
+                {
+                  "key": "Identification",
+                  "value": "LI P326"
+                },
+                {
+                  "key": "Name",
+                  "value": "Belluno"
+                },
+                {
+                  "key": "Lateral limits",
+                  "value": "Cerchio di raggio/Circle of radius 2.0NM centrato su/ centred on: 42°09'55\"N 010°29'23\"E"
+                },
+                {
+                  "key": "Upper limit",
+                  "value": "1500ft AGL"
+                },
+                {
+                  "key": "Lower limit",
+                  "value": "SFC"
+                },
+                {
+                  "key": "Type of activity",
+                  "value": "Divieto di sorvolo di edifici particolari/ Protected buildings overflying interdiction"
+                },
+                {
+                  "key": "Remarks",
+                  "value": "NIL"
+                },
+                {
+                  "key": "Validity",
+                  "value": "PERM"
+                }
+              ],
+              [
+                {
+                  "key": "Identification",
+                  "value": "LI P327"
+                },
+                {
+                  "key": "Name",
+                  "value": "Agropoli"
+                },
+                {
+                  "key": "Lateral limits",
+                  "value": "Cerchio di raggio/Circle of radius 1.2NM centrato su/ centred on: 40°34'28\"N 017°40'12\"E"
+                },
+                {
+                  "key": "Upper limit",
+                  "value": "FL195"
+                },
+                {
+                  "key": "Lower limit",
+                  "value": "SFC"
+                },
+                {
+                  "key": "Type of activity",
+                  "value": "Attività tecnologiche/ Technological activities"
+                },
+                {
+                  "key": "Remarks",
+                  "value": "NIL"
+                },
+                {
+                  "key": "Validity",
+                  "value": "PERM"
+                }
+              ],
+              [
+                {
+                  "key": "Identification",
+                  "value": "LI P328"
+                },
+                {
+                  "key": "Name",
+                  "value": "Cuneo"
+                },
+                {
+                  "key": "Lateral limits",
+                  "value": "Cerchio di raggio/Circle of radius 1.0NM centrato su/ centred on: 45°43'30\"N 017°13'48\"E"
+                },
+                {
+                  "key": "Upper limit",
+                  "value": "6000ft AGL"
+                },
+                {
+                  "key": "Lower limit",
+                  "value": "SFC"
+                },
+                {
+                  "key": "Type of activity",
+                  "value": "Divieto di sorvolo di edifici particolari/ Protected buildings overflying interdiction"
+                },
+                {
+                  "key": "Remarks",
+                  "value": "1) Proibito il traffico aereo civile, eccetto il TFC IFR che segue le procedure strumentali pubblicate da/e per l'AD di Cuneo/Civil air traffic prohibited, except IFR TFC following published instrument procedures to/ from Cuneo AD."
+                },
+                {
+                  "key": "Validity",
+                  "value": "PERM"
+                }
+              ],
+              [
+                {
+                  "key": "Identification",
+                  "value": "LI P329"
+                },
+                {
+                  "key": "Name",
+                  "value": "Urbino"
+                },
+                {
+                  "key": "Lateral limits",
+                  "value": "Cerchio di raggio/Circle of radius 0.3NM centrato su/ centred on: 42°11'36\"N 007°20'22\"E"
+                },
+                {
+                  "key": "Upper limit",
+                  "value": "5000ft AGL"
+                },
+                {
+                  "key": "Lower limit",
+                  "value": "SFC"
+                },
+                {
+                  "key": "Type of activity",
+                  "value": "Attività tecnologiche/ Technological activities"
+                },
+                {
+                  "key": "Remarks",
+                  "value": "NIL"
+                },
+                {
+                  "key": "Validity",
+                  "value": "PERM"
+                }
+              ],
+              [
+                {
+                  "key": "Identification",
+                  "value": "LI P330"
+                },
+                {
+                  "key": "Name",
+                  "value": "Patti"
+                },
+                {
+                  "key": "Lateral limits",
+                  "value": "Linea congiungente i punti/ line joining following points: 46°13'34\"N 013°51'10\"E 43°32'45\"N 014°58'21\"E 43°09'30\"N 009°51'55\"E 45°23'25\"N 008°43'52\"E 44°18'31\"N 016°22'09\"E 46°13'34\"N 013°51'10\"E"
+                },
+                {
+                  "key": "Upper limit",
+                  "value": "FL195"
+                },
+                {
+                  "key": "Lower limit",
+                  "value": "SFC"
+                },
+                {
+                  "key": "Type of activity",
+                  "value": "Divieto di sorvolo di edifici particolari/ Protected buildings overflying interdiction"
+                },
+                {
+                  "key": "Remarks",
+                  "value": "NIL"
+                },
+                {
+                  "key": "Validity",
+                  "value": "PERM"
+                }
+              ],
+              [
+                {
+                  "key": "Identification",
+                  "value": "LI P331"
+                },
+                {
+                  "key": "Name",
+                  "value": "Pescia"
+                },
+                {
+                  "key": "Lateral limits",
+                  "value": "Linea congiungente i punti/ line joining following points: 44°33'57\"N 010°46'05\"E 45°39'37\"N 008°54'06\"E 38°54'23\"N 013°31'08\"E 41°01'56\"N 012°59'02\"E 39°40'17\"N 017°26'33\"E 44°33'57\"N 010°46'05\"E"
+                },
+                {
+                  "key": "Upper limit",
+                  "value": "1500ft AGL"
+                },
+                {
+                  "key": "Lower limit",
+                  "value": "SFC"
+                },
+                {
+                  "key": "Type of activity",
+                  "value": "Divieto di sorvolo di edifici particolari/ Protected buildings overflying interdiction"
+                },
+                {
+                  "key": "Remarks",
+                  "value": "1) Proibito il traffico aereo civile, eccetto il TFC IFR che segue le procedure strumentali pubblicate da/e per l'AD di Pescia/Civil air traffic prohibited, except IFR TFC following published instrument procedures to/ from Pescia AD."
+                },
+                {
+                  "key": "Validity",
+                  "value": "PERM"
+                }
+              ]
+            ]
+          },
+          "relationship": {
+            "parent_id": null
+          }
+        }
+      ]
+    }
+  ]
+}

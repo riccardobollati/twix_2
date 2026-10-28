@@ -1,0 +1,494 @@
+{
+  "doc_name": "new_04 Qwen 27B baseline physical pages 6-23",
+  "reference": "model_reference",
+  "candidate": "Frozen Qwen 27B baseline with evaluation adapter",
+  "reference_model": "Codex local PDF image/text reference",
+  "candidate_model": null,
+  "exact_match": false,
+  "accuracy": 0.2056,
+  "components": {
+    "RecordMatchF1": {
+      "typed_f1": 0.166667,
+      "precision": 0.166667,
+      "recall": 0.166667
+    },
+    "NodeMatchF1": {
+      "typed_f1": 0.285714,
+      "untyped_f1": 0.285714,
+      "precision": 1.0,
+      "recall": 0.166667,
+      "untyped_precision": 1.0,
+      "untyped_recall": 0.166667
+    },
+    "ContentScore": {
+      "overall": 0.125485,
+      "macro": 0.166632,
+      "by_type": {
+        "table": 0.166598,
+        "key_value": 0.166667,
+        "metadata": null
+      }
+    },
+    "StructureScore": {
+      "edge_accuracy": null,
+      "path_accuracy": null,
+      "note_agreement_rate": null
+    }
+  },
+  "weights": {
+    "NodeMatchF1": 0.4,
+    "ContentScore": 0.4,
+    "StructureScore": 0.2
+  },
+  "threshold": 0.9,
+  "record_alignment": [
+    {
+      "gold_record_id": "page_6",
+      "candidate_record_id": "page_6",
+      "record_sim": 0.9
+    },
+    {
+      "gold_record_id": "page_7",
+      "candidate_record_id": "page_7",
+      "record_sim": 0.9
+    },
+    {
+      "gold_record_id": "page_8",
+      "candidate_record_id": "page_8",
+      "record_sim": 0.899846
+    }
+  ],
+  "missing_gold_records": [
+    {
+      "gold_record_id": "page_9",
+      "reason": "R-RECORD-MISSING"
+    },
+    {
+      "gold_record_id": "page_10",
+      "reason": "R-RECORD-MISSING"
+    },
+    {
+      "gold_record_id": "page_11",
+      "reason": "R-RECORD-MISSING"
+    },
+    {
+      "gold_record_id": "page_12",
+      "reason": "R-RECORD-MISSING"
+    },
+    {
+      "gold_record_id": "page_13",
+      "reason": "R-RECORD-MISSING"
+    },
+    {
+      "gold_record_id": "page_14",
+      "reason": "R-RECORD-MISSING"
+    },
+    {
+      "gold_record_id": "page_15",
+      "reason": "R-RECORD-MISSING"
+    },
+    {
+      "gold_record_id": "page_16",
+      "reason": "R-RECORD-MISSING"
+    },
+    {
+      "gold_record_id": "page_17",
+      "reason": "R-RECORD-MISSING"
+    },
+    {
+      "gold_record_id": "page_18",
+      "reason": "R-RECORD-MISSING"
+    },
+    {
+      "gold_record_id": "page_19",
+      "reason": "R-RECORD-MISSING"
+    },
+    {
+      "gold_record_id": "page_20",
+      "reason": "R-RECORD-MISSING"
+    },
+    {
+      "gold_record_id": "page_21",
+      "reason": "R-RECORD-MISSING"
+    },
+    {
+      "gold_record_id": "page_22",
+      "reason": "R-RECORD-MISSING"
+    },
+    {
+      "gold_record_id": "page_23",
+      "reason": "R-RECORD-MISSING"
+    }
+  ],
+  "extra_candidate_records": [
+    {
+      "candidate_record_id": "page_9",
+      "reason": "R-RECORD-EXTRA"
+    },
+    {
+      "candidate_record_id": "page_10",
+      "reason": "R-RECORD-EXTRA"
+    },
+    {
+      "candidate_record_id": "page_11",
+      "reason": "R-RECORD-EXTRA"
+    },
+    {
+      "candidate_record_id": "page_12",
+      "reason": "R-RECORD-EXTRA"
+    },
+    {
+      "candidate_record_id": "page_13",
+      "reason": "R-RECORD-EXTRA"
+    },
+    {
+      "candidate_record_id": "page_14",
+      "reason": "R-RECORD-EXTRA"
+    },
+    {
+      "candidate_record_id": "page_15",
+      "reason": "R-RECORD-EXTRA"
+    },
+    {
+      "candidate_record_id": "page_16",
+      "reason": "R-RECORD-EXTRA"
+    },
+    {
+      "candidate_record_id": "page_17",
+      "reason": "R-RECORD-EXTRA"
+    },
+    {
+      "candidate_record_id": "page_18",
+      "reason": "R-RECORD-EXTRA"
+    },
+    {
+      "candidate_record_id": "page_19",
+      "reason": "R-RECORD-EXTRA"
+    },
+    {
+      "candidate_record_id": "page_20",
+      "reason": "R-RECORD-EXTRA"
+    },
+    {
+      "candidate_record_id": "page_21",
+      "reason": "R-RECORD-EXTRA"
+    },
+    {
+      "candidate_record_id": "page_22",
+      "reason": "R-RECORD-EXTRA"
+    },
+    {
+      "candidate_record_id": "page_23",
+      "reason": "R-RECORD-EXTRA"
+    }
+  ],
+  "alignment": [
+    {
+      "gold_record_id": "page_6",
+      "candidate_record_id": "page_6",
+      "gold_id": "0_6_0",
+      "candidate_id": "0_6_0",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "page_6",
+      "candidate_record_id": "page_6",
+      "gold_id": "2_6_0",
+      "candidate_id": "2_6_0",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "page_7",
+      "candidate_record_id": "page_7",
+      "gold_id": "0_7_0",
+      "candidate_id": "0_7_0",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "page_7",
+      "candidate_record_id": "page_7",
+      "gold_id": "2_7_0",
+      "candidate_id": "2_7_0",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "page_8",
+      "candidate_record_id": "page_8",
+      "gold_id": "0_8_0",
+      "candidate_id": "0_8_0",
+      "type_match": true,
+      "content_sim": 1.0
+    },
+    {
+      "gold_record_id": "page_8",
+      "candidate_record_id": "page_8",
+      "gold_id": "2_8_0",
+      "candidate_id": "2_8_0",
+      "type_match": true,
+      "content_sim": 0.998765
+    }
+  ],
+  "missing_gold_nodes": [
+    {
+      "gold_record_id": "page_9",
+      "gold_id": "0_9_0",
+      "type": "key_value",
+      "closest_candidate_id": null,
+      "closest_similarity": 0.0,
+      "reason": "R-RECORD-MISSING"
+    },
+    {
+      "gold_record_id": "page_9",
+      "gold_id": "2_9_0",
+      "type": "table",
+      "closest_candidate_id": null,
+      "closest_similarity": 0.0,
+      "reason": "R-RECORD-MISSING"
+    },
+    {
+      "gold_record_id": "page_10",
+      "gold_id": "0_10_0",
+      "type": "key_value",
+      "closest_candidate_id": null,
+      "closest_similarity": 0.0,
+      "reason": "R-RECORD-MISSING"
+    },
+    {
+      "gold_record_id": "page_10",
+      "gold_id": "2_10_0",
+      "type": "table",
+      "closest_candidate_id": null,
+      "closest_similarity": 0.0,
+      "reason": "R-RECORD-MISSING"
+    },
+    {
+      "gold_record_id": "page_11",
+      "gold_id": "0_11_0",
+      "type": "key_value",
+      "closest_candidate_id": null,
+      "closest_similarity": 0.0,
+      "reason": "R-RECORD-MISSING"
+    },
+    {
+      "gold_record_id": "page_11",
+      "gold_id": "2_11_0",
+      "type": "table",
+      "closest_candidate_id": null,
+      "closest_similarity": 0.0,
+      "reason": "R-RECORD-MISSING"
+    },
+    {
+      "gold_record_id": "page_12",
+      "gold_id": "0_12_0",
+      "type": "key_value",
+      "closest_candidate_id": null,
+      "closest_similarity": 0.0,
+      "reason": "R-RECORD-MISSING"
+    },
+    {
+      "gold_record_id": "page_12",
+      "gold_id": "2_12_0",
+      "type": "table",
+      "closest_candidate_id": null,
+      "closest_similarity": 0.0,
+      "reason": "R-RECORD-MISSING"
+    },
+    {
+      "gold_record_id": "page_13",
+      "gold_id": "0_13_0",
+      "type": "key_value",
+      "closest_candidate_id": null,
+      "closest_similarity": 0.0,
+      "reason": "R-RECORD-MISSING"
+    },
+    {
+      "gold_record_id": "page_13",
+      "gold_id": "2_13_0",
+      "type": "table",
+      "closest_candidate_id": null,
+      "closest_similarity": 0.0,
+      "reason": "R-RECORD-MISSING"
+    },
+    {
+      "gold_record_id": "page_14",
+      "gold_id": "0_14_0",
+      "type": "key_value",
+      "closest_candidate_id": null,
+      "closest_similarity": 0.0,
+      "reason": "R-RECORD-MISSING"
+    },
+    {
+      "gold_record_id": "page_14",
+      "gold_id": "2_14_0",
+      "type": "table",
+      "closest_candidate_id": null,
+      "closest_similarity": 0.0,
+      "reason": "R-RECORD-MISSING"
+    },
+    {
+      "gold_record_id": "page_15",
+      "gold_id": "0_15_0",
+      "type": "key_value",
+      "closest_candidate_id": null,
+      "closest_similarity": 0.0,
+      "reason": "R-RECORD-MISSING"
+    },
+    {
+      "gold_record_id": "page_15",
+      "gold_id": "2_15_0",
+      "type": "table",
+      "closest_candidate_id": null,
+      "closest_similarity": 0.0,
+      "reason": "R-RECORD-MISSING"
+    },
+    {
+      "gold_record_id": "page_16",
+      "gold_id": "0_16_0",
+      "type": "key_value",
+      "closest_candidate_id": null,
+      "closest_similarity": 0.0,
+      "reason": "R-RECORD-MISSING"
+    },
+    {
+      "gold_record_id": "page_16",
+      "gold_id": "2_16_0",
+      "type": "table",
+      "closest_candidate_id": null,
+      "closest_similarity": 0.0,
+      "reason": "R-RECORD-MISSING"
+    },
+    {
+      "gold_record_id": "page_17",
+      "gold_id": "0_17_0",
+      "type": "key_value",
+      "closest_candidate_id": null,
+      "closest_similarity": 0.0,
+      "reason": "R-RECORD-MISSING"
+    },
+    {
+      "gold_record_id": "page_17",
+      "gold_id": "2_17_0",
+      "type": "table",
+      "closest_candidate_id": null,
+      "closest_similarity": 0.0,
+      "reason": "R-RECORD-MISSING"
+    },
+    {
+      "gold_record_id": "page_18",
+      "gold_id": "0_18_0",
+      "type": "key_value",
+      "closest_candidate_id": null,
+      "closest_similarity": 0.0,
+      "reason": "R-RECORD-MISSING"
+    },
+    {
+      "gold_record_id": "page_18",
+      "gold_id": "2_18_0",
+      "type": "table",
+      "closest_candidate_id": null,
+      "closest_similarity": 0.0,
+      "reason": "R-RECORD-MISSING"
+    },
+    {
+      "gold_record_id": "page_19",
+      "gold_id": "0_19_0",
+      "type": "key_value",
+      "closest_candidate_id": null,
+      "closest_similarity": 0.0,
+      "reason": "R-RECORD-MISSING"
+    },
+    {
+      "gold_record_id": "page_19",
+      "gold_id": "2_19_0",
+      "type": "table",
+      "closest_candidate_id": null,
+      "closest_similarity": 0.0,
+      "reason": "R-RECORD-MISSING"
+    },
+    {
+      "gold_record_id": "page_20",
+      "gold_id": "0_20_0",
+      "type": "key_value",
+      "closest_candidate_id": null,
+      "closest_similarity": 0.0,
+      "reason": "R-RECORD-MISSING"
+    },
+    {
+      "gold_record_id": "page_20",
+      "gold_id": "2_20_0",
+      "type": "table",
+      "closest_candidate_id": null,
+      "closest_similarity": 0.0,
+      "reason": "R-RECORD-MISSING"
+    },
+    {
+      "gold_record_id": "page_21",
+      "gold_id": "0_21_0",
+      "type": "key_value",
+      "closest_candidate_id": null,
+      "closest_similarity": 0.0,
+      "reason": "R-RECORD-MISSING"
+    },
+    {
+      "gold_record_id": "page_21",
+      "gold_id": "2_21_0",
+      "type": "table",
+      "closest_candidate_id": null,
+      "closest_similarity": 0.0,
+      "reason": "R-RECORD-MISSING"
+    },
+    {
+      "gold_record_id": "page_22",
+      "gold_id": "0_22_0",
+      "type": "key_value",
+      "closest_candidate_id": null,
+      "closest_similarity": 0.0,
+      "reason": "R-RECORD-MISSING"
+    },
+    {
+      "gold_record_id": "page_22",
+      "gold_id": "2_22_0",
+      "type": "table",
+      "closest_candidate_id": null,
+      "closest_similarity": 0.0,
+      "reason": "R-RECORD-MISSING"
+    },
+    {
+      "gold_record_id": "page_23",
+      "gold_id": "0_23_0",
+      "type": "key_value",
+      "closest_candidate_id": null,
+      "closest_similarity": 0.0,
+      "reason": "R-RECORD-MISSING"
+    },
+    {
+      "gold_record_id": "page_23",
+      "gold_id": "2_23_0",
+      "type": "table",
+      "closest_candidate_id": null,
+      "closest_similarity": 0.0,
+      "reason": "R-RECORD-MISSING"
+    }
+  ],
+  "extra_candidate_nodes": [],
+  "type_mismatches": [],
+  "content_diffs": [
+    {
+      "gold_id": "2_8_0",
+      "candidate_id": "2_8_0",
+      "type": "table",
+      "field": "rows[11].Section designation",
+      "gold": "HE 1000 AA",
+      "candidate": "HE",
+      "reason": "R-CELL-DIFFERS",
+      "gold_record_id": "page_8",
+      "candidate_record_id": "page_8"
+    }
+  ],
+  "structure_diffs": [],
+  "eval_version": "twix-eval-source-sha256:944b3f08d1b7143db8297e7fe068c8032d39405a0f1efd7f613dc5ff4cdff900"
+}

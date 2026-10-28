@@ -1,0 +1,160 @@
+=== EVAL REPORT =========================================================
+doc:        
+reference:  model_reference (Codex-generated local PDF reference)
+candidate:  agent (?)
+threshold:  0.90
+accuracy:   0.992      exact_match: False     verdict: PASS
+
+--- Score breakdown ----------------------------------------------------
+RecordMatchF1   typed=1.000  P=1.000  R=1.000
+NodeMatchF1     typed=1.000  untyped=1.000  P=1.000  R=1.000
+ContentScore    overall=0.983   table=0.985  key_value=n/a  metadata=n/a
+StructureScore  edge=n/a  path=n/a  note_agreement=n/a
+
+--- Records ------------------------------------------------------------
+matched: page_10 <-> page_10 (sim=0.900)
+matched: page_11 <-> page_11 (sim=0.900)
+matched: page_12 <-> page_12 (sim=0.900)
+matched: page_13 <-> page_13 (sim=0.900)
+matched: page_14 <-> page_14 (sim=0.900)
+matched: page_15 <-> page_15 (sim=0.900)
+matched: page_16 <-> page_16 (sim=0.900)
+matched: page_17 <-> page_17 (sim=0.897)
+matched: page_18 <-> page_18 (sim=0.900)
+matched: page_19 <-> page_19 (sim=0.900)
+matched: page_20 <-> page_20 (sim=0.900)
+matched: page_21 <-> page_21 (sim=0.897)
+matched: page_22 <-> page_22 (sim=0.900)
+matched: page_23 <-> page_23 (sim=0.900)
+matched: page_24 <-> page_24 (sim=0.874)
+matched: page_25 <-> page_25 (sim=0.897)
+matched: page_6 <-> page_6 (sim=0.896)
+matched: page_7 <-> page_7 (sim=0.897)
+matched: page_8 <-> page_8 (sim=0.891)
+matched: page_9 <-> page_9 (sim=0.875)
+missing gold records:    (none)
+extra candidate records: (none)
+
+--- Missing nodes (0) -----------------------------------------------
+(none)
+
+--- Extra (hallucinated) nodes (0) ----------------------------------
+(none)
+
+--- Type mismatches (0) ---------------------------------------------
+(none)
+
+--- Content mismatches (19) ------------------------------------------
+--- record page_17 <-> page_17 ---
+[gold 0_0017 / table / rows[0].DATE WAS FILED]
+  gold:        "Unknown"
+  candidate:   ""
+  why:         [R-CELL-WRONG-COLUMN] the value was extracted under the wrong column; check the column-group -> field mapping (duplicate/ambiguous field names in the template)
+  fix:         fix the column-group -> field mapping; duplicate/ambiguous field names in the template are routing values to the wrong column.
+[gold 0_0017 / table / column[DATE WAS FILED]]
+  gold:        "DATE WAS FILED"
+  candidate:   "Filings"
+  why:         [R-COLUMN-SWAP] most of this column's mismatched cells match a single other gold column — systematic column swap
+  fix:         swap the field mapping for these two columns; the extractor consistently emits one column's values under the other.
+--- record page_21 <-> page_21 ---
+[gold 0_0021 / table / rows[1].DATE WAS FILED]
+  gold:        "Unknown"
+  candidate:   ""
+  why:         [R-CELL-WRONG-COLUMN] the value was extracted under the wrong column; check the column-group -> field mapping (duplicate/ambiguous field names in the template)
+  fix:         fix the column-group -> field mapping; duplicate/ambiguous field names in the template are routing values to the wrong column.
+[gold 0_0021 / table / column[DATE WAS FILED]]
+  gold:        "DATE WAS FILED"
+  candidate:   "Filings"
+  why:         [R-COLUMN-SWAP] most of this column's mismatched cells match a single other gold column — systematic column swap
+  fix:         swap the field mapping for these two columns; the extractor consistently emits one column's values under the other.
+--- record page_24 <-> page_24 ---
+[gold 0_0024 / table / rows[1].DATE WAS FILED]
+  gold:        "Unknown"
+  candidate:   ""
+  why:         [R-CELL-WRONG-COLUMN] the value was extracted under the wrong column; check the column-group -> field mapping (duplicate/ambiguous field names in the template)
+  fix:         fix the column-group -> field mapping; duplicate/ambiguous field names in the template are routing values to the wrong column.
+[gold 0_0024 / table / rows[3].INJURED PARTY]
+  gold:        "Taylor, William, Jr."
+  candidate:   "Dickerson, Lemon Taylor, William, Jr."
+  why:         [R-CELL-DIFFERS] aligned cell value differs after eval.md §3.4
+  fix:         the cell value is wrong; check column-boundary detection or text grouping.
+[gold 0_0024 / table / rows[3].MOTION FILER]
+  gold:        "William Taylor, Jr."
+  candidate:   "Yvonne Yancey William Taylor, Jr."
+  why:         [R-CELL-DIFFERS] aligned cell value differs after eval.md §3.4
+  fix:         the cell value is wrong; check column-boundary detection or text grouping.
+[gold 0_0024 / table / rows[3].Comments and explanations for rulings]
+  gold:        "Diagnosed 1985, only says "did not know." Risks of creosote exposure and filings ... (truncated)"
+  candidate:   "No claim filed and no grounds for relief set forth; sent a letter asking that an ... (truncated)"
+  why:         [R-CELL-DIFFERS] aligned cell value differs after eval.md §3.4
+  fix:         the cell value is wrong; check column-boundary detection or text grouping.
+[gold 0_0024 / table / rows[2]]
+  gold:        "[{"key": "Claim sequence number", "value": "96"}, {"key": "CLAIM NO.", "value":  ... (truncated)"
+  candidate:   "null"
+  why:         [R-ROW-MISSING] gold row has no aligned candidate row (eval.md §5.1)
+  fix:         row is not being parsed; check row-detection heuristics for this table.
+[gold 0_0024 / table / column[DATE WAS FILED]]
+  gold:        "DATE WAS FILED"
+  candidate:   "Filings"
+  why:         [R-COLUMN-SWAP] most of this column's mismatched cells match a single other gold column — systematic column swap
+  fix:         swap the field mapping for these two columns; the extractor consistently emits one column's values under the other.
+--- record page_25 <-> page_25 ---
+[gold 0_0025 / table / rows[2].DATE WAS FILED]
+  gold:        "Unknown"
+  candidate:   ""
+  why:         [R-CELL-WRONG-COLUMN] the value was extracted under the wrong column; check the column-group -> field mapping (duplicate/ambiguous field names in the template)
+  fix:         fix the column-group -> field mapping; duplicate/ambiguous field names in the template are routing values to the wrong column.
+[gold 0_0025 / table / column[DATE WAS FILED]]
+  gold:        "DATE WAS FILED"
+  candidate:   "Filings"
+  why:         [R-COLUMN-SWAP] most of this column's mismatched cells match a single other gold column — systematic column swap
+  fix:         swap the field mapping for these two columns; the extractor consistently emits one column's values under the other.
+--- record page_6 <-> page_6 ---
+[gold 0_0006 / table / rows[0].DATE WAS FILED]
+  gold:        "Unknown"
+  candidate:   ""
+  why:         [R-CELL-WRONG-COLUMN] the value was extracted under the wrong column; check the column-group -> field mapping (duplicate/ambiguous field names in the template)
+  fix:         fix the column-group -> field mapping; duplicate/ambiguous field names in the template are routing values to the wrong column.
+[gold 0_0006 / table / column[DATE WAS FILED]]
+  gold:        "DATE WAS FILED"
+  candidate:   "Filings"
+  why:         [R-COLUMN-SWAP] most of this column's mismatched cells match a single other gold column — systematic column swap
+  fix:         swap the field mapping for these two columns; the extractor consistently emits one column's values under the other.
+--- record page_7 <-> page_7 ---
+[gold 0_0007 / table / rows[2].DATE WAS FILED]
+  gold:        "Unknown"
+  candidate:   ""
+  why:         [R-CELL-WRONG-COLUMN] the value was extracted under the wrong column; check the column-group -> field mapping (duplicate/ambiguous field names in the template)
+  fix:         fix the column-group -> field mapping; duplicate/ambiguous field names in the template are routing values to the wrong column.
+[gold 0_0007 / table / column[DATE WAS FILED]]
+  gold:        "DATE WAS FILED"
+  candidate:   "Filings"
+  why:         [R-COLUMN-SWAP] most of this column's mismatched cells match a single other gold column — systematic column swap
+  fix:         swap the field mapping for these two columns; the extractor consistently emits one column's values under the other.
+--- record page_8 <-> page_8 ---
+[gold 0_0008 / table / rows[0].DATE WAS FILED]
+  gold:        "Unknown"
+  candidate:   ""
+  why:         [R-CELL-WRONG-COLUMN] the value was extracted under the wrong column; check the column-group -> field mapping (duplicate/ambiguous field names in the template)
+  fix:         fix the column-group -> field mapping; duplicate/ambiguous field names in the template are routing values to the wrong column.
+[gold 0_0008 / table / rows[2].DATE WAS FILED]
+  gold:        "Unknown"
+  candidate:   ""
+  why:         [R-CELL-WRONG-COLUMN] the value was extracted under the wrong column; check the column-group -> field mapping (duplicate/ambiguous field names in the template)
+  fix:         fix the column-group -> field mapping; duplicate/ambiguous field names in the template are routing values to the wrong column.
+--- record page_9 <-> page_9 ---
+[gold 0_0009 / table / rows[3]]
+  gold:        "[{"key": "Claim sequence number", "value": "35"}, {"key": "CLAIM NO.", "value":  ... (truncated)"
+  candidate:   "null"
+  why:         [R-ROW-MISSING] gold row has no aligned candidate row (eval.md §5.1)
+  fix:         row is not being parsed; check row-detection heuristics for this table.
+
+--- Structure mismatches (0) ----------------------------------------
+(none)
+
+--- Summary of root causes --------------------------------------------
+- 8 of total mismatches: [R-CELL-WRONG-COLUMN] the value was extracted under the wrong column; check the column-group -> field mapping (duplicate/ambiguous field names in the template)
+- 6 of total mismatches: [R-COLUMN-SWAP] most of this column's mismatched cells match a single other gold column — systematic column swap
+- 3 of total mismatches: [R-CELL-DIFFERS] aligned cell value differs after eval.md §3.4
+- 2 of total mismatches: [R-ROW-MISSING] gold row has no aligned candidate row (eval.md §5.1)
+========================================================================

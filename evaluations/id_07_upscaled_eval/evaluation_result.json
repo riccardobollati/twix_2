@@ -1,0 +1,171 @@
+{
+  "status": "completed",
+  "accuracy": 1.0,
+  "accuracy_scale": "0_to_1",
+  "cost": null,
+  "pages": {
+    "development": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "evaluation": [
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25
+    ],
+    "requested": 20,
+    "evaluated": 20,
+    "full_document_page_count": 35,
+    "mapping_evidence": "normalized extracted-text SHA-256 matched for sample pages 1-5 and full-source pages 1-5; evaluation subset text matched full-source pages 6-25 (20/20)"
+  },
+  "full_document_run": {
+    "status": "success",
+    "exit_code": 0,
+    "reason": null,
+    "duration_seconds": 3.554213,
+    "rows_or_items": 400,
+    "stdout": "Extracted 400 areas from 35 pages -> /Users/riccardo/tesi/code/twix_2/evaluations/id_07_upscaled_eval/runs/full_raw.json\n",
+    "stderr": ""
+  },
+  "selected_pages_run": {
+    "status": "success",
+    "exit_code": 0,
+    "duration_seconds": 2.101283,
+    "rows_or_items": 238,
+    "reason": null
+  },
+  "candidate": {
+    "successful_pages": 20,
+    "empty_failed_pages": [],
+    "rows_or_items": 238,
+    "representation": "one source-page record with one canonical table node"
+  },
+  "reference": {
+    "source": "Codex-generated local PDF reference",
+    "qualification": "model-assisted local reference; not human-verified truth; no external model service",
+    "rows_or_items": 238,
+    "template_additions": [],
+    "visually_reviewed_pages": [
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25
+    ],
+    "parse_errors": 0
+  },
+  "score_components": {
+    "RecordMatchF1": {
+      "typed_f1": 1.0,
+      "precision": 1.0,
+      "recall": 1.0
+    },
+    "NodeMatchF1": {
+      "typed_f1": 1.0,
+      "untyped_f1": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "untyped_precision": 1.0,
+      "untyped_recall": 1.0
+    },
+    "ContentScore": {
+      "overall": 1.0,
+      "macro": 1.0,
+      "by_type": {
+        "table": 1.0,
+        "key_value": null,
+        "metadata": null
+      }
+    },
+    "StructureScore": {
+      "edge_accuracy": null,
+      "path_accuracy": null,
+      "note_agreement_rate": null
+    }
+  },
+  "scorer": {
+    "version": "twix-eval-source-sha256:51498ee8d6bed2851a762f199b43cd8b8a835dffc35a9e3bfc7efbb3379c6132",
+    "unchanged": true,
+    "duplicate_key_safe_loader": "src.eval.convert.load_json_dedup via score_paths"
+  },
+  "adapter_validation": {
+    "development_records": 5,
+    "development_rows": 58,
+    "evaluation_records": 20,
+    "evaluation_rows": 238,
+    "repeatability": "byte-identical canonical output across two runs",
+    "frozen_before_reference": true,
+    "row_order_preserved": true,
+    "source_fields_accounted_for": true,
+    "silent_drops": 0
+  },
+  "errors": [],
+  "setup_notes": [
+    "Initial evaluation-PDF creation with project-environment pypdf was unavailable (ModuleNotFoundError); Poppler pdfseparate/pdfunite created the same pages 6-25 subset, verified by 20/20 normalized text hashes. No extraction or score impact."
+  ],
+  "artifacts": {
+    "workspace": "/Users/riccardo/tesi/code/twix_2/evaluations/id_07_upscaled_eval",
+    "full_document_raw_output": "/Users/riccardo/tesi/code/twix_2/evaluations/id_07_upscaled_eval/runs/full_raw.json",
+    "selected_pages_pdf": "/Users/riccardo/tesi/code/twix_2/evaluations/id_07_upscaled_eval/inputs/evaluation_pages_6_25.pdf",
+    "selected_pages_raw_output": "/Users/riccardo/tesi/code/twix_2/evaluations/id_07_upscaled_eval/runs/evaluation_subset_raw.json",
+    "adapter": "/Users/riccardo/tesi/code/twix_2/evaluations/id_07_upscaled_eval/adapter.py",
+    "mapping_manifest": "/Users/riccardo/tesi/code/twix_2/evaluations/id_07_upscaled_eval/mapping_manifest.json",
+    "candidate_canonical": "/Users/riccardo/tesi/code/twix_2/evaluations/id_07_upscaled_eval/runs/candidate_canonical.json",
+    "evaluation_template": "/Users/riccardo/tesi/code/twix_2/evaluations/id_07_upscaled_eval/evaluation_template.json",
+    "reference_raw": "/Users/riccardo/tesi/code/twix_2/evaluations/id_07_upscaled_eval/reference/ground_truth_raw.json",
+    "reference_canonical": "/Users/riccardo/tesi/code/twix_2/evaluations/id_07_upscaled_eval/reference/ground_truth_canonical.json",
+    "page_inventory": "/Users/riccardo/tesi/code/twix_2/evaluations/id_07_upscaled_eval/reference/page_inventory.json",
+    "reference_qa_notes": "/Users/riccardo/tesi/code/twix_2/evaluations/id_07_upscaled_eval/reference/qa_notes.md",
+    "page_log": "/Users/riccardo/tesi/code/twix_2/evaluations/id_07_upscaled_eval/logs/page_log.json",
+    "scorer_json": "/Users/riccardo/tesi/code/twix_2/evaluations/id_07_upscaled_eval/score/eval.json",
+    "scorer_report": "/Users/riccardo/tesi/code/twix_2/evaluations/id_07_upscaled_eval/score/scorer_report.txt"
+  },
+  "hashes": {
+    "full_source_pdf_sha256": "de896dfb234b955693fcef39adff2b2857ec4609cd921cf3f8f622cca2f52aa2",
+    "development_pdf_sha256": "27edbdeb87885935bf4626ab91fd48bd95f1dd65925f651e431f3d3a9021f132",
+    "frozen_extractor_sha256": "52b897cb611e4daa74de76c52670dbc5272a6657d2101bcdaed5a23d8761e291",
+    "baseline_template_sha256": "680ac8ded8c59afa0c0fdc8f637c95d254ea3d5ca46ebb498a29dd4fc8167026",
+    "adapter_sha256": "d09cf281ba4aaf149f9f5b386454658934771c995ec3de3cce817b1f667095ad",
+    "mapping_manifest_sha256": "4dfc72406405e8d09b010f96b55cb3bb70b14000dc6bbb7ce4de9d610b8e4274",
+    "evaluation_template_sha256": "1f7f7db40801091f1a1a089341f49d92d53606b2c9ffc83ec20e3c6a2c1d7adf",
+    "candidate_canonical_sha256": "eb5301428b19b7fad91b8df80b858fae589aedc7d81fefc69052552306887f1c",
+    "reference_raw_sha256": "5a9411265c4465389feacf06dd26b638568d5c5f82bd44b567cfa1b4674718bc",
+    "reference_canonical_sha256": "eb5301428b19b7fad91b8df80b858fae589aedc7d81fefc69052552306887f1c",
+    "scorer_source_sha256": "51498ee8d6bed2851a762f199b43cd8b8a835dffc35a9e3bfc7efbb3379c6132"
+  }
+}

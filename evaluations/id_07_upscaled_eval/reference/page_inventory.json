@@ -1,0 +1,768 @@
+{
+  "source": "Codex-generated local PDF reference; not human-verified truth",
+  "page_range": [
+    6,
+    25
+  ],
+  "template_additions": [],
+  "pages": [
+    {
+      "source_page": 6,
+      "printed_page_label": 6,
+      "table_count": 1,
+      "substantive_structures": [
+        {
+          "type": "table",
+          "name": "Prohibited areas",
+          "fields": [
+            "Identification",
+            "Name",
+            "Lateral limits",
+            "Upper limit",
+            "Lower limit",
+            "Type of activity",
+            "Remarks",
+            "Validity"
+          ],
+          "row_count": 13
+        }
+      ],
+      "identifiers": [
+        "LI P332",
+        "LI P333",
+        "LI P334",
+        "LI P335",
+        "LI P336",
+        "LI P337",
+        "LI P338",
+        "LI P339",
+        "LI P340",
+        "LI P341",
+        "LI P342",
+        "LI P343",
+        "LI P344"
+      ],
+      "parse_errors": [],
+      "visual_review": "completed_against_rendered_source_page"
+    },
+    {
+      "source_page": 7,
+      "printed_page_label": 7,
+      "table_count": 1,
+      "substantive_structures": [
+        {
+          "type": "table",
+          "name": "Prohibited areas",
+          "fields": [
+            "Identification",
+            "Name",
+            "Lateral limits",
+            "Upper limit",
+            "Lower limit",
+            "Type of activity",
+            "Remarks",
+            "Validity"
+          ],
+          "row_count": 12
+        }
+      ],
+      "identifiers": [
+        "LI P345",
+        "LI P346",
+        "LI P347",
+        "LI P348",
+        "LI P349",
+        "LI P350",
+        "LI P351",
+        "LI P352",
+        "LI P353",
+        "LI P354",
+        "LI P355",
+        "LI P356"
+      ],
+      "parse_errors": [],
+      "visual_review": "completed_against_rendered_source_page"
+    },
+    {
+      "source_page": 8,
+      "printed_page_label": 8,
+      "table_count": 1,
+      "substantive_structures": [
+        {
+          "type": "table",
+          "name": "Prohibited areas",
+          "fields": [
+            "Identification",
+            "Name",
+            "Lateral limits",
+            "Upper limit",
+            "Lower limit",
+            "Type of activity",
+            "Remarks",
+            "Validity"
+          ],
+          "row_count": 12
+        }
+      ],
+      "identifiers": [
+        "LI P357",
+        "LI P358",
+        "LI P359",
+        "LI P360",
+        "LI P361",
+        "LI P362",
+        "LI P363",
+        "LI P364",
+        "LI P365",
+        "LI P366",
+        "LI P367",
+        "LI P368"
+      ],
+      "parse_errors": [],
+      "visual_review": "completed_against_rendered_source_page"
+    },
+    {
+      "source_page": 9,
+      "printed_page_label": 9,
+      "table_count": 1,
+      "substantive_structures": [
+        {
+          "type": "table",
+          "name": "Prohibited areas",
+          "fields": [
+            "Identification",
+            "Name",
+            "Lateral limits",
+            "Upper limit",
+            "Lower limit",
+            "Type of activity",
+            "Remarks",
+            "Validity"
+          ],
+          "row_count": 14
+        }
+      ],
+      "identifiers": [
+        "LI P369",
+        "LI P370",
+        "LI P371",
+        "LI P372",
+        "LI P373",
+        "LI P374",
+        "LI P375",
+        "LI P376",
+        "LI P377",
+        "LI P378",
+        "LI P379",
+        "LI P380",
+        "LI P381",
+        "LI P382"
+      ],
+      "parse_errors": [],
+      "visual_review": "completed_against_rendered_source_page"
+    },
+    {
+      "source_page": 10,
+      "printed_page_label": 10,
+      "table_count": 1,
+      "substantive_structures": [
+        {
+          "type": "table",
+          "name": "Prohibited areas",
+          "fields": [
+            "Identification",
+            "Name",
+            "Lateral limits",
+            "Upper limit",
+            "Lower limit",
+            "Type of activity",
+            "Remarks",
+            "Validity"
+          ],
+          "row_count": 10
+        }
+      ],
+      "identifiers": [
+        "LI P383",
+        "LI P384",
+        "LI P385",
+        "LI P386",
+        "LI P387",
+        "LI P388",
+        "LI P389",
+        "LI P390",
+        "LI P391",
+        "LI P392"
+      ],
+      "parse_errors": [],
+      "visual_review": "completed_against_rendered_source_page"
+    },
+    {
+      "source_page": 11,
+      "printed_page_label": 11,
+      "table_count": 1,
+      "substantive_structures": [
+        {
+          "type": "table",
+          "name": "Prohibited areas",
+          "fields": [
+            "Identification",
+            "Name",
+            "Lateral limits",
+            "Upper limit",
+            "Lower limit",
+            "Type of activity",
+            "Remarks",
+            "Validity"
+          ],
+          "row_count": 10
+        }
+      ],
+      "identifiers": [
+        "LI P393",
+        "LI P394",
+        "LI P395",
+        "LI P396",
+        "LI P397",
+        "LI P398",
+        "LI P399",
+        "LI P400",
+        "LI P401",
+        "LI P402"
+      ],
+      "parse_errors": [],
+      "visual_review": "completed_against_rendered_source_page"
+    },
+    {
+      "source_page": 12,
+      "printed_page_label": 12,
+      "table_count": 1,
+      "substantive_structures": [
+        {
+          "type": "table",
+          "name": "Prohibited areas",
+          "fields": [
+            "Identification",
+            "Name",
+            "Lateral limits",
+            "Upper limit",
+            "Lower limit",
+            "Type of activity",
+            "Remarks",
+            "Validity"
+          ],
+          "row_count": 11
+        }
+      ],
+      "identifiers": [
+        "LI P403",
+        "LI P404",
+        "LI P405",
+        "LI P406",
+        "LI P407",
+        "LI P408",
+        "LI P409",
+        "LI P410",
+        "LI P411",
+        "LI P412",
+        "LI P413"
+      ],
+      "parse_errors": [],
+      "visual_review": "completed_against_rendered_source_page"
+    },
+    {
+      "source_page": 13,
+      "printed_page_label": 13,
+      "table_count": 1,
+      "substantive_structures": [
+        {
+          "type": "table",
+          "name": "Prohibited areas",
+          "fields": [
+            "Identification",
+            "Name",
+            "Lateral limits",
+            "Upper limit",
+            "Lower limit",
+            "Type of activity",
+            "Remarks",
+            "Validity"
+          ],
+          "row_count": 10
+        }
+      ],
+      "identifiers": [
+        "LI P414",
+        "LI P415",
+        "LI P416",
+        "LI P417",
+        "LI P418",
+        "LI P419",
+        "LI P420",
+        "LI P421",
+        "LI P422",
+        "LI P423"
+      ],
+      "parse_errors": [],
+      "visual_review": "completed_against_rendered_source_page"
+    },
+    {
+      "source_page": 14,
+      "printed_page_label": 14,
+      "table_count": 1,
+      "substantive_structures": [
+        {
+          "type": "table",
+          "name": "Prohibited areas",
+          "fields": [
+            "Identification",
+            "Name",
+            "Lateral limits",
+            "Upper limit",
+            "Lower limit",
+            "Type of activity",
+            "Remarks",
+            "Validity"
+          ],
+          "row_count": 11
+        }
+      ],
+      "identifiers": [
+        "LI P424",
+        "LI P425",
+        "LI P426",
+        "LI P427",
+        "LI P428",
+        "LI P429",
+        "LI P430",
+        "LI P431",
+        "LI P432",
+        "LI P433",
+        "LI P434"
+      ],
+      "parse_errors": [],
+      "visual_review": "completed_against_rendered_source_page"
+    },
+    {
+      "source_page": 15,
+      "printed_page_label": 15,
+      "table_count": 1,
+      "substantive_structures": [
+        {
+          "type": "table",
+          "name": "Prohibited areas",
+          "fields": [
+            "Identification",
+            "Name",
+            "Lateral limits",
+            "Upper limit",
+            "Lower limit",
+            "Type of activity",
+            "Remarks",
+            "Validity"
+          ],
+          "row_count": 12
+        }
+      ],
+      "identifiers": [
+        "LI P435",
+        "LI P436",
+        "LI P437",
+        "LI P438",
+        "LI P439",
+        "LI P440",
+        "LI P441",
+        "LI P442",
+        "LI P443",
+        "LI P444",
+        "LI P445",
+        "LI P446"
+      ],
+      "parse_errors": [],
+      "visual_review": "completed_against_rendered_source_page"
+    },
+    {
+      "source_page": 16,
+      "printed_page_label": 16,
+      "table_count": 1,
+      "substantive_structures": [
+        {
+          "type": "table",
+          "name": "Prohibited areas",
+          "fields": [
+            "Identification",
+            "Name",
+            "Lateral limits",
+            "Upper limit",
+            "Lower limit",
+            "Type of activity",
+            "Remarks",
+            "Validity"
+          ],
+          "row_count": 12
+        }
+      ],
+      "identifiers": [
+        "LI P447",
+        "LI P448",
+        "LI P449",
+        "LI P450",
+        "LI P451",
+        "LI P452",
+        "LI P453",
+        "LI P454",
+        "LI P455",
+        "LI P456",
+        "LI P457",
+        "LI P458"
+      ],
+      "parse_errors": [],
+      "visual_review": "completed_against_rendered_source_page"
+    },
+    {
+      "source_page": 17,
+      "printed_page_label": 17,
+      "table_count": 1,
+      "substantive_structures": [
+        {
+          "type": "table",
+          "name": "Prohibited areas",
+          "fields": [
+            "Identification",
+            "Name",
+            "Lateral limits",
+            "Upper limit",
+            "Lower limit",
+            "Type of activity",
+            "Remarks",
+            "Validity"
+          ],
+          "row_count": 14
+        }
+      ],
+      "identifiers": [
+        "LI P459",
+        "LI P460",
+        "LI P461",
+        "LI P462",
+        "LI P463",
+        "LI P464",
+        "LI P465",
+        "LI P466",
+        "LI P467",
+        "LI P468",
+        "LI P469",
+        "LI P470",
+        "LI P471",
+        "LI P472"
+      ],
+      "parse_errors": [],
+      "visual_review": "completed_against_rendered_source_page"
+    },
+    {
+      "source_page": 18,
+      "printed_page_label": 18,
+      "table_count": 1,
+      "substantive_structures": [
+        {
+          "type": "table",
+          "name": "Prohibited areas",
+          "fields": [
+            "Identification",
+            "Name",
+            "Lateral limits",
+            "Upper limit",
+            "Lower limit",
+            "Type of activity",
+            "Remarks",
+            "Validity"
+          ],
+          "row_count": 12
+        }
+      ],
+      "identifiers": [
+        "LI P473",
+        "LI P474",
+        "LI P475",
+        "LI P476",
+        "LI P477",
+        "LI P478",
+        "LI P479",
+        "LI P480",
+        "LI P481",
+        "LI P482",
+        "LI P483",
+        "LI P484"
+      ],
+      "parse_errors": [],
+      "visual_review": "completed_against_rendered_source_page"
+    },
+    {
+      "source_page": 19,
+      "printed_page_label": 19,
+      "table_count": 1,
+      "substantive_structures": [
+        {
+          "type": "table",
+          "name": "Prohibited areas",
+          "fields": [
+            "Identification",
+            "Name",
+            "Lateral limits",
+            "Upper limit",
+            "Lower limit",
+            "Type of activity",
+            "Remarks",
+            "Validity"
+          ],
+          "row_count": 11
+        }
+      ],
+      "identifiers": [
+        "LI P485",
+        "LI P486",
+        "LI P487",
+        "LI P488",
+        "LI P489",
+        "LI P490",
+        "LI P491",
+        "LI P492",
+        "LI P493",
+        "LI P494",
+        "LI P495"
+      ],
+      "parse_errors": [],
+      "visual_review": "completed_against_rendered_source_page"
+    },
+    {
+      "source_page": 20,
+      "printed_page_label": 20,
+      "table_count": 1,
+      "substantive_structures": [
+        {
+          "type": "table",
+          "name": "Prohibited areas",
+          "fields": [
+            "Identification",
+            "Name",
+            "Lateral limits",
+            "Upper limit",
+            "Lower limit",
+            "Type of activity",
+            "Remarks",
+            "Validity"
+          ],
+          "row_count": 12
+        }
+      ],
+      "identifiers": [
+        "LI P496",
+        "LI P497",
+        "LI P498",
+        "LI P499",
+        "LI P500",
+        "LI P501",
+        "LI P502",
+        "LI P503",
+        "LI P504",
+        "LI P505",
+        "LI P506",
+        "LI P507"
+      ],
+      "parse_errors": [],
+      "visual_review": "completed_against_rendered_source_page"
+    },
+    {
+      "source_page": 21,
+      "printed_page_label": 21,
+      "table_count": 1,
+      "substantive_structures": [
+        {
+          "type": "table",
+          "name": "Prohibited areas",
+          "fields": [
+            "Identification",
+            "Name",
+            "Lateral limits",
+            "Upper limit",
+            "Lower limit",
+            "Type of activity",
+            "Remarks",
+            "Validity"
+          ],
+          "row_count": 11
+        }
+      ],
+      "identifiers": [
+        "LI P508",
+        "LI P509",
+        "LI P510",
+        "LI P511",
+        "LI P512",
+        "LI P513",
+        "LI P514",
+        "LI P515",
+        "LI P516",
+        "LI P517",
+        "LI P518"
+      ],
+      "parse_errors": [],
+      "visual_review": "completed_against_rendered_source_page"
+    },
+    {
+      "source_page": 22,
+      "printed_page_label": 22,
+      "table_count": 1,
+      "substantive_structures": [
+        {
+          "type": "table",
+          "name": "Prohibited areas",
+          "fields": [
+            "Identification",
+            "Name",
+            "Lateral limits",
+            "Upper limit",
+            "Lower limit",
+            "Type of activity",
+            "Remarks",
+            "Validity"
+          ],
+          "row_count": 11
+        }
+      ],
+      "identifiers": [
+        "LI P519",
+        "LI P520",
+        "LI P521",
+        "LI P522",
+        "LI P523",
+        "LI P524",
+        "LI P525",
+        "LI P526",
+        "LI P527",
+        "LI P528",
+        "LI P529"
+      ],
+      "parse_errors": [],
+      "visual_review": "completed_against_rendered_source_page"
+    },
+    {
+      "source_page": 23,
+      "printed_page_label": 23,
+      "table_count": 1,
+      "substantive_structures": [
+        {
+          "type": "table",
+          "name": "Prohibited areas",
+          "fields": [
+            "Identification",
+            "Name",
+            "Lateral limits",
+            "Upper limit",
+            "Lower limit",
+            "Type of activity",
+            "Remarks",
+            "Validity"
+          ],
+          "row_count": 14
+        }
+      ],
+      "identifiers": [
+        "LI P530",
+        "LI P531",
+        "LI P532",
+        "LI P533",
+        "LI P534",
+        "LI P535",
+        "LI P536",
+        "LI P537",
+        "LI P538",
+        "LI P539",
+        "LI P540",
+        "LI P541",
+        "LI P542",
+        "LI P543"
+      ],
+      "parse_errors": [],
+      "visual_review": "completed_against_rendered_source_page"
+    },
+    {
+      "source_page": 24,
+      "printed_page_label": 24,
+      "table_count": 1,
+      "substantive_structures": [
+        {
+          "type": "table",
+          "name": "Prohibited areas",
+          "fields": [
+            "Identification",
+            "Name",
+            "Lateral limits",
+            "Upper limit",
+            "Lower limit",
+            "Type of activity",
+            "Remarks",
+            "Validity"
+          ],
+          "row_count": 13
+        }
+      ],
+      "identifiers": [
+        "LI P544",
+        "LI P545",
+        "LI P546",
+        "LI P547",
+        "LI P548",
+        "LI P549",
+        "LI P550",
+        "LI P551",
+        "LI P552",
+        "LI P553",
+        "LI P554",
+        "LI P555",
+        "LI P556"
+      ],
+      "parse_errors": [],
+      "visual_review": "completed_against_rendered_source_page"
+    },
+    {
+      "source_page": 25,
+      "printed_page_label": 25,
+      "table_count": 1,
+      "substantive_structures": [
+        {
+          "type": "table",
+          "name": "Prohibited areas",
+          "fields": [
+            "Identification",
+            "Name",
+            "Lateral limits",
+            "Upper limit",
+            "Lower limit",
+            "Type of activity",
+            "Remarks",
+            "Validity"
+          ],
+          "row_count": 13
+        }
+      ],
+      "identifiers": [
+        "LI P557",
+        "LI P558",
+        "LI P559",
+        "LI P560",
+        "LI P561",
+        "LI P562",
+        "LI P563",
+        "LI P564",
+        "LI P565",
+        "LI P566",
+        "LI P567",
+        "LI P568",
+        "LI P569"
+      ],
+      "parse_errors": [],
+      "visual_review": "completed_against_rendered_source_page"
+    }
+  ]
+}

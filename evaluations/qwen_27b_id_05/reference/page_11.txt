@@ -1,0 +1,46 @@
+                                                                                                             
+                                                                                                             
+      Complaints Detail Rpt #A-2                Champaign Police Department                                  
+                                                                                                             
+                                            Complaints    By  Date                                           
+                                                                                                             
+        Date  Number  Investigator Date Assigned Racial Category / Type Location Of Occurrence Disposition Completed Recorded On Camera
+       2/12/2013 09-02 Park, Benl       No Formal       Not Stated              NOT SUSTAINED     No         
+                                 2/13/2009         Citizen                              3/23/2009 N/A        
+        Complainant:             DOB:       Gender: MALE Address:     Urbana IL 61802      H Phone:          
+                                Type Of Complaint               Description              Complaint Disposition
+                       Complaint #:1 R-3B.3 Courtesy: Conduct   Wrong Action by Employee NOT SUSTAINED       
+                                Name               ID No. Rank     Division Officer Disposition Action Taken Body Cam
+                         Officer #: 1 Carson, Megan. 784-RET Senior Officer Field Operations NOT SUSTAINED NONE No
+        Date  Number  Investigator Date Assigned Racial Category / Type Location Of Occurrence Disposition Completed Recorded On Camera
+       3/15/2013 09-03 Park, Ben        No Formal       Not Stated              EXONERATED        No         
+                                 3/18/2009         Citizen                              4/20/2009 N/A        
+        Complainant:             DOB:       Gender: MALE Address:        IL 61822          H Phone:          
+                                Type Of Complaint               Description              Complaint Disposition
+                       Complaint #:1 R-3B.1 Courtesy:Profanity  Discourteous Conduct     NOT SUSTAINED       
+                       Complaint #:2 R-5D Use of physical force UNREASONABLE AMOUNT OF FORCE EXONERATED      
+                                Name               ID No. Rank     Division Officer Disposition Action Taken Body Cam
+                         Officer #: 1 Carson, Megan 712  OFFICER   Field Operations EXONERATED NONE  No      
+        Date  Number  Investigator Date Assigned Racial Category / Type Location Of Occurrence Disposition Completed Recorded On Camera
+       3/20/2013 09-04A Park, Ben       No Formal       Not Stated              NOT SUSTAINED     No         
+                                 3/30/2009         Citizen                              4/27/2009 N/A        
+        Complainant:             DOB:       Gender: FEMAL Address:    , Champaign IL 61821 H Phone:          
+                                Type Of Complaint               Description              Complaint Disposition
+                       Complaint #:1 R-5B ARREST, SEARCH AND SEIZURE Wrong Action by Employee NOT SUSTAINED  
+                       Complaint #:2 R-5D Use of physical force UNREASONABLE AMOUNT OF FORCE UNFOUNDED       
+                                Name               ID No. Rank     Division Officer Disposition Action Taken Body Cam
+                         Officer #: 1 Wallace, Derek. 7901 OFFICER Field Operations NOT SUSTAINED NONE No    
+                                                                                                             
+        Date  Number  Investigator Date Assigned Racial Category / Type Location Of Occurrence Disposition Completed Recorded On Camera
+       3/21/2013 09-04B Park, Ben       No Formal       Not Stated              UNFOUNDED         No         
+                                 3/30/2009         Citizen                               6/1/2009 N/A        
+        Complainant:             DOB:       Gender: FEMAL Address:     Champaign IL 61821  H Phone: (        
+                                Type Of Complaint               Description              Complaint Disposition
+                       Complaint #:1 R-5B ARREST, SEARCH AND SEIZURE Wrong Action by Employee UNFOUNDED      
+                                Name               ID No. Rank     Division Officer Disposition Action Taken Body Cam
+                         Officer #: 1 Wallace, Derek 739 OFFICER   PATROL   UNFOUNDED    NONE        No      
+                                                                                                             
+                                                                                                             
+                                                                                                             
+       L.E.A. Data Technologies ADMINISTRATIVE Database 11/10/2020 10:49:22 AM                    Page 11 of 74
+                                                                                                             

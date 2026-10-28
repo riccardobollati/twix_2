@@ -1,0 +1,59 @@
+New Order (Page 2)
+Agency: Assurance Media Station: WDAZ-S1 Order ID: 7442220
+Client: 339 - Florida Senate - Nelson Product: 355 - Get Out The Vote Estimate: 6744 - Nelson Wk#1 10.30-11.05
+Flight Start: 10/30/2018 Flight End: 11/05/2018 Received in ePort: 10/30/2018 12:02:14 PM
+Line Daypart DPT Total
+No (Program) Code Rate C/T Len 10/30 10/31 11/1 11/2 11/3 11/4 11/5 Spots Rtg CPP Imp CPM
+TuWThFM 6:30P-7P
+12 PA $434.00 C 30 1 1 1 1 0 0 1 5
+Entertainment Tonight
+TuWThFM 6A-7A
+13 EM $282.00 C 30 1 1 1 1 0 0 1 5
+First News Hour 2
+TuWThFM 10P-10:35P
+14 LN $804.00 C 30 2 2 2 2 0 0 2 10
+WDAY/WDAZ News at 10
+TuWThFM 5A-6A
+15 EM $68.00 C 30 3 3 3 3 0 0 3 15
+First News Hour 1
+Su 10:35P-11:05P
+16 LF $160.00 C 30 0 0 0 0 0 2 0 2
+WDAY/WDAZ Sports Sunday
+TuWThFM 12P-1P
+17 DT $33.00 C 30 1 1 1 1 0 0 1 5
+The Chew
+TuWThFM 10:35P-11:35P
+18 LF $164.00 C 30 1 1 1 1 0 0 1 5
+Jimmy Kimmel
+Sa 10P-10:35P
+19 LN $503.00 C 30 0 0 0 0 1 0 0 1
+10P News Saturday
+F 9P-10P
+20 PT $422.00 C 30 0 0 0 0 2 0 0 2
+20/20
+Sa 7P-10P
+21 PT $294.00 C 30 0 0 0 0 0 1 0 1
+NCAA FTBALL
+TuWThFM 10A-11A
+22 DT $90.00 C 30 2 2 2 2 0 0 2 10
+The View
+TuWThFM 5P-5:30P
+23 EN $308.00 C 30 3 3 3 3 0 0 3 15
+WDAY/WDAZ News at 5
+TuWThFM 5A-6A
+24 EM $70.00 C 30 1 1 1 1 0 0 1 5
+First News Hour 1
+TuWThFM 8A-9A
+25 EM $161.00 C 30 1 1 1 1 0 0 1 5
+Good Morning America Hour 2
+TuWThFM 7A-8A
+26 EM $313.00 C 30 2 2 2 2 0 0 2 10
+Good Morning America Hour 1
+Sa 7A-8:30A
+27 EM $41.00 C 30 0 0 0 0 2 0 0 2
+First News Saturday
+Sa 6A-7A
+28 EM $81.00 C 30 0 0 0 0 0 1 0 1
+Good Morning America Saturday
+Total Spots: 30 30 30 30 9 7 30
+Cash$ - Spots: $44,677.00 - 166 Trade$ - Spots: $0.00 - 0 Total Cost: $44,677.00 Total GRP - CPP: 0.0 - $0.00 Total GIMP(000) - CPM: 0 - $0.00

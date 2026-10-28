@@ -1,0 +1,126 @@
+{
+  "template": [
+    {
+      "type": "table",
+      "fields": [
+        "Date",
+        "Number",
+        "Investigator",
+        "Date Assigned",
+        "Racial",
+        "Category / Type",
+        "Location Of Occurrence",
+        "Disposition",
+        "Completed",
+        "Recorded On Camera"
+      ],
+      "bid": [
+        0
+      ],
+      "child": -1,
+      "node_id": 0,
+      "complexity": {
+        "same_row_structure": true,
+        "nested": false
+      }
+    },
+    {
+      "type": "kv",
+      "fields": [
+        "Complainant:",
+        "DOB:",
+        "Gender:",
+        "Address:",
+        "H Phone:"
+      ],
+      "bid": [
+        1
+      ],
+      "child": -1,
+      "node_id": 1,
+      "complexity": {
+        "repeated": false
+      }
+    },
+    {
+      "type": "table",
+      "fields": [
+        "Type Of Complaint",
+        "Description",
+        "Complaint Disposition"
+      ],
+      "bid": [
+        2
+      ],
+      "child": -1,
+      "node_id": 2,
+      "complexity": {
+        "same_row_structure": true,
+        "nested": false
+      }
+    },
+    {
+      "type": "table",
+      "fields": [
+        "Name",
+        "ID No.",
+        "Rank",
+        "Division",
+        "Officer Disposition",
+        "Action Taken",
+        "Body Cam"
+      ],
+      "bid": [
+        3
+      ],
+      "child": -1,
+      "node_id": 3,
+      "complexity": {
+        "same_row_structure": true,
+        "nested": false
+      }
+    }
+  ],
+  "metadata": [
+    {
+      "pattern": "Report Criteria: Complaints Occurred Between: \\d{1,2}/\\d{1,2}/\\d{4} AND \\d{1,2}/\\d{1,2}/\\d{4}",
+      "type": "document_level"
+    },
+    {
+      "pattern": "Complaints Detail Rpt #A-2",
+      "type": "document_level"
+    },
+    {
+      "pattern": "Champaign Police Department",
+      "type": "document_level"
+    },
+    {
+      "pattern": "Complaints By Date",
+      "type": "document_level"
+    },
+    {
+      "pattern": "L\\.E\\.A\\. Data Technologies",
+      "type": "document_level"
+    },
+    {
+      "pattern": "ADMINISTRATIVE Database",
+      "type": "document_level"
+    },
+    {
+      "pattern": "11/10/2020 \\d{1,2}:\\d{2}:\\d{2} (AM|PM)",
+      "type": "document_level"
+    },
+    {
+      "pattern": "Page \\d+ of \\d+",
+      "type": "document_level"
+    },
+    {
+      "pattern": "Complaint #:\\d+",
+      "type": "record_level"
+    },
+    {
+      "pattern": "Officer #:\\d+",
+      "type": "record_level"
+    }
+  ]
+}

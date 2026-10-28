@@ -1,0 +1,59 @@
+New Order (Page 2)
+Agency: Buying Time Station: WDAY-D3 Order ID: 7441906
+Client: 266 - West Virginia Senate - Manchin Product: 328 - Political Estimate: 6974 - Manchin Wk#4 10.30-11.05
+Flight Start: 10/30/2018 Flight End: 11/05/2018 Received in ePort: 10/30/2018 11:47:03 AM
+Line Daypart DPT Total
+No (Program) Code Rate C/T Len 10/30 10/31 11/1 11/2 11/3 11/4 11/5 Spots Rtg CPP Imp CPM
+TuWThFM 5A-6A
+12 EM $40.00 C 30 1 1 1 1 0 0 1 5
+First News Hour 1
+Sa 7P-10P
+13 PT $280.00 C 30 0 0 0 0 0 1 0 1
+NCAA FTBALL
+Sa 7P-10P
+14 PT $285.00 C 30 0 0 0 0 0 1 0 1
+NCAA FTBALL
+Sa 7P-10P
+15 PT $250.00 C 30 0 0 0 0 0 1 0 1
+NCAA FTBALL
+Sa 6P-6:30P
+16 EN $220.00 C 30 0 0 0 0 0 1 0 1
+Saturday Early News
+TuWThFM 11A-12P
+17 DT $44.00 C 30 2 2 2 2 0 0 2 10
+Rachael Ray
+TuWThFM 10A-11A
+18 DT $80.00 C 30 1 1 1 1 0 0 1 5
+The View
+TuWThFM 5P-5:30P
+19 EN $378.00 C 30 1 1 1 1 0 0 1 5
+WDAY/WDAZ News at 5
+TuWThFM 9A-10A
+20 DT $100.00 C 30 1 1 1 1 0 0 1 5
+Live! with Kelly and Ryan
+TuWThFM 10:35P-11:35P
+21 LF $200.00 C 30 1 1 1 1 0 0 1 5
+Jimmy Kimmel
+TuWThFM 8A-9A
+22 EM $120.00 C 30 1 1 1 1 0 0 1 5
+Good Morning America Hour 2
+Sa 10P-10:35P
+23 LN $560.00 C 30 0 0 0 0 0 1 0 1
+10P News Saturday
+TuWThFM 4P-4:30P
+24 EF $70.00 C 30 3 3 3 3 0 0 3 15
+WDAY/WDAZ News at 4p
+M 9P-10P
+25 PT $720.00 C 30 0 0 0 0 0 2 0 2
+The Good Doctor
+TuWThFM 10:35P-11:35P
+26 LF $200.00 C 30 2 2 2 2 0 0 2 10
+Jimmy Kimmel
+TuWThFM 6P-6:30P
+27 EN $676.00 C 30 1 1 1 1 0 0 1 5
+WDAY/WDAZ News at 6
+Sa 11A-6P
+28 S $70.00 C 30 0 0 0 0 2 0 0 2
+NCAA FTBALL
+Total Spots: 28 28 28 28 8 8 28
+Cash$ - Spots: $30,290.00 - 156 Trade$ - Spots: $0.00 - 0 Total Cost: $30,290.00 Total GRP - CPP: 0.0 - $0.00 Total GIMP(000) - CPM: 0 - $0.00
