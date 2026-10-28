@@ -1,15 +1,10 @@
 """Offline checks for independent key/value page clustering."""
 from __future__ import annotations
 
-from pathlib import Path
-import sys
 import unittest
 
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "test-clustering"))
-import build_kv_html  # noqa: E402
-import cluster_kv  # noqa: E402
+from src.clustering import cluster_kv
 
 
 def label(key: str, value: str, x: float, y: float, value_x: float | None = None) -> dict:
@@ -56,23 +51,6 @@ class ClusterKvTests(unittest.TestCase):
         extra = cluster_kv.group_feature("kv_002", group(2, label("City", "Paris", 120, 300)),
                                          {"city"}, [], 600)
         self.assertGreater(cluster_kv.page_similarity([a], [b, extra]), 0.77)
-
-    def test_kv_view_has_own_cluster_assignments_and_navigation(self):
-        report = {"page_count": 3, "source_total_pages": 3, "skipped_pages": [2],
-                  "families": [{"id": "kv_001"}],
-                  "pages": [{"page": n, "groups": [{"family": "kv_001", "keys": ["name"],
-                            "pairs": [{"key": "Name", "value": "Alice"}]}] if n != 2 else []}
-                            for n in range(1, 4)],
-                  "overlays": ["kv_page_0001.png"],
-                  "algorithms": {method: {"cluster_count": 1, "clusters": {"1": [1, 3]},
-                                          "representatives": {"1": 1}, "mean_within_similarity": 0.9,
-                                          "first_five_cluster_coverage": 1.0}
-                                 for method in cluster_kv.METHODS}}
-        html = build_kv_html.document_html("sample", report, Path("/tmp/sample.pdf"), Path("/tmp"))
-        self.assertIn("Table clusters", html)
-        self.assertIn("KV cluster", html)
-        self.assertIn("kv_page_0001.png", html)
-        self.assertIn("Pages without confirmed KV groups (1)", html)
 
 
 if __name__ == "__main__":

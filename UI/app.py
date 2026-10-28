@@ -711,7 +711,7 @@ def _build_run_command(run: Run, input_path: Path) -> list[str]:
 
 def _generate_run_statistics(run_dir: Path) -> dict:
     """Render the reusable per-document report for one completed UI run."""
-    from viz_batch_results import generate_document_results
+    from inspect_results.viz_batch_results import generate_document_results
 
     with _STATS_RENDER_LOCK:
         return generate_document_results(

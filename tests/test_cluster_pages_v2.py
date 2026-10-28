@@ -1,15 +1,12 @@
 """Focused offline checks for the header/structure clustering rules."""
 from __future__ import annotations
 
-from pathlib import Path
-import sys
 import unittest
 
 import numpy as np
 
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "test-clustering"))
-import cluster_pages_v2 as v2  # noqa: E402
+from src.clustering import cluster_pages_v2 as v2
 
 
 class ClusterPagesV2Tests(unittest.TestCase):

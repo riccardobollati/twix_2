@@ -1,14 +1,12 @@
 """Select source pages for template learning and independent evaluation.
 
-The exploratory table and KV clusterers are deliberately reused here: the
-pipeline must make the same deterministic grouping shown in viewing 2.
+The table and KV clusterers provide independent deterministic page groups.
 """
 from __future__ import annotations
 
 from collections import defaultdict
 import json
 from pathlib import Path
-import sys
 import time
 from typing import Any
 
@@ -20,11 +18,7 @@ FIRST_TEMPLATE_PAGES = 3
 
 
 def _clusterers():
-    source_dir = Path(__file__).resolve().parents[2] / "test-clustering"
-    if str(source_dir) not in sys.path:
-        sys.path.insert(0, str(source_dir))
-    import cluster_pages_v2  # type: ignore[import-not-found]
-    import cluster_kv  # type: ignore[import-not-found]
+    from src.clustering import cluster_pages_v2, cluster_kv
     return cluster_pages_v2, cluster_kv
 
 

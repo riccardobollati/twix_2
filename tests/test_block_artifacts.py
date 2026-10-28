@@ -11,8 +11,8 @@ from PIL import Image
 from src.agents.block_artifacts import block_artifacts_node
 from src.agents.block_separation import block_separation_node
 from src.models.opencode import OPENCODE_BUDGET_EXIT_CODE
-from viz_blocks import _parse_targets, render_blocks, run_block_separator
-from viz_record_separation import _load_record_blocks, render_record_separation
+from inspect_results.viz_blocks import _parse_targets, render_blocks, run_block_separator
+from inspect_results.viz_record_separation import _load_record_blocks, render_record_separation
 
 
 class BlockArtifactTests(unittest.TestCase):

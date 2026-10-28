@@ -5,8 +5,8 @@ import tempfile
 import time
 from typing import Any
 
-from viz_blocks import render_blocks, run_block_separator
-from viz_record_separation import render_record_separation
+from inspect_results.viz_blocks import render_blocks, run_block_separator
+from inspect_results.viz_record_separation import render_record_separation
 
 
 def block_artifacts_node(state: dict[str, Any]) -> dict[str, Any]:

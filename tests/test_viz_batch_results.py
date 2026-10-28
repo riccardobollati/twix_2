@@ -5,7 +5,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from viz_batch_results import (
+from inspect_results.viz_batch_results import (
     _break_even_pages,
     _ground_truth_cost_usd,
     _mean_token_type_percentages,
@@ -124,7 +124,7 @@ class TokenBreakdownTests(unittest.TestCase):
                 },
             }]
         }).encode())
-        with patch("viz_batch_results.urllib.request.urlopen", return_value=response):
+        with patch("inspect_results.viz_batch_results.urllib.request.urlopen", return_value=response):
             snapshot = fetch_openrouter_pricing(["openrouter/example/model"])
 
         self.assertEqual(snapshot["source"], "openrouter_api")

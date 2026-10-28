@@ -8,7 +8,7 @@ from tempfile import TemporaryDirectory
 import unittest
 from unittest.mock import MagicMock, patch
 
-from test.scan_structure import (Rules, cluster_candidates, compatibility, make_rows,
+from src.clustering.scan_structure import (Rules, cluster_candidates, compatibility, make_rows,
                                 load_pdf, plot_results, scan_pages, spatial_coverage,
                                 spatial_word_boxes)
 

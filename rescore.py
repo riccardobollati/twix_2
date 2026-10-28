@@ -12,7 +12,7 @@ metadata.json in place:
 Use after any change to src/eval so metadata.json and the charts in
 data/results/ never mix scorer versions. Regenerate charts afterwards with:
 
-    python viz_batch_results.py data
+    python -m inspect_results.viz_batch_results data
 
 Usage:
     python rescore.py [data_folder] [--doc name ...] [--dry-run]
@@ -118,7 +118,7 @@ def main() -> None:
     action = "would patch" if args.dry_run else "patched"
     print(f"\n{action} {changed} metadata.json file(s).")
     if not args.dry_run:
-        print("Regenerate charts with: python viz_batch_results.py " + args.folder)
+        print("Regenerate charts with: python -m inspect_results.viz_batch_results " + args.folder)
 
 
 if __name__ == "__main__":

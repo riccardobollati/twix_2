@@ -17,7 +17,7 @@ from matplotlib.figure import Figure
 from matplotlib.ticker import PercentFormatter
 import pypdfium2 as pdfium
 
-from viz_blocks import render_blocks, run_block_separator
+from inspect_results.viz_blocks import render_blocks, run_block_separator
 
 
 DEFAULT_PAGES = 100

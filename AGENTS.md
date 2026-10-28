@@ -37,7 +37,7 @@ python api.py --host 127.0.0.1 --port 8000
 python src/run_batch.py --jobs 2 --eval
 
 python -m unittest discover -s tests -v
-python -m compileall -q api.py run.py fix.py rescore.py single_eval.py src
+python -m compileall -q api.py run.py rescore.py single_eval.py src inspect_results
 ```
 
 There is no configured linter. The tests are offline and must not make API
@@ -77,7 +77,7 @@ Environment selection:
 | `src/agents/graph.py` | LangGraph topology and train-repair routing |
 | `src/agents/cluster_sampling.py` | Deterministic table/KV page sampling and source-page split plan |
 | `src/agents/` | Individual graph phases and shared graph state |
-| `test-clustering/` | Shared deterministic table/KV cluster engines and research viewers |
+| `src/clustering/` | Deterministic table/KV clustering, structure scanning, and line detection |
 | `src/prompts/` | Contracts given to DeepSeek and OpenCode |
 | `src/models/` | DeepSeek provider and OpenCode CLI wrapper |
 | `src/pipeline.py` | Portable, model-free runtime copied into every generated pipeline |
@@ -85,9 +85,8 @@ Environment selection:
 | `src/ground_truth_gen/` | Ground-truth prompt plus OCR/render/JSON helpers |
 | `src/run_batch.py` | Parallel benchmark runner with terminal dashboard |
 | `single_eval.py` | Evaluate a generated pipeline on another PDF or page sample |
-| `fix.py` | Regenerate test ground truth/eval for one legacy `data/<id>` run |
 | `rescore.py` | Re-score saved artifacts with current `src/eval` code, without LLM calls |
-| `viz_*.py` | Bounding-box, block, OpenCode-log, and batch-result visualizations |
+| `inspect_results/` | Block, record, and batch-result visualizations |
 | `tests/` | Offline `unittest` regressions |
 
 `data/`, `outputs/`, `api_runs/`, `env/`, `.env`, PDFs, OCR dumps, and generated
@@ -273,7 +272,7 @@ overlays for selected pages on demand.
 
 After that,
 `block_artifacts` reapplies it to the complete train PDF, then calls the reusable
-renderers in `viz_blocks.py` and `viz_record_separation.py`. It writes block
+renderers in `inspect_results/viz_blocks.py` and `inspect_results/viz_record_separation.py`. It writes block
 overlays under `<output>/artifacts/blocks/` and deterministic record overlays
 under `<output>/artifacts/record_separation/`. In eval mode it also applies the
 learned separator to the independent test PDF and writes UI-only overlays under
@@ -415,7 +414,7 @@ Minimum verification for source changes:
 
 ```bash
 python -m unittest discover -s tests -v
-python -m compileall -q api.py run.py fix.py rescore.py single_eval.py src
+python -m compileall -q api.py run.py rescore.py single_eval.py src inspect_results
 ```
 
 Add focused offline regressions for bug fixes. Do not make tests depend on the
@@ -432,8 +431,6 @@ OpenCode service.
 - `single_eval.py` contains its own sequential ground-truth driver for sampled
   pages. Shared boundary helpers come from `gt_common.py`, but generation
   behavior is not identical to the graph's parallel coverage-checked path.
-- `fix.py` assumes the legacy `data/<doc_id>` layout and mutates existing ground
-  truth, eval, and metadata artifacts in place.
 - `rescore.py` can rewrite reports and metadata. Use `--dry-run` first when
   examining historical experiments.
 - `--group-rows` changes the OCR granularity even though generated prompts and

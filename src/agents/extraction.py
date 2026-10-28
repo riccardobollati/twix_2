@@ -6,8 +6,8 @@ import sys
 import time
 from typing import Any
 
-from viz_blocks import render_blocks
-from viz_record_separation import render_record_separation
+from inspect_results.viz_blocks import render_blocks
+from inspect_results.viz_record_separation import render_record_separation
 
 
 PIPELINE_TIMEOUT_S = 300

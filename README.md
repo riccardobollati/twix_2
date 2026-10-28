@@ -383,8 +383,8 @@ failure is returned to OpenCode for up to three attempts. Generated-script runs
 time out after 300 seconds.
 
 After block separation succeeds, the artifact node reapplies the generated
-separator to the complete train PDF and `viz_blocks.py` renders every train
-page under `<output>/artifacts/blocks/`. `viz_record_separation.py` applies the
+separator to the complete train PDF and `inspect_results/viz_blocks.py` renders every train
+page under `<output>/artifacts/blocks/`. `inspect_results/viz_record_separation.py` applies the
 deterministic node-sequence grouper to the same block output and renders record
 envelopes under `<output>/artifacts/record_separation/`. Eval runs also render
 the learned separator on held-out pages under `<output>/artifacts/test_blocks/`
@@ -754,41 +754,29 @@ python single_eval.py path/to/new.pdf experiment_a --pages 20 --seed 7
 python single_eval.py path/to/new.pdf experiment_a --reuse
 ```
 
-Regenerate only test ground truth and evaluation for the legacy dataset layout:
-
-```bash
-python fix.py id_04 --window 20
-```
-
-This overwrites test ground truth/eval and patches `metadata.json` in place.
 
 ## Visual diagnostics
 
 ```bash
-python viz_bb.py id_04 1 2
-python viz_blocks.py id_04 1 2
-python viz_blocks.py id_04 path/to.pdf
-python viz_blocks.py id_04 --pdf-path path/to.pdf
-python viz_record_separation.py id_04 1 2
-python viz_record_separation.py id_04 --pdf-path path/to.pdf
-python viz_record_separation.py id_04 --pdf-path path/to.pdf --template-path data/id_04/template.json
-python viz_agent_log.py data/id_04/debug/
-python viz_batch_results.py data
+python -m inspect_results.viz_blocks id_04 1 2
+python -m inspect_results.viz_blocks id_04 path/to.pdf
+python -m inspect_results.viz_blocks id_04 --pdf-path path/to.pdf
+python -m inspect_results.viz_record_separation id_04 1 2
+python -m inspect_results.viz_record_separation id_04 --pdf-path path/to.pdf
+python -m inspect_results.viz_record_separation id_04 --pdf-path path/to.pdf --template-path data/id_04/template.json
+python -m inspect_results.viz_batch_results data
 ```
 
-- `viz_bb.py` draws OCR word boxes.
-- `viz_blocks.py` runs `data/<name>/pipeline/block_separation.py` on the chosen
+- `inspect_results/viz_blocks.py` runs `data/<name>/pipeline/block_separation.py` on the chosen
   PDF, then draws colored detected-block bounds and lists detected block
   IDs and types. Its current metadata lookup does not reliably display routing
   models because routing is keyed by node ID while blocks use instance IDs.
-- `viz_record_separation.py` runs the same generated separator, groups its
+- `inspect_results/viz_record_separation.py` runs the same generated separator, groups its
   document-order blocks with `src/record_grouping.py`, and draws one colored
   record envelope per page while retaining each physical block outline. It is
   also imported by the graph artifact phase through
   `render_record_separation(...)`.
-- `viz_agent_log.py` renders OpenCode JSONL events, commands, prompts, stderr, and
-  token usage.
-- `viz_batch_results.py` creates accuracy, token/cost, phase, break-even, and
+- `inspect_results/viz_batch_results.py` creates accuracy, token/cost, phase, break-even, and
   per-document charts under `data/results/`. Its reusable
   `generate_document_results(document_dir, out_dir)` entry point renders the
   same per-document report for a single completed run; the UI uses it to
@@ -821,11 +809,17 @@ and candidate pairs with the current code before combining experiments.
 
 ## Development checks
 
+The maintained implementation lives in `src/`. In particular,
+`src/clustering/` contains the deterministic table/KV page clustering,
+structure scanner, and PDF line detector used by training-page selection.
+`tests/` contains offline regressions for the maintained implementation.
+The visualizers in `inspect_results/` are also used by the pipeline and UI.
+
 Offline regressions:
 
 ```bash
 python -m unittest discover -s tests -v
-python -m compileall -q run.py fix.py rescore.py single_eval.py src
+python -m compileall -q api.py run.py rescore.py single_eval.py src inspect_results
 ```
 
 The test suite covers input resolution, page-remapped front-matter cropping,

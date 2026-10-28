@@ -39,7 +39,7 @@ Older runs with a saved source PDF and `pipeline/block_separation.py` show
 the metadata source start page, so the extraction pipeline does not rerun.
 
 After a successful UI run, the dashboard calls the reusable single-document
-renderer from `viz_batch_results.py`. The final-results Stats tab shows summary
+renderer from `inspect_results/viz_batch_results.py`. The final-results Stats tab shows summary
 metrics and the generated overview, phase-cost, and token-breakdown plots. These
 files are stored under `UI/runs/<run-id>/artifacts/stats/`; plot-generation
 errors are reported in Logs without changing a successful pipeline into a

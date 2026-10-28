@@ -1,21 +1,14 @@
 """Offline checks for deterministic table-structure page clustering."""
 from __future__ import annotations
 
-import importlib.util
 from pathlib import Path
-import sys
 import tempfile
 import unittest
 
 import numpy as np
 
 
-SCRIPT = Path(__file__).resolve().parents[1] / "test-sorter-lines" / "cluster_pages.py"
-sys.path.insert(0, str(SCRIPT.parent))
-SPEC = importlib.util.spec_from_file_location("cluster_pages", SCRIPT)
-assert SPEC and SPEC.loader
-cluster_pages = importlib.util.module_from_spec(SPEC)
-SPEC.loader.exec_module(cluster_pages)
+from src.clustering import cluster_pages
 
 
 class ClusterPagesTests(unittest.TestCase):
